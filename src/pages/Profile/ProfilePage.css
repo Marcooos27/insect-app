@@ -1,0 +1,16 @@
+.profile-container {
+color: black;
+}
+
+.profile-title {
+font-size: 24px;
+font-weight: bold;
+color: black;
+margin-bottom: 16px;
+}
+
+.profile-text {
+font-size: 16px;
+color: black;
+margin-bottom: 8px;
+}

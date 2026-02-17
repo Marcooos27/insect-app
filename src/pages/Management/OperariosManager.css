@@ -1,0 +1,318 @@
+/* OperariosManager.css */
+
+/*
+.operarios-page ion-content {
+--background: #f3f6fb;
+font-family: 'Inter', 'Segoe UI', sans-serif;
+color: #1f2933;
+}
+
+
+.operarios-page ion-toolbar {
+--background: linear-gradient(135deg, #1e3a8a, #2563eb);
+--color: #ffffff;
+font-weight: 600;
+box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.operarios-page ion-title {
+font-size: 1.15rem;
+letter-spacing: 0.4px;
+}
+
+
+.operarios-page ion-toolbar ion-button {
+--background: #ffffff;
+--color: #2563eb;
+--border-radius: 50%;
+width: 42px;
+height: 42px;
+
+box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+transition: all 0.2s ease;
+}
+
+.operarios-page ion-toolbar ion-button:hover {
+transform: scale(1.08);
+--background: #e5edff;
+}
+
+
+
+.operarios-page ion-item {
+--background: #1f2937;
+border-radius: 14px;
+margin-bottom: 10px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+
+
+.operarios-page ion-label h2 {
+color: #ffffff;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+
+
+
+.operarios-page ion-label p {
+color: #d1d5db;
+font-size: 0.85rem;
+}
+
+
+
+.operarios-page ion-button[color="primary"] {
+--background: #ffffff;
+--color: #111827;
+font-weight: 600;
+}
+
+
+
+.operarios-page ion-button[color="primary"] {
+--background: #e5e7eb;
+}
+
+
+
+
+
+.operarios-page ion-list {
+margin: 16px;
+border-radius: 14px;
+background: #ffffff;
+box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+overflow: hidden;
+}
+
+
+
+.operarios-page ion-item {
+--background: #ffffff;
+--padding-start: 16px;
+--inner-padding-end: 12px;
+
+border-bottom: 1px solid #f1f5f9;
+
+transition: transform 0.15s ease,
+background 0.15s ease,
+box-shadow 0.15s ease;
+}
+
+.operarios-page ion-item:hover {
+background: #f8fafc;
+transform: translateY(-2px);
+box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+
+
+.operarios-page ion-label h2 {
+font-size: 1rem;
+font-weight: 600;
+color: #111827;
+}
+
+
+
+.operarios-page ion-label p {
+font-size: 0.85rem;
+color: #64748b;
+}
+
+
+
+.operarios-page ion-button {
+--border-radius: 8px;
+--padding-start: 8px;
+--padding-end: 8px;
+
+transition: all 0.2s ease;
+}
+
+.operarios-page ion-button:hover {
+transform: translateY(-2px);
+}
+
+
+
+.operarios-page ion-button[color="primary"] {
+--background: #e0ecff;
+--color: #2563eb;
+}
+
+.operarios-page ion-button[color="primary"]:hover {
+--background: #c7dbff;
+}
+
+
+
+.operarios-page ion-button[color="danger"] {
+--background: #fee2e2;
+--color: #dc2626;
+}
+
+.operarios-page ion-button[color="danger"]:hover {
+--background: #fecaca;
+}
+
+
+
+.operarios-page .ion-text-center {
+margin-top: 50px;
+color: #475569;
+}
+
+.operarios-page .ion-text-center p {
+font-size: 0.95rem;
+margin-top: 10px;
+}
+
+
+
+
+
+.operario-form {
+background: #ffffff;
+padding: 24px;
+border-radius: 18px;
+}
+
+
+
+.operario-form h2 {
+text-align: center;
+color: #111827;
+margin-bottom: 20px;
+}
+
+
+
+.form-group {
+position: relative;
+margin-bottom: 22px;
+}
+
+
+
+.form-group input {
+width: 100%;
+padding: 14px 12px;
+border: 2px solid #d1d5db;
+border-radius: 14px;
+font-size: 0.95rem;
+color: #111827;
+background: #ffffff;
+outline: none;
+transition: border 0.2s ease;
+}
+
+
+
+.form-group input:focus {
+border-color: #2563eb;
+}
+
+
+
+.form-group label {
+position: absolute;
+top: -10px;
+left: 14px;
+background: #ffffff;
+padding: 0 6px;
+font-size: 0.8rem;
+font-weight: 600;
+color: #374151;
+}
+
+
+
+
+
+.task-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-label p {
+  background-color: #008cff;
+  color: #1b1b1b;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+*/
+
+
+
+/* OperariosManager.css */
+
+/* ===============================
+Para formulario de crear operario
+================================= */
+
+:root {
+  /* === PALETA VERDE PRINCIPAL === */
+  --green-darkest: #336A29;
+  --green-dark: #498528;
+  --green-mid: #80B155;
+  --green-light: #C1D95C;
+  --green-accent: #EAEF9D;
+
+  /* === TEXTO === */
+  --text-primary: #3b433c;
+  --text-secondary: #89a18a;
+  --text--white: #ffffff;
+}
+
+
+.operarios-page ion-item ion-label h2 {
+  color: var(--text-primary);           
+  letter-spacing: 0.5px;
+}
+
+
+.operarios-page ion-item ion-button.edit-button ion-icon {
+  color: var(--text-primary); 
+}
+
+.operarios-page ion-item ion-button.edit-button:hover ion-icon {
+  color: var(--green-mid); 
+}
+
+.header-toolbar {
+  --background: var(--green-mid); 
+  --color: var(--text-white);      
+}
+
+/* Boton de + para crear operario*/
+.add-button ion-icon {
+  --background: var(--green-mid); 
+  /*transition: color 0.3s; */
+  --color: var(--text-primary);
+}
+
+/* Hover */
+.add-button:hover  {
+  background-color: var(--green-light); 
+  --color: var(--text-primary);
+}
+
+
+.operarios-page ion-item {
+  --background: rgb(255, 255, 255);
+  --padding-start: 16px;
+  --inner-padding-end: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.operarios-page ion-item:hover {
+  background: #f9fafc;
+  transform: scale(1.01);
+}

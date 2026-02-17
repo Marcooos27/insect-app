@@ -1,0 +1,104 @@
+/* ClientesManager.css */
+
+/* ====== General ====== */
+ion-content {
+  --background: #f4f6f9; /* Fondo gris clarito tipo dashboard */
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  color: #2d3436;
+}
+
+/* ====== Header ====== */
+ion-toolbar {
+  --background: #1e3a8a; /* Azul oscuro elegante */
+  --color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+ion-title {
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
+}
+
+/* ====== Lista de clientes ====== */
+ion-list {
+  margin: 15px;
+  border-radius: 12px;
+  background: rgb(107, 146, 255);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+/* Cada cliente */
+.clientes-page ion-item {
+  --background: rgb(255, 255, 255);
+  --padding-start: 16px;
+  --inner-padding-end: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.clientes-page ion-item:hover {
+  background: #f9fafc;
+  transform: scale(1.01);
+}
+
+/* Nombre */
+ion-label h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+/* Teléfono / detalles */
+ion-label p {
+  font-size: 0.85rem;
+  color: #000000;
+}
+
+/* ====== Botones de acción ====== */
+ion-button {
+  --border-radius: 8px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --color: #1e3a8a;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+ion-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Botón eliminar */
+ion-button[color="danger"] {
+  --color: #dc2626;
+}
+
+ion-button[color="danger"]:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+/* Botón añadir en el header */
+ion-toolbar ion-button {
+  --background: #2563eb;
+  --color: white;
+  --border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  width: 42px;
+  height: 42px;
+}
+
+ion-toolbar ion-button:hover {
+  background: #1d4ed8;
+}
+
+/* ====== Loading Spinner ====== */
+.ion-text-center {
+  margin-top: 40px;
+  color: #475569;
+}
+
+.ion-text-center p {
+  font-size: 0.95rem;
+  margin-top: 10px;
+}

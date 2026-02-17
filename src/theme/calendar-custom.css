@@ -1,0 +1,101 @@
+/* === ESTILOS DEL CALENDARIO === */
+
+/* Día actual con fondo azul clarito */
+.rbc-day-bg.rbc-today {
+  background-color: #cce6ff !important;
+}
+
+/* Texto general en negro */
+.rbc-toolbar-label,
+.rbc-date-cell,
+.rbc-header,
+.rbc-event-content,
+.rbc-event-label {
+  color: #000 !important;
+}
+
+/* Fondo clarito para los recuadros */
+.rbc-day-bg {
+  background-color: #f7f7fa !important;
+}
+
+/* Líneas del calendario en negro */
+.rbc-month-view,
+.rbc-time-view,
+.rbc-timeslot-group,
+.rbc-day-bg,
+.rbc-header,
+.rbc-row,
+.rbc-row-segment {
+  border-color: #000 !important;
+}
+
+.rbc-day-bg,
+.rbc-header,
+.rbc-row,
+.rbc-row-segment {
+  border-bottom: 1px solid #000 !important;
+  border-right: 1px solid #000 !important;
+}
+
+/* === Personalización de la barra superior === */
+
+.rbc-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #eef3ff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Texto del mes y año */
+.rbc-toolbar-label {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #000 !important;
+}
+
+/* Botones del calendario */
+.rbc-toolbar button {
+  background-color: #3880ff;
+  color: #000; /* Texto en negro */
+  border: 1px solid #000;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin: 0 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover */
+.rbc-toolbar button:hover {
+  background-color: #cce6ff;
+}
+
+/* Botón activo (Mes, Semana, Día) */
+.rbc-toolbar button.rbc-active {
+  background-color: #2dd36f;
+  color: #000;
+  border: 1px solid #000;
+}
+
+/* Espaciado entre botones */
+.rbc-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Asegura que todos los textos del calendario sean negros */
+.rbc-month-view, 
+.rbc-time-view,
+.rbc-timeslot-group,
+.rbc-time-header,
+.rbc-header,
+.rbc-time-content {
+  color: #000 !important;
+}

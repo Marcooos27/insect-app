@@ -1,0 +1,201 @@
+cells:
+  - kind: 2
+    value: "import oracledb\r
+
+      from passlib.context import CryptContext\r
+
+      \r
+
+      # Configuración de la conexión\r
+
+      def get_connection():\r
+
+      \    return oracledb.connect(user=\"TU_USUARIO\", password=\"TU_PASS\",
+      dsn=\"localhost/XE\")\r
+
+      \r
+
+      # Contexto para hash de contraseñas\r
+
+      pwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\r
+
+      \r
+
+      # Datos del usuario admin inicial\r
+
+      admin_email = \"admin@insecteat.es\"\r
+
+      admin_password = \"adminMarcos\"  # contraseña de prueba\r
+
+      admin_rol = \"admin\"\r
+
+      \r
+
+      # Hashear contraseña\r
+
+      hashed_password = pwd_context.hash(admin_password)\r
+
+      \r
+
+      # Crear usuario\r
+
+      def create_admin_user():\r
+
+      \    conn = get_connection()\r
+
+      \    cur = conn.cursor()\r
+
+      \    try:\r
+
+      \        cur.execute(\"\"\"\r
+
+      \            INSERT INTO Usuario (email, password, rol)\r
+
+      \            VALUES (:1, :2, :3)\r
+
+      \        \"\"\", (admin_email, hashed_password, admin_rol))\r
+
+      \        conn.commit()\r
+
+      \        print(\"Usuario admin creado correctamente\")\r
+
+      \    except oracledb.IntegrityError:\r
+
+      \        print(\"El usuario ya existe\")\r
+
+      \    finally:\r
+
+      \        cur.close()\r
+
+      \        conn.close()\r
+
+      \r
+
+      if __name__ == \"__main__\":\r
+
+      \    create_admin_user()\r\n"
+    languageId: oracle-sql
+  - kind: 1
+    value: "Para saber como es la contraseña \"adminMarcos\" on el hash me he metido
+      a esta pagina web: \"https://bcrypt-generator.com/\" donde metes una
+      contraseña y te da el hash codificado, que en este caso para la contraseña
+      \"adminMarcos\" es este:\r
+
+      \r
+
+      $2a$12$WKIDWSWsl8lb9nATWaMQJOcp57SvtcyqGZ5GiD3KE/v7Iy6SapUgO"
+    languageId: markdown
+  - kind: 2
+    value: "INSERT INTO usuarios (ID, email, username, password_hash, rol,
+      created_at)\r
+
+      VALUES (1, 'marcos@insecteat.es', 'adminMarcos',
+      '$2a$12$WKIDWSWsl8lb9nATWaMQJOcp57SvtcyqGZ5GiD3KE/v7Iy6SapUgO', 'admin',
+      SYSTIMESTAMP);\r
+
+      \r
+
+      COMMIT;"
+    languageId: oracle-sql
+  - kind: 2
+    value: "INSERT INTO usuarios (ID, email, username, password_hash, rol,
+      created_at)\r
+
+      VALUES (2, 'marcos_operario@insecteat.es', 'adminMarcosOperario',
+      '$2a$12$HLzBB1vpLX8C4fqtFz2CZOhgeXuLQwCboHUaorzGZ0yNMBOqXwQ3y', 'user',
+      SYSTIMESTAMP);\r
+
+      \r
+
+      COMMIT;"
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT * FROM usuarios;
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT * FROM operario;
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT * FROM tarea;
+    languageId: oracle-sql
+  - kind: 2
+    value: "ALTER TABLE usuarios\r
+
+      ADD id_operario NUMBER;\r\n"
+    languageId: oracle-sql
+  - kind: 2
+    value: "ALTER TABLE usuarios\r
+
+      ADD CONSTRAINT fk_operario\r
+
+      FOREIGN KEY (id_operario) REFERENCES operario(id_operario);\r\n"
+    languageId: oracle-sql
+  - kind: 2
+    value: "CREATE SEQUENCE operario_seq\r
+
+      START WITH 1\r
+
+      INCREMENT BY 1;"
+    languageId: oracle-sql
+  - kind: 2
+    value: "CREATE OR REPLACE TRIGGER operario_trigger\r
+
+      BEFORE INSERT ON operario\r
+
+      FOR EACH ROW\r
+
+      BEGIN\r
+
+      \  IF :NEW.id_operario IS NULL THEN\r
+
+      \    SELECT operario_seq.NEXTVAL\r
+
+      \    INTO :NEW.id_operario\r
+
+      \    FROM dual;\r
+
+      \  END IF;\r
+
+      END;\r
+
+      /\r\n"
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT MAX(id_operario) FROM operario;
+    languageId: oracle-sql
+  - kind: 2
+    value: DROP SEQUENCE operario_seq;
+    languageId: oracle-sql
+  - kind: 2
+    value: "CREATE SEQUENCE operario_seq\r
+
+      START WITH 4\r
+
+      INCREMENT BY 1;\r\n"
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT email, username FROM usuarios;
+    languageId: oracle-sql
+  - kind: 2
+    value: "SELECT constraint_name, column_name\r
+
+      FROM user_cons_columns\r
+
+      WHERE table_name = 'USUARIOS';\r\n"
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT * FROM usuarios;
+    languageId: oracle-sql
+  - kind: 2
+    value: "CREATE SEQUENCE usuarios_seq\r
+
+      START WITH 3\r
+
+      INCREMENT BY 1;\r\n"
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT * FROM usuarios;
+    languageId: oracle-sql
+  - kind: 2
+    value: SELECT * FROM operario;
+    languageId: oracle-sql

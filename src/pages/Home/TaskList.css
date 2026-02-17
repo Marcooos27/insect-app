@@ -1,0 +1,203 @@
+:root {
+  /* === PALETA VERDE PRINCIPAL === */
+  --green-darkest: #336A29;
+  --green-dark: #498528;
+  --green-mid: #80B155;
+  --green-light: #C1D95C;
+  --green-accent: #EAEF9D;
+
+  /* === TEXTO === */
+  --text-primary: #3b433c;
+  --text-secondary: #89a18a;
+}
+
+
+
+/* TÍTULO DE SECCIÓN (NO CARD) */
+.section-title {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 12px 0 20px;
+}
+
+/* Card del operario */
+.task-card {
+  background: linear-gradient(
+    145deg,
+    var(--green-mid),
+    var(--green-dark)
+  );
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Encabezado del operario */
+.operator-header {
+  margin-bottom: 16px;
+}
+
+/* Nombre del operario */
+.operator-name {
+  text-transform: uppercase;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 5px;
+
+  /* refuerzo visual */
+  text-shadow: 0 0 2px currentColor;
+}
+
+/* Lista */
+.task-list {
+  padding: 0;
+  background: transparent !important;
+}
+
+/* Tarea (verde exterior) */
+.task-item {
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  overflow: visible;
+
+  --background: var(--green-light);
+  --border-color: transparent;
+  --inner-border-width: 0;
+  --padding-start: 12px;
+  --padding-end: 12px;
+
+  background-color: var(--green-accent);
+  border: 0.5px solid rgba(0,0,0,0.08);
+}
+
+.task-item::part(native) {
+  border-radius: 10px;
+}
+
+.no-tasks-item {
+  --background: transparent;
+  --inner-border-width: 0;
+  --border-color: transparent;
+  --highlight-height: 0;
+
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0;
+  margin: 0;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+
+.no-tasks-text {
+  display: flex;
+  align-items: center;
+
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+
+  overflow: visible; /* CLAVE */
+
+  background-color: var(--green-light);
+  --background: var(--green-light);
+  --border-color: transparent;
+  --inner-border-width: 0;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  color: var(--text-primary);
+  font-weight: 600;
+  border: 5px solid var(--green-accent);
+}
+
+
+ion-list {
+  background: transparent !important;
+}
+
+
+/* Checkbox */
+.task-checkbox {
+  --checkmark-color: var(--green-accent);
+  --size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+/* Contenido */
+.task-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Texto de tarea */
+.task-label p {
+  background-color: #008cff;
+  color: #1b1b1b;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* Acciones (checkbox + botón) */
+.task-actions {
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  align-items: center;
+  row-gap: 8px;
+  margin-right: 16px;
+}
+
+/* Botón editar */
+.edit-task-btn {
+  background-color: var(--green-accent);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Efecto hover (verde oscuro cuando pasas el cursos por encima) botón editar */
+.edit-task-btn:hover {
+  background-color: var(--green-dark);
+}
+
+/* Filas alineadas (rectangulos verde-light interiores)*/
+.task-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 8px;
+
+  background-color: var(--green-accent);
+  border: 2px solid var(--green-light);
+  padding: 6px 10px;
+  border-radius: 10px;
+  margin: 2px 0;
+}
+
+/* Columna izquierda (Tipo / Descripción / Entrega) */
+.task-key {
+  text-align: right;
+  font-weight: 700;
+  color: var(--text-primary);
+
+}
+
+/* Columna derecha (valor) */
+.task-value {
+  color: var(--text-primary);
+  text-align: left;
+}

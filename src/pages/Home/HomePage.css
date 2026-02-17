@@ -1,0 +1,165 @@
+:root {
+  /* === PALETA VERDE PRINCIPAL === */
+  --green-darkest: #336A29;
+  --green-dark: #498528;
+  --green-mid: #80B155;
+  --green-light: #C1D95C;
+  --green-accent: #EAEF9D;
+
+  /* === TEXTO === */
+  --text-primary: #546355;
+  --text-secondary: #c8e6c9;
+
+  /* === GRADIENTE HOME === */
+  --home-gradient-start: #80B155;
+  --home-gradient-end: #336A29;
+
+  /* === GLASS EFECTOS === */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.12);
+
+  /* === SEGMENT ACTIVE === */
+  --segment-active-start: #EAEF9D;
+  --segment-active-end: #80B155;
+}
+
+
+
+
+
+
+
+/* Fondo de toda la página */
+.homepage {
+  --background: linear-gradient(
+    135deg,
+    var(--home-gradient-start),
+    var(--home-gradient-end)
+  );
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Contenido principal */
+.homepage-content {
+  padding: 20px;
+  background: var(--glass-bg);; /* efecto translúcido */
+  backdrop-filter: blur(12px); /* efecto glassmorphism */
+  min-height: 100vh; /* restando altura del header */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Segmento de selección */
+.homepage-segment {
+  --background: var(--glass-bg);
+  --border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+}
+
+/* Botones del segmento */
+.segment-button {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
+}
+
+.segment-button.activated {
+  background: linear-gradient(
+    135deg,
+    var(--segment-active-start),
+    var(--segment-active-end)
+  );
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+/*
+--green-darkest: #336A29;
+  --green-dark: #498528;
+  --green-mid: #80B155;
+  --green-light: #C1D95C;
+  --green-accent: #EAEF9D;
+
+  background-color: var(--green-accent);*/
+
+/* Botón LIST */
+.segment-button.list-button {
+  --color-checked: var(--green-dark);
+  --btn-bg: var(--green-dark);
+  --btn-bg-active: var(--green-light);
+}
+.segment-button.list-button.activated {
+  background: linear-gradient(135deg, var(--green-accent), var(--green-light));
+  color: #fff !important;
+}
+
+/* Botón ASSIGN */
+.segment-button.assign-button {
+  --color-checked: var(--green-light);
+  --btn-bg: var(--green-light);
+  --btn-bg-active: var(--green-light);
+}
+.segment-button.assign-button.activated {
+  background: linear-gradient(135deg, var(--green-accent), var(--green-light));
+  color: #fff !important;
+}
+
+
+
+/* Contenedor de las tarjetas (TaskList / AssignTask) */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Tarjetas internas */
+.home-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.home-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.45);
+}
+
+/* Títulos dentro de las tarjetas */
+.home-card h1,
+.home-card h2 {
+  color: var(--text-primary);
+}
+
+/* Texto normal */
+.home-card p,
+.home-card span {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Scroll */
+.homepage-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.homepage-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.homepage-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+
+.homepage-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
