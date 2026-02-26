@@ -1,34 +1,18 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-import oracledb
+import psycopg2
+from psycopg2 import IntegrityError
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
-from datetime import date, datetime
-import os
-from dotenv import load_dotenv # Para cargar credenciales desde .env
-from pathlib import Path
+from datetime import date, datetime, timedelta
+
 from backend.auth.auth import get_current_user, router as auth_router
 from backend.database import get_connection  # Importamos la función de conexión a la BD
 from backend.auth.auth import require_admin
 
-
-BASE_DIR = Path(__file__).resolve().parent
-
-load_dotenv(BASE_DIR / '.env')  # Cargar variables de entorno desde el archivo .env
-
 app = FastAPI(title="API Multi-Tablas Oracle")
 
 app.include_router(auth_router)
-
-
-# --- Conexión a la BD ---
-""" def get_connection():
-    return oracledb.connect(
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        dsn=os.getenv("DB_DSN")
-    )
- """
 
 app.add_middleware(
     CORSMiddleware,
