@@ -3,4 +3,4 @@ uvicorn
 passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
-oracledb
+psycopg2-binary

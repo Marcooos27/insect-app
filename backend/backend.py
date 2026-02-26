@@ -9,6 +9,7 @@ from dotenv import load_dotenv # Para cargar credenciales desde .env
 from pathlib import Path
 from backend.auth.auth import get_current_user, router as auth_router
 from backend.database import get_connection  # Importamos la función de conexión a la BD
+from backend.auth.auth import require_admin
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -231,7 +232,7 @@ def get_tareas(user = Depends(get_current_user)):
 from datetime import datetime, timedelta
 
 @app.post("/tarea")
-def add_tarea(tarea: TareaIn):
+def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     print("TAREA RECIBIDA:", tarea)
     conn = get_connection()
     cur = conn.cursor()

@@ -328,3 +328,14 @@ def update_profile(
     conn.close()
 
     return {"message": "Perfil actualizado"}
+
+
+
+
+def require_admin(user=Depends(get_current_user)):
+    if user["rol"] != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Solo administradores pueden hacer esto"
+        )
+    return user
