@@ -8,7 +8,8 @@ from passlib.context import CryptContext
 from backend.database import get_connection
 from backend.auth.jwt import create_access_token, decode_token
 
-import oracledb
+import psycopg2
+from psycopg2 import sql, IntegrityError
 
 import os
 from dotenv import load_dotenv

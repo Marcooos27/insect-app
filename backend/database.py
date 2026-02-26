@@ -1,16 +1,19 @@
-import oracledb
+import psycopg2
 import os
 from dotenv import load_dotenv
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR.parent / ".env")
 
 def get_connection():
-    return oracledb.connect(
+    return psycopg2.connect(
+        dbname=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        dsn=os.getenv("DB_DSN"),
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT"),
+        sslmode="require"
     )
 
-'''print("DB_USER:", os.getenv("DB_USER"))'''
+    
