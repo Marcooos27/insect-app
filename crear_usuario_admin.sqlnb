@@ -199,3 +199,38 @@ cells:
   - kind: 2
     value: SELECT * FROM operario;
     languageId: oracle-sql
+  - kind: 2
+    value: "DESC CLIENTE;\r
+
+      DESC PEDIDO;\r
+
+      DESC PROVEEDOR;\r
+
+      DESC OPERARIO;\r
+
+      DESC CAMARA;\r
+
+      DESC LOTE_ALIMENTO;\r
+
+      DESC REGISTRO;\r
+
+      DESC SENSORES;\r
+
+      DESC FRANQUICIADO;\r
+
+      DESC ENGORDE;\r
+
+      DESC VOLADERO;\r
+
+      DESC INCUBACION;\r
+
+      DESC PRODUCTOS;\r
+
+      DESC TAREA;\r
+
+      DESC PEDIDO;\r
+
+      DESC EVENTO;\r
+
+      DESC USUARIOS;"
+    languageId: oracle-sql

@@ -1,0 +1,5 @@
+"ID","EMAIL","USERNAME","PASSWORD_HASH","ROL","CREATED_AT","ID_OPERARIO"
+1,"marcos@insecteat.es","adminMarcos","$2b$12$Umc7jv1de5cY2iu48e.jtO90gOwEFLh00ef6bPKRPPdDQaPL.uyDu","admin","13/02/26",
+3,"prueba@insecteatprueba.es","pruebaUser","$2b$12$G6rW8zBYV98XiRYJio9rQOlEK.iJC3ZLKCDaGwZPIhrQiybk/GKg.","user","15/02/26",7
+4,"test@insecteat.es","test","$2b$12$Oz08wo4fmrcoS5jd4k2gqO8KfD2sHG59RAhd.mT1PaV3/pMgsnK6C","user","15/02/26",8
+2,"marcos_operario@insecteat.es","adminMarcosOperario","$2b$12$mx3I9ap/zHWrg0a3BQAu9eamNRZ4bKaFOdnnKjnnIM1hvvrQ0L8.y","user","13/02/26",

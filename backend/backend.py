@@ -8,14 +8,21 @@ from datetime import date, datetime, timedelta
 
 from backend.auth.auth import get_current_user, router as auth_router
 from backend.database import get_connection  # Importamos la función de conexión a la BD
+<<<<<<< HEAD
 
+=======
+from backend.auth.auth import require_admin
+>>>>>>> 815ea159c3eb648efd10f5e21d36adf7797c3631
 
 app = FastAPI(title="API Multi-Tablas Oracle")
 
 app.include_router(auth_router)
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 815ea159c3eb648efd10f5e21d36adf7797c3631
 app.add_middleware(
     CORSMiddleware,
     # Añadimos los orígenes usados en desarrollo. Si sigues teniendo problemas con
@@ -218,7 +225,7 @@ def get_tareas(user = Depends(get_current_user)):
 from datetime import datetime, timedelta
 
 @app.post("/tarea")
-def add_tarea(tarea: TareaIn):
+def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     print("TAREA RECIBIDA:", tarea)
     conn = get_connection()
     cur = conn.cursor()

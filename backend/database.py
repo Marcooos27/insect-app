@@ -14,6 +14,10 @@ def get_connection():
         host=os.getenv("DB_HOST"),
         port=os.getenv("DB_PORT"),
         sslmode="require"
+<<<<<<< HEAD
     )
 
     
+=======
+    )
+>>>>>>> 815ea159c3eb648efd10f5e21d36adf7797c3631
