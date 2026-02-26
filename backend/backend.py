@@ -14,6 +14,7 @@ app = FastAPI(title="API Multi-Tablas Oracle")
 
 app.include_router(auth_router)
 
+
 app.add_middleware(
     CORSMiddleware,
     # Añadimos los orígenes usados en desarrollo. Si sigues teniendo problemas con
