@@ -8,7 +8,8 @@ from passlib.context import CryptContext
 from backend.database import get_connection
 from backend.auth.jwt import create_access_token, decode_token
 
-import oracledb
+import psycopg2
+from psycopg2 import IntegrityError
 
 import os
 from dotenv import load_dotenv
@@ -70,65 +71,54 @@ def verify_password(plain: str, hashed: str):
 
 @router.post("/register")
 def register_user(data: RegisterRequest):
-    
-    conn = get_connection()
-    cur = conn.cursor()
 
+    conn = get_connection()
     try:
-        # 1️⃣ Verificar si el email ya existe
+        cur = conn.cursor()
+
+        # 1️⃣ Verificar email
         cur.execute(
-            "SELECT id FROM usuarios WHERE email = :email",
-            {"email": data.email},
+            "SELECT id FROM usuarios WHERE email = %s",
+            (data.email.lower().strip(),)
         )
 
         if cur.fetchone():
             raise HTTPException(400, "El email ya está registrado")
 
-        # 2️⃣ Crear operario automáticamente
-        new_id = cur.var(oracledb.NUMBER)
-
+        # 2️⃣ Crear operario (ID automático)
         cur.execute("""
             INSERT INTO operario (nombre, turno_trabajo)
-            VALUES (:nombre, :turno)
-            RETURNING id_operario INTO :new_id
-        """, {
-            "nombre": data.username,
-            "turno": "Mañana",
-            "new_id": new_id
-        })
+            VALUES (%s, %s)
+            RETURNING id_operario
+        """, (
+            data.username,
+            "Mañana"
+        ))
 
-        id_operario = new_id.getvalue()[0]
+        id_operario = cur.fetchone()[0]
 
-        # 3️⃣ Hashear contraseña
+        # 3️⃣ Hash password
         hashed_pw = hash_password(data.password)
 
-        # 4️⃣ Determinar rol seguro
-        rol_final = "user"  # por defecto
+        # 4️⃣ Rol
+        rol_final = "user"
+        ADMIN_PASSWORD = os.getenv("ADMIN_REGISTER_PASSWORD")
 
-        if hasattr(data, "rol") and data.rol == "admin":
-            ADMIN_PASSWORD = os.getenv("ADMIN_REGISTER_PASSWORD")
-
-            if data.admin_password != ADMIN_PASSWORD:
-                raise HTTPException(
-                    status_code=403,
-                    detail="Contraseña de administrador incorrecta"
-                )
-
+        if data.admin_password == ADMIN_PASSWORD:
             rol_final = "admin"
 
-        # 4️⃣ Crear usuario vinculado al operario
+        # 5️⃣ Crear usuario
         cur.execute("""
             INSERT INTO usuarios
-            (id, email, username, password_hash, rol, id_operario)
-            VALUES
-            (usuarios_seq.NEXTVAL, :email, :username, :password_hash, :rol, :id_operario)
-        """, {
-            "email": data.email,
-            "username": data.username,
-            "password_hash": hashed_pw,
-            "rol": rol_final,
-            "id_operario": id_operario
-        })
+            (email, username, password_hash, rol, id_operario)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            data.email.lower().strip(),
+            data.username,
+            hashed_pw,
+            rol_final,
+            id_operario
+        ))
 
         conn.commit()
 
@@ -138,16 +128,9 @@ def register_user(data: RegisterRequest):
             "rol": rol_final
         }
 
-    except HTTPException:
+    except:
         conn.rollback()
         raise
-
-    except Exception as e:
-        import traceback
-        print(traceback.format_exc())  # 👈 ESTO ES CLAVE
-        conn.rollback()
-        raise
-
     finally:
         cur.close()
         conn.close()
@@ -161,39 +144,26 @@ def register_user(data: RegisterRequest):
 @router.post("/login")
 def login(data: LoginRequest):
 
-    print("Login recibido:", data.email, data.password)
-
-    import traceback
-
     conn = get_connection()
-    cur = conn.cursor()
-
     try:
-        # Normalizamos el email
+        cur = conn.cursor()
+
         email = data.email.strip().lower()
 
         cur.execute("""
             SELECT id, password_hash, rol, username, email, id_operario
             FROM usuarios
-            WHERE LOWER(email) = :email
-        """, {"email": email})
+            WHERE LOWER(email) = %s
+        """, (email,))
 
         user = cur.fetchone()
 
         if not user:
-            raise HTTPException(401, "Usuario no encontrado (revisa el email)")
-        
+            raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
-        print("Hash en DB:", user[1])  # 🟢 para depuración
-        print("Verificando password...")
-
-
-        # Verificamos contraseña
         if not verify_password(data.password, user[1]):
-            print("Error: Contraseña no coincide")  # 🟢 para depuración
-            raise HTTPException(401, "Contraseña incorrecta")
+            raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
-        # Creamos token con id_operario
         token = create_access_token({
             "user_id": user[0],
             "rol": user[2],
@@ -201,19 +171,15 @@ def login(data: LoginRequest):
         })
 
         return {
-                "access_token": token,
-                "token_type": "bearer",
-                "user": {
-                    "id": user[0],
-                    "username": user[3],
-                    "email": user[4],
-                    "rol": user[2],
-                },
-            }
-
-    except Exception as e:
-        print("Error en login:", traceback.format_exc())
-        raise HTTPException(500, f"Error interno: {str(e)}")
+            "access_token": token,
+            "token_type": "bearer",
+            "user": {
+                "id": user[0],
+                "username": user[3],
+                "email": user[4],
+                "rol": user[2],
+            },
+        }
 
     finally:
         cur.close()
@@ -231,32 +197,36 @@ def get_current_user(
     payload = decode_token(token)
 
     user_id = payload.get("user_id")
-    id_operario = payload.get("id_operario")
+
+    if not user_id:
+        raise HTTPException(401, "Token inválido")
 
     conn = get_connection()
-    cur = conn.cursor()
+    try:
+        cur = conn.cursor()
 
-    cur.execute("""
-        SELECT id, email, username, rol
-        FROM usuarios
-        WHERE id = :id
-    """, {"id": user_id})
+        cur.execute("""
+            SELECT id, email, username, rol, id_operario
+            FROM usuarios
+            WHERE id = %s
+        """, (user_id,))
 
-    user = cur.fetchone()
+        user = cur.fetchone()
 
-    cur.close()
-    conn.close()
+        if not user:
+            raise HTTPException(401, "Usuario no válido")
 
-    if not user:
-        raise HTTPException(401, "Usuario no válido")
+        return {
+            "id": user[0],
+            "email": user[1],
+            "username": user[2],
+            "rol": user[3],
+            "id_operario": user[4]
+        }
 
-    return {
-        "id": user[0],
-        "email": user[1],
-        "username": user[2],
-        "rol": user[3],
-        "id_operario": id_operario
-    }
+    finally:
+        cur.close()
+        conn.close()
 
 
 # ================================
@@ -279,30 +249,38 @@ def update_password(
 ):
 
     conn = get_connection()
-    cur = conn.cursor()
+    try:
+        cur = conn.cursor()
 
-    cur.execute(
-        "SELECT password_hash FROM usuarios WHERE id = :id",
-        {"id": user["id"]},
-    )
+        cur.execute(
+            "SELECT password_hash FROM usuarios WHERE id = %s",
+            (user["id"],)
+        )
 
-    stored = cur.fetchone()[0]
+        row = cur.fetchone()
 
-    if not verify_password(data.old_password, stored):
-        raise HTTPException(401, "Contraseña actual incorrecta")
+        if not row:
+            raise HTTPException(404, "Usuario no encontrado")
 
-    new_hash = hash_password(data.new_password)
+        stored_hash = row[0]
 
-    cur.execute(
-        "UPDATE usuarios SET password_hash = :1 WHERE id = :2",
-        (new_hash, user["id"]),
-    )
+        if not verify_password(data.old_password, stored_hash):
+            raise HTTPException(401, "Contraseña actual incorrecta")
 
-    conn.commit()
-    cur.close()
-    conn.close()
+        new_hash = hash_password(data.new_password)
 
-    return {"message": "Contraseña actualizada"}
+        cur.execute(
+            "UPDATE usuarios SET password_hash = %s WHERE id = %s",
+            (new_hash, user["id"])
+        )
+
+        conn.commit()
+
+        return {"message": "Contraseña actualizada correctamente"}
+
+    finally:
+        cur.close()
+        conn.close()
 
 
 # ================================
@@ -316,18 +294,21 @@ def update_profile(
 ):
 
     conn = get_connection()
-    cur = conn.cursor()
+    try:
+        cur = conn.cursor()
 
-    cur.execute(
-        "UPDATE usuarios SET username = :1 WHERE id = :2",
-        (data.username, user["id"]),
-    )
+        cur.execute(
+            "UPDATE usuarios SET username = %s WHERE id = %s",
+            (data.username, user["id"])
+        )
 
-    conn.commit()
-    cur.close()
-    conn.close()
+        conn.commit()
 
-    return {"message": "Perfil actualizado"}
+        return {"message": "Perfil actualizado correctamente"}
+
+    finally:
+        cur.close()
+        conn.close()
 
 
 

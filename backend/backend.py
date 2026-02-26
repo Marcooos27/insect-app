@@ -44,12 +44,14 @@ async def options_evento(request: Request):
 # TABLA: CLIENTE
 # ================================
 class ClienteIn(BaseModel):
-    id_cliente: int
     nombre: str
     telefono: str | None = None
     direccion: str | None = None
     pedido: str | None = None
     satisfaccion: str | None = None
+
+class ClienteOut(ClienteIn):
+    id_cliente: int
 
 @app.get("/cliente")
 def get_clientes():
@@ -68,12 +70,12 @@ def update_cliente(id_cliente: int, cliente: ClienteIn):
     cur = conn.cursor()
     cur.execute("""
         UPDATE Cliente
-        SET nombre = :1, 
-            telefono = :2, 
-            direccion = :3, 
-            pedido = :4, 
-            satisfaccion = :5
-        WHERE id_cliente = :6
+        SET nombre = %s, 
+            telefono = %s, 
+            direccion = %s, 
+            pedido = %s, 
+            satisfaccion = %s
+        WHERE id_cliente = %s
     """, (cliente.nombre, cliente.telefono, cliente.direccion, cliente.pedido, cliente.satisfaccion, id_cliente))
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
@@ -89,26 +91,27 @@ def add_cliente(cliente: ClienteIn):
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO Cliente (id_cliente, nombre, telefono, direccion, pedido, satisfaccion)
-            VALUES (:1, :2, :3, :4, :5, :6)
+            INSERT INTO Cliente (nombre, telefono, direccion, pedido, satisfaccion)
+            VALUES (%s, %s, %s, %s, %s)
         """, (
-            cliente.id_cliente, cliente.nombre, cliente.telefono,
+            cliente.nombre, cliente.telefono,
             cliente.direccion, cliente.pedido, cliente.satisfaccion
         ))
+        new_id = cur.fetchone()[0]
         conn.commit()
-    except oracledb.IntegrityError:
-        raise HTTPException(status_code=400, detail="El cliente ya existe")
+        return {"message": "Cliente insertado", "id_cliente": new_id}
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     finally:
         cur.close()
         conn.close()
-    return {"message": "Cliente insertado correctamente"}
 
 
 @app.delete("/cliente/{id_cliente}")
 def delete_cliente(id_cliente: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Cliente WHERE id_cliente = :1", [id_cliente])
+    cur.execute("DELETE FROM Cliente WHERE id_cliente = %s", [id_cliente])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     conn.commit()
@@ -121,7 +124,6 @@ def delete_cliente(id_cliente: int):
 # TABLA: PEDIDO
 # ================================
 class PedidoIn(BaseModel):
-    id_pedido: int
     id_cliente: int
     estado: str
     tipo_producto: str
@@ -129,6 +131,9 @@ class PedidoIn(BaseModel):
     fecha_entrega: datetime | None = None
     fecha_prevista: datetime | None = None
     logistica: str | None = None
+
+class PedidoOut(PedidoIn):
+    id_pedido: int
 
 @app.get("/pedido")
 def get_pedidos():
@@ -150,17 +155,19 @@ def add_pedido(pedido: PedidoIn):
     try:
         cur.execute("""
             INSERT INTO Pedido (
-                id_pedido, id_cliente, estado, tipo_producto, cantidad,
+                id_cliente, estado, tipo_producto, cantidad,
                 fecha_entrega, fecha_prevista, logistica
             )
-            VALUES (:1, :2, :3, :4, :5, TO_DATE(:6,'YYYY-MM-DD'),
-                    TO_DATE(:7,'YYYY-MM-DD'), :8)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id_pedido
         """, (
-            pedido.id_pedido, pedido.id_cliente, pedido.estado, pedido.tipo_producto,
+            pedido.id_cliente, pedido.estado, pedido.tipo_producto,
             pedido.cantidad, pedido.fecha_entrega, pedido.fecha_prevista, pedido.logistica
         ))
+        new_id = cur.fetchone()[0]
         conn.commit()
-    except oracledb.IntegrityError:
+        return {"id_pedido": new_id}
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail="El pedido ya existe")
     finally:
         cur.close()
@@ -171,7 +178,7 @@ def add_pedido(pedido: PedidoIn):
 def delete_pedido(id_pedido: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Pedido WHERE id_pedido = :1", [id_pedido])
+    cur.execute("DELETE FROM Pedido WHERE id_pedido = %s", [id_pedido])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
     conn.commit()
@@ -193,6 +200,11 @@ class TareaIn(BaseModel):
     frecuencia: Optional[str] = None  # diaria | semanal | mensual
     logistica: Optional[str] = None
 
+class TareaOut(TareaIn):
+    id_tarea: int
+    fecha_creacion: datetime
+    fecha_prevista: datetime | None
+
 @app.get("/tarea")
 def get_tareas(user = Depends(get_current_user)):
     conn = get_connection()
@@ -201,7 +213,7 @@ def get_tareas(user = Depends(get_current_user)):
     if user["rol"] == "user":
         cur.execute("""
             SELECT * FROM Tarea
-            WHERE id_operario = :1
+            WHERE id_operario = %s
         """, [user["id_operario"]])
     else:
         cur.execute("SELECT * FROM Tarea")
@@ -234,15 +246,17 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     try:
         cur.execute("""
             INSERT INTO Tarea (
-                    id_tarea, id_cliente, id_operario, estado, 
+                    id_cliente, id_operario, estado, 
                     tipo_tarea, descripcion, fecha_creacion, fecha_prevista, logistica)
 
-            VALUES (tarea_seq.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, :8)
+            VALUES (tarea_seq.NEXTVAL, %s, %s, %s, %s, %s, %s, %s)
         """, (
             tarea.id_cliente, tarea.id_operario, tarea.estado, tarea.tipo_tarea, tarea.descripcion,
             fecha_creacion, fecha_prevista, tarea.logistica
         ))
+        new_id = cur.fetchone()[0]
         conn.commit()
+        return {"id_tarea": new_id}
     except Exception as e:
         print("ERROR ORACLE:", e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -259,7 +273,7 @@ def update_tarea(id_tarea: int, estado: dict):
     cur = conn.cursor()
 
     cur.execute(
-        "UPDATE Tarea SET estado = :1 WHERE id_tarea = :2",
+        "UPDATE Tarea SET estado = %s WHERE id_tarea = %s",
         [estado["estado"], id_tarea]
     )
 
@@ -269,7 +283,7 @@ def update_tarea(id_tarea: int, estado: dict):
     conn.commit()
 
     # devolver tarea actualizada
-    cur.execute("SELECT * FROM Tarea WHERE id_tarea = :1", [id_tarea])
+    cur.execute("SELECT * FROM Tarea WHERE id_tarea = %s", [id_tarea])
     tarea = cur.fetchone()
 
     cur.close()
@@ -283,7 +297,7 @@ def update_tarea(id_tarea: int, estado: dict):
 def delete_tarea(id_tarea: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Tarea WHERE id_tarea = :1", [id_tarea])
+    cur.execute("DELETE FROM Tarea WHERE id_tarea = %s", [id_tarea])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Tarea no encontrado")
     conn.commit()
@@ -301,9 +315,12 @@ class EventoIn(BaseModel):
     descripcion: Optional[str] = None
     fecha_inicio: date
     fecha_fin: date | None = None
-    estado: str | None = None
+    estado: str | None = "Pendiente"
     id_operario: Optional[int] = None
     id_tarea: Optional[int] = None
+
+class EventoOut(EventoIn):
+    id_evento: int
 
 @app.get("/evento")
 def get_eventos():
@@ -336,15 +353,17 @@ def add_evento(evento: EventoIn):
                 tipo_evento, descripcion, fecha_inicio, fecha_fin,
                 estado, id_operario, titulo, id_tarea
             )
-            VALUES (:1, :2, TRUNC(TO_DATE(:3,'YYYY-MM-DD')), TRUNC(TO_DATE(:4,'YYYY-MM-DD')),
-                    :5, :6, :7, :8)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             evento.tipo_evento, evento.descripcion, evento.fecha_inicio,
             evento.fecha_fin, evento.estado or "Pendiente", evento.id_operario,
             evento.titulo, evento.id_tarea
         ))
+        new_id = cur.fetchone()[0]
         conn.commit()
-    except oracledb.IntegrityError as e:
+        return {"id_evento": new_id}
+    
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad: {e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error inesperado: {e}")
@@ -360,7 +379,7 @@ def add_evento(evento: EventoIn):
 def delete_evento(id_evento: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Evento WHERE id_evento = :1", [id_evento])
+    cur.execute("DELETE FROM Evento WHERE id_evento = %s", [id_evento])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
     conn.commit()
@@ -374,10 +393,12 @@ def delete_evento(id_evento: int):
 # TABLA: PROVEEDOR
 # ================================
 class ProveedorIn(BaseModel):
-    id_proveedor: int
     nombre: str
     tipo_producto: str | None = None
     URL_ficha_producto: str | None = None
+
+class ProveedorOut(ProveedorIn):
+    id_proveedor: int
 
 @app.get("/proveedor")
 def get_proveedores():
@@ -396,14 +417,14 @@ def add_proveedor(proveedor: ProveedorIn):
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO Proveedor (id_proveedor, nombre, tipo_producto, URL_ficha_producto)
-            VALUES (:1, :2, :3, :4)
+            INSERT INTO Proveedor (nombre, tipo_producto, URL_ficha_producto)
+            VALUES (%s, %s, %s)
         """, (
-            proveedor.id_proveedor, proveedor.nombre,
+            proveedor.nombre,
             proveedor.tipo_producto, proveedor.URL_ficha_producto
         ))
         conn.commit()
-    except oracledb.IntegrityError:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail="El proveedor ya existe")
     finally:
         cur.close()
@@ -414,7 +435,7 @@ def add_proveedor(proveedor: ProveedorIn):
 def delete_proveedor(id_proveedor: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Proveedor WHERE id_proveedor = :1", [id_proveedor])
+    cur.execute("DELETE FROM Proveedor WHERE id_proveedor = %s", [id_proveedor])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Proveedor no encontrado")
     conn.commit()
@@ -430,13 +451,15 @@ def delete_proveedor(id_proveedor: int):
 # TABLA: OPERARIO
 # ================================
 class OperarioIn(BaseModel):
-    id_operario: int
     nombre: str
     turno_trabajo: str
 
 class OperarioUpdateCreate(BaseModel):
     nombre: str
     turno_trabajo: str
+
+class OperarioOut(OperarioIn):
+    id_operario: int
 
 @app.get("/operario")
 def get_operarios():
@@ -452,21 +475,24 @@ def get_operarios():
 @app.post("/operario")
 def add_operario(operario: OperarioUpdateCreate):
     conn = get_connection()
-    cur = conn.cursor()
-    try:
-        # Generar id automáticamente usando secuencia o max(id)+1
-        cur.execute("SELECT NVL(MAX(id_operario), 0) + 1 FROM Operario")
-        new_id = cur.fetchone()[0]
 
+    try:
+        cur = conn.cursor()
         cur.execute("""
-            INSERT INTO Operario (id_operario, nombre, turno_trabajo)
-            VALUES (:1, :2, :3)
+            INSERT INTO operario (nombre, turno_trabajo)
+            VALUES (%s, %s)
+            RETURNING *
         """, (
-            new_id, operario.nombre, operario.turno_trabajo
+            operario.nombre,
+            operario.turno_trabajo
         ))
+        new_operario = cur.fetchone()
         conn.commit()
-    except oracledb.IntegrityError:
-        raise HTTPException(status_code=400, detail="El operario ya existe")
+        cols = [d[0] for d in cur.description]
+        return dict(zip(cols, new_operario))
+    except IntegrityError:
+        conn.rollback()
+        raise HTTPException(400, "El operario ya existe")
     finally:
         cur.close()
         conn.close()
@@ -476,7 +502,7 @@ def add_operario(operario: OperarioUpdateCreate):
 def delete_operario(id_operario: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Operario WHERE id_operario = :1", [id_operario])
+    cur.execute("DELETE FROM Operario WHERE id_operario = %s", [id_operario])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Operario no encontrado")
     conn.commit()
@@ -493,8 +519,8 @@ def update_operario(id_operario: int, operario: OperarioUpdateCreate):
         # Actualizar nombre y turno_trabajo para el id dado
         cur.execute("""
             UPDATE Operario
-            SET nombre = :1, turno_trabajo = :2
-            WHERE id_operario = :3
+            SET nombre = %s, turno_trabajo = %s
+            WHERE id_operario = %s
         """, (
             operario.nombre,
             operario.turno_trabajo,
@@ -516,8 +542,10 @@ def update_operario(id_operario: int, operario: OperarioUpdateCreate):
 # TABLA: CAMARA
 # ================================
 class CamaraIn(BaseModel):
-    id_camara: int
     porcentaje_uso: float
+
+class CamaraOut(CamaraIn):
+    id_camara: int
 
 @app.get("/camara")
 def get_camaras():
@@ -536,13 +564,13 @@ def add_camara(camara: CamaraIn):
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO Camara (id_camara, porcentaje_uso)
-            VALUES (:1, :2)
+            INSERT INTO Camara (porcentaje_uso)
+            VALUES (%s, %s)
         """, (
-            camara.id_camara, camara.porcentaje_uso
+            camara.porcentaje_uso
         ))
         conn.commit()
-    except oracledb.IntegrityError:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail="La cámara ya existe")
     finally:
         cur.close()
@@ -553,7 +581,7 @@ def add_camara(camara: CamaraIn):
 def delete_camara(id_camara: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Camara WHERE id_camara = :1", [id_camara])
+    cur.execute("DELETE FROM Camara WHERE id_camara = %s", [id_camara])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Cámara no encontrada")
     conn.commit()
@@ -568,11 +596,13 @@ def delete_camara(id_camara: int):
 # TABLA: LOTE_ALIMENTO
 # ================================
 class LoteAlimentoIn(BaseModel):
-    id_lote_alimento: int
     descripcion: str | None = None
     fecha_llegada: str | None = None      # 'YYYY-MM-DD'
     fecha_caducidad: str | None = None    # 'YYYY-MM-DD'
     cantidad: float | None = None
+
+class LoteAlimentoOut(LoteAlimentoIn):
+    id_lote_alimento: int
 
 @app.get("/lote_alimento")
 def get_lotes_alimento():
@@ -592,16 +622,16 @@ def add_lote_alimento(lote: LoteAlimentoIn):
     try:
         cur.execute("""
             INSERT INTO Lote_Alimento
-                (id_lote_alimento, descripcion, fecha_llegada, fecha_caducidad, cantidad)
+                (descripcion, fecha_llegada, fecha_caducidad, cantidad)
             VALUES
-                (:1, :2, TO_DATE(:3,'YYYY-MM-DD'), TO_DATE(:4,'YYYY-MM-DD'), :5)
+                (%s, %s, %s, %s)
         """, (
-            lote.id_lote_alimento, lote.descripcion,
+            lote.descripcion,
             lote.fecha_llegada, lote.fecha_caducidad,
             lote.cantidad
         ))
         conn.commit()
-    except oracledb.IntegrityError as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad: {e}")
     finally:
         cur.close()
@@ -612,7 +642,7 @@ def add_lote_alimento(lote: LoteAlimentoIn):
 def delete_lote_alimento(id_lote_alimento: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Lote_Alimento WHERE id_lote_alimento = :1", [id_lote_alimento])
+    cur.execute("DELETE FROM Lote_Alimento WHERE id_lote_alimento = %s", [id_lote_alimento])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Lote_Alimento no encontrado")
     conn.commit()
@@ -626,13 +656,15 @@ def delete_lote_alimento(id_lote_alimento: int):
 # TABLA: REGISTRO
 # ================================
 class RegistroIn(BaseModel):
-    id_registro: int
     id_camara: int
     tipo_registro: str | None = None
     timestamp_registro: str | None = None  # 'YYYY-MM-DD HH:MM:SS'
     humedad: float | None = None
     co2: float | None = None
     temperatura: float | None = None
+
+class RegistroOut(RegistroIn):
+    id_registro: int
 
 @app.get("/registro")
 def get_registros():
@@ -652,15 +684,15 @@ def add_registro(reg: RegistroIn):
     try:
         cur.execute("""
             INSERT INTO Registro
-                (id_registro, id_camara, tipo_registro, timestamp_registro, humedad, co2, temperatura)
+                (id_camara, tipo_registro, timestamp_registro, humedad, co2, temperatura)
             VALUES
-                (:1, :2, :3, TO_TIMESTAMP(:4,'YYYY-MM-DD HH24:MI:SS'), :5, :6, :7)
+                (%s, %s, %s, %s, %s, %s)
         """, (
-            reg.id_registro, reg.id_camara, reg.tipo_registro,
+            reg.id_camara, reg.tipo_registro,
             reg.timestamp_registro, reg.humedad, reg.co2, reg.temperatura
         ))
         conn.commit()
-    except oracledb.IntegrityError as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad (¿FK id_camara?): {e}")
     finally:
         cur.close()
@@ -671,7 +703,7 @@ def add_registro(reg: RegistroIn):
 def delete_registro(id_registro: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Registro WHERE id_registro = :1", [id_registro])
+    cur.execute("DELETE FROM Registro WHERE id_registro = %s", [id_registro])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Registro no encontrado")
     conn.commit()
@@ -685,10 +717,12 @@ def delete_registro(id_registro: int):
 # TABLA: SENSORES
 # ================================
 class SensorIn(BaseModel):
-    id_sensor: int
     id_registro: int
     tipo_sensor: str | None = None
     ubicacion: str | None = None
+
+class SensorOut(SensorIn):
+    id_sensor: int
 
 @app.get("/sensores")
 def get_sensores():
@@ -708,14 +742,14 @@ def add_sensor(sensor: SensorIn):
     try:
         cur.execute("""
             INSERT INTO Sensores
-                (id_sensor, id_registro, tipo_sensor, ubicacion)
+                (id_registro, tipo_sensor, ubicacion)
             VALUES
-                (:1, :2, :3, :4)
+                (%s, %s, %s)
         """, (
-            sensor.id_sensor, sensor.id_registro, sensor.tipo_sensor, sensor.ubicacion
+            sensor.id_registro, sensor.tipo_sensor, sensor.ubicacion
         ))
         conn.commit()
-    except oracledb.IntegrityError as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad (¿FK id_registro?): {e}")
     finally:
         cur.close()
@@ -726,7 +760,7 @@ def add_sensor(sensor: SensorIn):
 def delete_sensor(id_sensor: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Sensores WHERE id_sensor = :1", [id_sensor])
+    cur.execute("DELETE FROM Sensores WHERE id_sensor = %s", [id_sensor])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Sensor no encontrado")
     conn.commit()
@@ -740,8 +774,10 @@ def delete_sensor(id_sensor: int):
 # TABLA: FRANQUICIADO
 # ================================
 class FranquiciadoIn(BaseModel):
-    id_franquiciado: int
     ubicacion: str | None = None
+
+class FranquiciadoOut(FranquiciadoIn):
+    id_franquiciado: int
 
 @app.get("/franquiciado")
 def get_franquiciados():
@@ -760,11 +796,11 @@ def add_franquiciado(f: FranquiciadoIn):
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO Franquiciado (id_franquiciado, ubicacion)
-            VALUES (:1, :2)
-        """, (f.id_franquiciado, f.ubicacion))
+            INSERT INTO Franquiciado (ubicacion)
+            VALUES (%s)
+        """, (f.ubicacion))
         conn.commit()
-    except oracledb.IntegrityError as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad: {e}")
     finally:
         cur.close()
@@ -775,7 +811,7 @@ def add_franquiciado(f: FranquiciadoIn):
 def delete_franquiciado(id_franquiciado: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Franquiciado WHERE id_franquiciado = :1", [id_franquiciado])
+    cur.execute("DELETE FROM Franquiciado WHERE id_franquiciado = %s", [id_franquiciado])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Franquiciado no encontrado")
     conn.commit()
@@ -789,7 +825,6 @@ def delete_franquiciado(id_franquiciado: int):
 # TABLA: ENGORDE
 # ================================
 class EngordeIn(BaseModel):
-    id_pallet: int
     id_camara: int | None = None
     id_operario: int | None = None
     id_lote_madre: int | None = None
@@ -800,6 +835,10 @@ class EngordeIn(BaseModel):
     fecha_desmontaje: str
     fecha_desmontaje_prevista: str
     destino: str | None = None
+
+class EngordeOut(EngordeIn):
+    id_pallet: int
+
 
 @app.get("/engorde")
 def get_engorde():
@@ -819,20 +858,17 @@ def add_engorde(e: EngordeIn):
     try:
         cur.execute("""
             INSERT INTO Engorde
-                (id_pallet, id_camara, id_operario, id_lote_madre, pasillo, posicion,
+                (id_camara, id_operario, id_lote_madre, pasillo, posicion,
                  timestamp_ubicacion, fecha_montaje, fecha_desmontaje, fecha_desmontaje_prevista, destino)
             VALUES
-                (:1, :2, :3, :4, :5, :6,
-                 TO_TIMESTAMP(:7,'YYYY-MM-DD HH24:MI:SS'),
-                 TO_DATE(:8,'YYYY-MM-DD'), TO_DATE(:9,'YYYY-MM-DD'), TO_DATE(:10,'YYYY-MM-DD'),
-                 :11)
+                (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            e.id_pallet, e.id_camara, e.id_operario, e.id_lote_madre, e.pasillo, e.posicion,
+            e.id_camara, e.id_operario, e.id_lote_madre, e.pasillo, e.posicion,
             e.timestamp_ubicacion, e.fecha_montaje, e.fecha_desmontaje, e.fecha_desmontaje_prevista,
             e.destino
         ))
         conn.commit()
-    except oracledb.IntegrityError as err:
+    except IntegrityError as err:
         raise HTTPException(status_code=400, detail=f"Error de integridad (¿FK id_camara/id_operario?): {err}")
     finally:
         cur.close()
@@ -843,7 +879,7 @@ def add_engorde(e: EngordeIn):
 def delete_engorde(id_pallet: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Engorde WHERE id_pallet = :1", [id_pallet])
+    cur.execute("DELETE FROM Engorde WHERE id_pallet = %s", [id_pallet])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Engorde no encontrado")
     conn.commit()
@@ -857,11 +893,13 @@ def delete_engorde(id_pallet: int):
 # TABLA: VOLADERO
 # ================================
 class VoladeroIn(BaseModel):
-    id_voladero: int
     id_pallet: int
     fecha_inicio: str
     fecha_fin: str
     fecha_fin_estimada: str
+
+class VoladeroOut(VoladeroIn):
+    id_voladero: int
 
 @app.get("/voladero")
 def get_voladero():
@@ -881,14 +919,14 @@ def add_voladero(v: VoladeroIn):
     try:
         cur.execute("""
             INSERT INTO Voladero
-                (id_voladero, id_pallet, fecha_inicio, fecha_fin, fecha_fin_estimada)
+                (id_pallet, fecha_inicio, fecha_fin, fecha_fin_estimada)
             VALUES
-                (:1, :2, TO_DATE(:3,'YYYY-MM-DD'), TO_DATE(:4,'YYYY-MM-DD'), TO_DATE(:5,'YYYY-MM-DD'))
+                (%s, %s, %s, %s)
         """, (
-            v.id_voladero, v.id_pallet, v.fecha_inicio, v.fecha_fin, v.fecha_fin_estimada
+            v.id_pallet, v.fecha_inicio, v.fecha_fin, v.fecha_fin_estimada
         ))
         conn.commit()
-    except oracledb.IntegrityError as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad (¿FK id_pallet?): {e}")
     finally:
         cur.close()
@@ -899,7 +937,7 @@ def add_voladero(v: VoladeroIn):
 def delete_voladero(id_voladero: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Voladero WHERE id_voladero = :1", [id_voladero])
+    cur.execute("DELETE FROM Voladero WHERE id_voladero = %s", [id_voladero])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Voladero no encontrado")
     conn.commit()
@@ -913,7 +951,6 @@ def delete_voladero(id_voladero: int):
 # TABLA: INCUBACION
 # ================================
 class IncubacionIn(BaseModel):
-    id_lote_madre: int
     id_lote_alimento: int | None = None
     id_operario: int | None = None
     id_voladero: int | None = None
@@ -922,6 +959,9 @@ class IncubacionIn(BaseModel):
     origen: str | None = None
     gramos_huevos: float | None = None
     n_bandejas: int | None = None
+
+class IncubaciónOut(IncubacionIn):
+    id_lote_madre: int
 
 @app.get("/incubacion")
 def get_incubacion():
@@ -941,18 +981,16 @@ def add_incubacion(i: IncubacionIn):
     try:
         cur.execute("""
             INSERT INTO Incubacion
-                (id_lote_madre, id_lote_alimento, id_operario, id_voladero,
+                (id_lote_alimento, id_operario, id_voladero,
                  fecha_inicio, fecha_fin, origen, gramos_huevos, n_bandejas)
             VALUES
-                (:1, :2, :3, :4,
-                 TO_DATE(:5,'YYYY-MM-DD'), TO_DATE(:6,'YYYY-MM-DD'),
-                 :7, :8, :9)
+                (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            i.id_lote_madre, i.id_lote_alimento, i.id_operario, i.id_voladero,
+            i.id_lote_alimento, i.id_operario, i.id_voladero,
             i.fecha_inicio, i.fecha_fin, i.origen, i.gramos_huevos, i.n_bandejas
         ))
         conn.commit()
-    except oracledb.IntegrityError as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad (¿FK id_lote_alimento/id_operario?): {e}")
     finally:
         cur.close()
@@ -963,7 +1001,7 @@ def add_incubacion(i: IncubacionIn):
 def delete_incubacion(id_lote_madre: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Incubacion WHERE id_lote_madre = :1", [id_lote_madre])
+    cur.execute("DELETE FROM Incubacion WHERE id_lote_madre = %s", [id_lote_madre])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Incubación no encontrada")
     conn.commit()
@@ -977,7 +1015,6 @@ def delete_incubacion(id_lote_madre: int):
 # TABLA: PRODUCTOS
 # ================================
 class ProductoIn(BaseModel):
-    id_bigbag: int
     id_lote_madre: int | None = None
     id_pallet: int | None = None
     id_operario: int | None = None
@@ -987,6 +1024,9 @@ class ProductoIn(BaseModel):
     url_pdf: str | None = None
     tipo_producto: str | None = None
     ubicacion_almacen: str | None = None
+
+class ProductoOut(ProductoIn):
+    id_bigbag: int
 
 @app.get("/productos")
 def get_productos():
@@ -1006,18 +1046,16 @@ def add_producto(p: ProductoIn):
     try:
         cur.execute("""
             INSERT INTO Productos
-                (id_bigbag, id_lote_madre, id_pallet, id_operario, id_pedido,
+                (id_lote_madre, id_pallet, id_operario, id_pedido,
                  fecha_produccion, fecha_caducidad, url_pdf, tipo_producto, ubicacion_almacen)
             VALUES
-                (:1, :2, :3, :4, :5,
-                 TO_DATE(:6,'YYYY-MM-DD'), TO_DATE(:7,'YYYY-MM-DD'),
-                 :8, :9, :10)
+                (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            p.id_bigbag, p.id_lote_madre, p.id_pallet, p.id_operario, p.id_pedido,
+            p.id_lote_madre, p.id_pallet, p.id_operario, p.id_pedido,
             p.fecha_produccion, p.fecha_caducidad, p.url_pdf, p.tipo_producto, p.ubicacion_almacen
         ))
         conn.commit()
-    except oracledb.IntegrityError as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=f"Error de integridad (¿FKs?): {e}")
     finally:
         cur.close()
@@ -1028,7 +1066,7 @@ def add_producto(p: ProductoIn):
 def delete_producto(id_bigbag: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Productos WHERE id_bigbag = :1", [id_bigbag])
+    cur.execute("DELETE FROM Productos WHERE id_bigbag = %s", [id_bigbag])
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     conn.commit()
