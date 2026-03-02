@@ -70,7 +70,7 @@ def verify_password(plain: str, hashed: str):
 # REGISTER
 # ================================
 
-@router.post("/register")
+@router.post("/auth/register")
 def register_user(data: RegisterRequest):
 
     conn = get_connection()
@@ -142,7 +142,7 @@ def register_user(data: RegisterRequest):
 # LOGIN
 # ================================
 
-@router.post("/login")
+@router.post("/auth/login")
 def login(data: LoginRequest):
 
     conn = get_connection()
@@ -234,7 +234,7 @@ def get_current_user(
 # GET /me
 # ================================
 
-@router.get("/me")
+@router.get("/auth/me")
 def me(user=Depends(get_current_user)):
     return user
 
@@ -243,7 +243,7 @@ def me(user=Depends(get_current_user)):
 # UPDATE PASSWORD
 # ================================
 
-@router.put("/user/password")
+@router.put("/auth/user/password")
 def update_password(
     data: PasswordUpdate,
     user=Depends(get_current_user),
@@ -288,7 +288,7 @@ def update_password(
 # UPDATE PROFILE
 # ================================
 
-@router.put("/user/profile")
+@router.put("/auth/user/profile")
 def update_profile(
     data: ProfileUpdate,
     user=Depends(get_current_user),
