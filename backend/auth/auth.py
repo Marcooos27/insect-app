@@ -55,15 +55,13 @@ class ProfileUpdate(BaseModel):
 # ================================
 
 def hash_password(password: str):
-    # Truncamos a 72 bytes para bcrypt
-    truncated = password.strip()[:72]
+    truncated = password.encode("utf-8")[:72]
     return pwd_context.hash(truncated)
 
 
-def verify_password(plain: str, hashed: str):
-    # Truncamos a 72 bytes antes de verificar
-    truncated = plain.strip()[:72]
-    return pwd_context.verify(truncated, hashed)
+def verify_password(plain_password: str, hashed_password: str):
+    truncated = plain_password.encode("utf-8")[:72]
+    return pwd_context.verify(truncated, hashed_password)
 
 
 # ================================
