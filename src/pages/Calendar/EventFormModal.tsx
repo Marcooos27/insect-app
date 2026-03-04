@@ -45,6 +45,7 @@ const EventFormModal: React.FC<Props> = ({ isOpen, onClose }) => {
       return;
     }
     await addEvent({
+      id: Date.now(),
       title: eventType,
       description,
       start: new Date(start),
