@@ -17,6 +17,7 @@ interface CalendarContextType {
   events: Event[];
   isOwnerView: boolean;
   toggleView: () => void;
+  addEvent: (event: Event) => void;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -24,23 +25,29 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { tareas } = useContext(TareaContext);
   const [isOwnerView, setIsOwnerView] = useState(true);
+  const [eventsState, setEventsState] = useState<Event[]>([]);
+
+  const addEvent = (event: Event) => {
+    setEventsState(prev => [...prev, event]);
+  };
 
   const events = useMemo(() => {
-    return tareas
-      .filter(t => t.fecha_prevista !== null)
-      .map(t => ({
-        id: t.id_tarea,
-        title: t.tipo_tarea,
-        start: new Date(t.fecha_prevista!),
-        end: new Date(t.fecha_prevista!), // evento de 1 día
-        description: t.descripcion,
-      }));
-  }, [tareas]);
+  const tareasEvents = tareas
+    .filter(t => t.fecha_prevista !== null)
+    .map(t => ({
+      id: t.id_tarea,
+      title: t.tipo_tarea,
+      start: new Date(t.fecha_prevista!),
+      end: new Date(t.fecha_prevista!),
+      description: t.descripcion,
+    }));
+  return [...tareasEvents, ...eventsState];
+}, [tareas, eventsState]);
 
   const toggleView = () => setIsOwnerView(prev => !prev);
 
   return (
-    <CalendarContext.Provider value={{ events, isOwnerView, toggleView }}>
+    <CalendarContext.Provider value={{ events, isOwnerView, toggleView, addEvent}}>
       {children}
     </CalendarContext.Provider>
   );
