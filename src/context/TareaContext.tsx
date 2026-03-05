@@ -95,32 +95,28 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       return;
     }
 
-    const token = localStorage.getItem("token");
-    console.log("Fetching tareas con token:", token);
+    const fetchData = async () => {
+    console.log("Fetching tareas con token:", localStorage.getItem("token"));
+    try {
+      const res = await fetch("/api/tarea", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : [];
+      console.log("Parsed tareas: ", data);
+      setTareas(data);
+    } catch (err) {
+      console.error("Error cargando tareas:", err);
+      setTareas([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetch("/api/tarea", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
-        console.log("Response status:", res.status);
-        const text = await res.text(); // **leer el texto crudo**
-        console.log("Response raw text:", text);
-        try {
-          return JSON.parse(text); // intentar parsear
-        } catch (err) {
-          console.error("Error parsing JSON:", err);
-          return [];
-        }
-      })
-      .then((data) => {
-        console.log("Parsed tareas:", data);
-        setTareas(data);
-      })
-      .catch((err) => console.error("Error cargando tareas:", err))
-      .finally(() => setLoading(false));
-  }, [user, authLoading]);
+  fetchData();
+}, [authLoading, user]);
 
 
 
