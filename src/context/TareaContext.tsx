@@ -65,7 +65,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!token) return;
 
     try {
-      const res = await fetch("/tarea", {
+      const res = await fetch("/api/tarea", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
