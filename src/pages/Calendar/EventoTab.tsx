@@ -8,7 +8,7 @@ const Tab1: React.FC = () => {
   const location = useLocation<{ nuevoCliente?: any }>();
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/cliente")   // aquí llamas a tu endpoint FastAPI
+    fetch("/api/cliente")   // aquí llamas a tu endpoint FastAPI
       .then(res => res.json())
       .then(data => {setClientes(data);})
       .catch(err => console.error("Error cargando clientes:", err));

@@ -72,7 +72,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     console.log("Fetching tareas con token:", token);
 
-    fetch("http://127.0.0.1:8000/tarea", {
+    fetch("/api/tarea", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -93,7 +93,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://127.0.0.1:8000/tarea", {
+      const res = await fetch("/api/tarea", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -108,7 +108,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const addTarea  = async (tarea: TareaCreate) => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/tarea", {
+      const res = await fetch("/api/tarea", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,7 +136,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const completarTarea = async (id_tarea: number) => {
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/tarea/${id_tarea}`,
+        `/tarea/${id_tarea}`,
         {
           method: "PUT",
           headers: {

@@ -11,7 +11,7 @@ const PedidosManager = () => {
   const [showModal, setShowModal] = useState(false);
 
   const loadPedidos = async () => {
-    const res = await fetch("http://127.0.0.1:8000/pedido");
+    const res = await fetch("/api/pedido");
     const data = await res.json();
     setPedidos(data);
   };
@@ -22,7 +22,7 @@ const PedidosManager = () => {
 
   const handleSavePedido = async (pedido: any) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/pedido", {
+      const response = await fetch("/api/pedido", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pedido),
@@ -41,7 +41,7 @@ const PedidosManager = () => {
   };
 
   const deletePedido = async (id: number) => {
-    await fetch(`http://127.0.0.1:8000/pedido/${id}`, { method: "DELETE" });
+    await fetch(`/pedido/${id}`, { method: "DELETE" });
     loadPedidos();
   };
 

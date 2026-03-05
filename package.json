@@ -24,6 +24,7 @@
     "axios": "^1.11.0",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
+    "frappe-gantt": "^1.2.2",
     "ionicons": "^7.4.0",
     "react": "19.0.0",
     "react-big-calendar": "^1.19.4",

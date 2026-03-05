@@ -17,7 +17,7 @@ export const ManagementProvider = ({ children }: any) => {
 
   const fetchClientes = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/cliente");
+      const res = await fetch("/api/cliente");
       setClientes(await res.json());
     } catch (err) {
       console.error("Error cargando clientes:", err);
@@ -26,7 +26,7 @@ export const ManagementProvider = ({ children }: any) => {
 
   const createCliente = async (cliente: any) => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/cliente", {
+      const res = await fetch("/api/cliente", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cliente),
@@ -49,7 +49,7 @@ export const ManagementProvider = ({ children }: any) => {
 
   const fetchPedidos = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/pedido");
+      const res = await fetch("/api/pedido");
       setPedidos(await res.json());
     } catch (err) {
       console.error("Error cargando pedidos:", err);
@@ -58,7 +58,7 @@ export const ManagementProvider = ({ children }: any) => {
 
   const createPedido = async (pedido: any) => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/pedido", {
+      const res = await fetch("/api/pedido", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pedido),

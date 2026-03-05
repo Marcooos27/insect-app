@@ -40,7 +40,7 @@ const ClientesManager: React.FC = () => {
 
   // Cargar clientes desde tu backend
   useEffect(() => {
-    fetch("http://localhost:8000/cliente") // 👈 endpoint de FastAPI
+    fetch("/api/cliente") // 👈 endpoint de FastAPI
       .then((res) => res.json())
       .then((data) => {
         setClientes(data);
@@ -69,7 +69,7 @@ const ClientesManager: React.FC = () => {
   const handleCreate = (nuevo: ClienteNuevo) => {
     const nuevoCliente: Cliente = { id_cliente: getNextId(), ...nuevo };
 
-    fetch("http://localhost:8000/cliente", {
+    fetch("/api/cliente", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoCliente),
@@ -92,7 +92,7 @@ const ClientesManager: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
-    fetch(`http://localhost:8000/cliente/${id}`, { method: "DELETE" })
+    fetch(`/cliente/${id}`, { method: "DELETE" })
       .then((res) => {
         if (res.ok) {
           setClientes(clientes.filter((c) => c.id_cliente !== id));
@@ -102,7 +102,7 @@ const ClientesManager: React.FC = () => {
   };
 
   const handleUpdate = (cliente: Cliente) => {
-    fetch(`http://localhost:8000/cliente/${cliente.id_cliente}`, {
+    fetch(`/cliente/${cliente.id_cliente}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(cliente),
