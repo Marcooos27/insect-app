@@ -106,8 +106,17 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await res.json();
-      setTareas(data);
+      const text = await res.text();
+      console.log("Respuesta recarga tareas:", text);
+
+      if (!res.ok) throw new Error(`Error recargando tareas: ${res.status}`);
+
+      try {
+        const data = JSON.parse(text);
+        setTareas(data);
+      } catch (err) {
+        console.error("Error parseando JSON recarga:", err, text);
+      }
     } catch (err) {
       console.error("Error recargando tareas:", err);
     }
