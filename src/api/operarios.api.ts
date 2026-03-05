@@ -1,4 +1,4 @@
-const BASE_URL = "/operario";
+const BASE_URL = "/api/operario";
 
 export interface Operario {
   id_operario: number;
@@ -11,48 +11,64 @@ export interface OperarioCreate {
   turno_trabajo: string;
 }
 
-// GET
-export const getOperarios = async (): Promise<Operario[]> => {
-  const res = await fetch(BASE_URL);
-  if (!res.ok) throw new Error("Error cargando operarios");
-  return res.json();
+/**
+ * Helper para hacer fetch con token y parseo seguro de JSON
+ */
+const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  const token = localStorage.getItem("token");
+
+  const headers = {
+    ...options.headers,
+    Authorization: token ? `Bearer ${token}` : "",
+  };
+
+  const res = await fetch(url, { ...options, headers });
+
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (err) {
+    console.error("Respuesta inválida del backend:", text);
+    throw new Error("JSON inválido del backend");
+  }
+
+  if (!res.ok) {
+    throw new Error(
+      data?.detail || `Error en la petición ${res.status}: ${res.statusText}`
+    );
+  }
+
+  return data;
 };
 
-// POST
-export const createOperario = async (
-  op: OperarioCreate
-): Promise<void> => {
-  const res = await fetch(BASE_URL, {
+// GET todos los operarios
+export const getOperarios = async (): Promise<Operario[]> => {
+  return fetchWithAuth(BASE_URL);
+};
+
+// POST crear operario
+export const createOperario = async (op: OperarioCreate): Promise<void> => {
+  await fetchWithAuth(BASE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(op),
   });
-
-  if (!res.ok) throw new Error("Error creando operario");
 };
 
-// DELETE
-export const removeOperario = async (
-  id: number
-): Promise<void> => {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) throw new Error("Error eliminando operario");
+// DELETE eliminar operario
+export const removeOperario = async (id: number): Promise<void> => {
+  await fetchWithAuth(`${BASE_URL}/${id}`, { method: "DELETE" });
 };
 
-
-// UPDATE
+// PUT actualizar operario
 export const updateOperario = async (
   id: number,
   op: OperarioCreate
 ): Promise<void> => {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  await fetchWithAuth(`${BASE_URL}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(op),
   });
-
-  if (!res.ok) throw new Error("Error actualizando operario");
 };
