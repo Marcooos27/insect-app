@@ -60,35 +60,32 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [loading, setLoading] = useState(true);
 
-
-
   const fetchTareas = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
+    try {
       const res = await fetch("/api/tarea", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      const text = await res.text();
-      console.log("Respuesta recarga tareas:", text);
 
-      if (!res.ok) throw new Error(`Error recargando tareas: ${res.status}`);
+      const text = await res.text(); // debug: ver qué devuelve realmente
+      console.log("Raw tareas response:", text);
 
-      try {
-        const data: Tarea[] = JSON.parse(text); // parseamos seguro después del debug
-        setTareas(data);
-      } catch (err) {
-        console.error("Error parseando JSON recarga:", err, text);
-        setTareas([]); // fallback para que no rompa la app
+      if (!res.ok) {
+        throw new Error(`Error cargando tareas: ${res.status} ${res.statusText}`);
       }
+
+      const data: Tarea[] = JSON.parse(text); // parseamos seguro después del debug
+      setTareas(data);
+
     } catch (err) {
-      console.error("Error recargando tareas:", err);
+      console.error("Error fetchTareas:", err);
+      setTareas([]); // fallback para que no rompa la app
     }
   };
-
-
 
   useEffect(() => {
     if (authLoading) return;
@@ -98,92 +95,67 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       return;
     }
 
-    const token = localStorage.getItem("token");
-
-    console.log("Fetching tareas con token:", token);
-
-    fetch("/api/tarea", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
-        const text = await res.text(); // 🔹 leer como texto para debug
-        console.log("Respuesta fetch tareas:", text);
-
-        if (!res.ok) throw new Error(`Error cargando tareas: ${res.status}`);
-        try {
-          return JSON.parse(text); // 🔹 parse manual para ver errores
-        } catch (err) {
-          console.error("Error parseando JSON:", err, text);
-          throw err;
-        }
-      })
-      .then((data) => setTareas(data))
-      .catch((err) => console.error("Error cargando tareas:", err))
-      .finally(() => setLoading(false));
+    console.log("Fetching tareas con token:", localStorage.getItem("token"));
+    fetchTareas().finally(() => setLoading(false));
 
   }, [user, authLoading]);
 
+  const addTarea = async (tarea: TareaCreate) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-
-  
-
-
-  const addTarea  = async (tarea: TareaCreate) => {
     try {
       const res = await fetch("/api/tarea", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(tarea),
       });
 
-      if (!res.ok) throw new Error("Error insertando tarea");
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Error insertando tarea:", text);
+        throw new Error(`Error insertando tarea: ${res.status}`);
+      }
 
-      //const savedTarea  = await res.json();
+      await fetchTareas(); // recargamos tareas
 
-      // recargar tareas del backend
-      await fetchTareas();
-
-      //console.log("Tarea guardada:", savedTarea);
-
-
-    } catch (error) {
-      console.error("Error al añadir tarea:", error);
+    } catch (err) {
+      console.error("Error addTarea:", err);
     }
   };
-
 
   const completarTarea = async (id_tarea: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
-      const res = await fetch(
-        `/tarea/${id_tarea}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ estado: "Completada" }),
-        }
-      );
+      const res = await fetch(`/api/tarea/${id_tarea}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ estado: "Completada" }),
+      });
 
-      if (!res.ok) throw new Error("Error actualizando tarea");
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Error actualizando tarea:", text);
+        throw new Error(`Error actualizando tarea: ${res.status}`);
+      }
 
-      // recargar tareas desde backend
-      await fetchTareas();
+      await fetchTareas(); // recargamos tareas
 
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Error completarTarea:", err);
     }
   };
 
-
   return (
-    <TareaContext.Provider value={{ tareas, loading, addTarea, completarTarea  }}>
+    <TareaContext.Provider value={{ tareas, loading, addTarea, completarTarea }}>
       {children}
     </TareaContext.Provider>
   );
