@@ -64,7 +64,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    try {
+    
       const res = await fetch("/api/tarea", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -77,13 +77,14 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (!res.ok) {
         throw new Error(`Error cargando tareas: ${res.status} ${res.statusText}`);
       }
-
-      const data: Tarea[] = JSON.parse(text); // parseamos seguro después del debug
+      
+    try {
+      const data = JSON.parse(text); // parseamos seguro después del debug
       setTareas(data);
 
     } catch (err) {
-      console.error("Error fetchTareas:", err);
-      setTareas([]); // fallback para que no rompa la app
+      console.error("No es JSON válido:", err);
+      console.log("Texto recibido:", text);
     }
   };
 
