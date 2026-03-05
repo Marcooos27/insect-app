@@ -60,6 +60,36 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [loading, setLoading] = useState(true);
 
+
+
+  const fetchTareas = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("/api/tarea", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const text = await res.text();
+      console.log("Respuesta recarga tareas:", text);
+
+      if (!res.ok) throw new Error(`Error recargando tareas: ${res.status}`);
+
+      try {
+        const data: Tarea[] = JSON.parse(text); // parseamos seguro después del debug
+        setTareas(data);
+      } catch (err) {
+        console.error("Error parseando JSON recarga:", err, text);
+        setTareas([]); // fallback para que no rompa la app
+      }
+    } catch (err) {
+      console.error("Error recargando tareas:", err);
+    }
+  };
+
+
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -97,31 +127,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
 
 
-  const fetchTareas = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await fetch("/api/tarea", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const text = await res.text();
-      console.log("Respuesta recarga tareas:", text);
-
-      if (!res.ok) throw new Error(`Error recargando tareas: ${res.status}`);
-
-      try {
-        const data: Tarea[] = JSON.parse(text); // parseamos seguro después del debug
-        setTareas(data);
-      } catch (err) {
-        console.error("Error parseando JSON recarga:", err, text);
-        setTareas([]); // fallback para que no rompa la app
-      }
-    } catch (err) {
-      console.error("Error recargando tareas:", err);
-    }
-  };
+  
 
 
   const addTarea  = async (tarea: TareaCreate) => {
