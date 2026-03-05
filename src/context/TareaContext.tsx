@@ -112,10 +112,11 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (!res.ok) throw new Error(`Error recargando tareas: ${res.status}`);
 
       try {
-        const data = JSON.parse(text);
+        const data: Tarea[] = JSON.parse(text); // parseamos seguro después del debug
         setTareas(data);
       } catch (err) {
         console.error("Error parseando JSON recarga:", err, text);
+        setTareas([]); // fallback para que no rompa la app
       }
     } catch (err) {
       console.error("Error recargando tareas:", err);
