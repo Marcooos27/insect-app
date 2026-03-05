@@ -77,7 +77,7 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (!res.ok) {
         throw new Error(`Error cargando tareas: ${res.status} ${res.statusText}`);
       }
-      
+
     try {
       const data = JSON.parse(text); // parseamos seguro después del debug
       setTareas(data);
@@ -90,16 +90,42 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   useEffect(() => {
     if (authLoading) return;
-
     if (!user) {
       setLoading(false);
       return;
     }
 
-    console.log("Fetching tareas con token:", localStorage.getItem("token"));
-    fetchTareas().finally(() => setLoading(false));
+    const token = localStorage.getItem("token");
+    console.log("Fetching tareas con token:", token);
 
+    fetch("/api/tarea", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        console.log("Response status:", res.status);
+        const text = await res.text(); // **leer el texto crudo**
+        console.log("Response raw text:", text);
+        try {
+          return JSON.parse(text); // intentar parsear
+        } catch (err) {
+          console.error("Error parsing JSON:", err);
+          return [];
+        }
+      })
+      .then((data) => {
+        console.log("Parsed tareas:", data);
+        setTareas(data);
+      })
+      .catch((err) => console.error("Error cargando tareas:", err))
+      .finally(() => setLoading(false));
   }, [user, authLoading]);
+
+
+
+
+  // const addTarea
 
   const addTarea = async (tarea: TareaCreate) => {
     const token = localStorage.getItem("token");
