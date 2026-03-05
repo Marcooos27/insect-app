@@ -100,32 +100,30 @@ def register_user(data: RegisterRequest):
         hashed_pw = hash_password(data.password)
 
         # 4️⃣ Rol
-        rol_final = "user"
         ADMIN_PASSWORD = os.getenv("ADMIN_REGISTER_PASSWORD")
 
         if data.admin_password == ADMIN_PASSWORD:
-            rol_final = "admin"
 
-        # 5️⃣ Crear usuario
-        cur.execute("""
-            INSERT INTO usuarios
-            (email, username, password_hash, rol, id_operario)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (
-            data.email.lower().strip(),
-            data.username,
-            hashed_pw,
-            rol_final,
-            id_operario
-        ))
+            # 5️⃣ Crear usuario
+            cur.execute("""
+                INSERT INTO usuarios
+                (email, username, password_hash, rol, id_operario)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                data.email.lower().strip(),
+                data.username,
+                hashed_pw,
+                data.rol,
+                id_operario
+            ))
 
-        conn.commit()
+            conn.commit()
 
-        return {
-            "message": "Usuario creado correctamente",
-            "id_operario": id_operario,
-            "rol": rol_final
-        }
+            return {
+                "message": "Usuario creado correctamente",
+                "id_operario": id_operario,
+                "rol": data.rol
+            }
 
     except:
         conn.rollback()
