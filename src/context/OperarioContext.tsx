@@ -29,13 +29,24 @@ export const OperarioProvider: React.FC<{ children: ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
 
-  // Cargar operarios desde backend
+  /**
+   * fetchOperarios:
+   * - Cambiado para asegurarnos de que loading siempre se resetea
+   * - Agregado console.log para depuración
+   * - Manejo de usuario no logueado
+   */
   const fetchOperarios = async () => {
-    if (!user) return;
+    if (!user) {
+      setOperarios([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await getOperarios();
-      setOperarios(data);
+      console.log("Operarios recibidos del backend:", data);
+      setOperarios(data || []);
     } catch (err) {
       console.error("Error cargando operarios:", err);
       setOperarios([]);
@@ -74,13 +85,9 @@ export const OperarioProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // useEffect para cargar al inicio
+  // useEffect para cargar operarios al inicio
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
     fetchOperarios();
   }, [user, authLoading]);
 
