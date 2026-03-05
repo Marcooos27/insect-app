@@ -77,9 +77,17 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("401 o error cargando tareas");
-        return res.json();
+      .then(async (res) => {
+        const text = await res.text(); // 🔹 leer como texto para debug
+        console.log("Respuesta fetch tareas:", text);
+
+        if (!res.ok) throw new Error(`Error cargando tareas: ${res.status}`);
+        try {
+          return JSON.parse(text); // 🔹 parse manual para ver errores
+        } catch (err) {
+          console.error("Error parseando JSON:", err, text);
+          throw err;
+        }
       })
       .then((data) => setTareas(data))
       .catch((err) => console.error("Error cargando tareas:", err))
