@@ -230,7 +230,9 @@ from datetime import datetime, timedelta
 
 @app.post("/tarea")
 def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
-    print("TAREA RECIBIDA:", tarea)
+    import pprint
+    print("TAREA RECIBIDA (raw):", tarea)
+    pprint.pprint(tarea.dict())
     conn = get_connection()
     cur = conn.cursor()
 
@@ -244,8 +246,18 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     elif tarea.frecuencia == "mensual":
         fecha_prevista = fecha_creacion + timedelta(days=30)
 
+
+    cur.execute("SELECT * FROM Tarea LIMIT 0")  # No devuelve filas, solo estructura
+    cols = [desc[0] for desc in cur.description]
+    print("COLUMNAS EN TAREA:", cols)
+
+    tarea_dict = tarea.dict()
+    tarea_dict["fecha_creacion"] = fecha_creacion
+    tarea_dict["fecha_prevista"] = fecha_prevista
+
+    print("VALORES A INSERTAR:", tarea_dict)
+
     try:
-        print(tarea.dict())
         cur.execute("""
             INSERT INTO Tarea (
                     id_cliente, id_operario, estado, 
