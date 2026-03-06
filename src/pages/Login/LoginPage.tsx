@@ -40,7 +40,7 @@ const Login = () => {
         </IonItem>
 
         <IonItem>
-          <IonLabel position="floating">Password</IonLabel>
+          <IonLabel position="floating">Contraseña</IonLabel>
           <IonInput
             type="password"
             onIonChange={e => setPassword(e.detail.value!)}
