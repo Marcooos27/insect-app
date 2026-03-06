@@ -47,6 +47,7 @@ logger = logging.getLogger(__name__)
 
 # Opcional: manejar explícitamente la petición OPTIONS a /evento como fallback
 from fastapi import Request, Response
+import time
 
 
 @app.options("/evento")
@@ -55,6 +56,26 @@ async def options_evento(request: Request):
     # a esta respuesta, pero si el navegador hace una petición preflight que falla,
     # esta ruta garantiza una respuesta 200 para OPTIONS.
     return Response(status_code=200)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    duration = round(time.time() - start_time, 3)
+
+    logger.info(
+        f"{request.method} {request.url.path} "
+        f"status={response.status_code} "
+        f"time={duration}s"
+    )
+
+    return response
+
+
 
 # ================================
 # TABLA: CLIENTE
