@@ -234,7 +234,7 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     conn = get_connection()
     cur = conn.cursor()
 
-    fecha_creacion = datetime.now()
+    fecha_creacion = datetime.now().date()
     fecha_prevista = None
 
     if tarea.frecuencia == "diaria":
@@ -245,6 +245,7 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
         fecha_prevista = fecha_creacion + timedelta(days=30)
 
     try:
+        print(tarea.dict())
         cur.execute("""
             INSERT INTO Tarea (
                     id_cliente, id_operario, estado, 
@@ -265,7 +266,6 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     finally:
         cur.close()
         conn.close()
-    return {"message": "Tarea insertada correctamente"}
 
 
 
