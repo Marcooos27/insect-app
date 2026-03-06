@@ -250,7 +250,8 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
                     id_cliente, id_operario, estado, 
                     tipo_tarea, descripcion, fecha_creacion, fecha_prevista, logistica)
 
-            VALUES (tarea_seq.NEXTVAL, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id_tarea
         """, (
             tarea.id_cliente, tarea.id_operario, tarea.estado, tarea.tipo_tarea, tarea.descripcion,
             fecha_creacion, fecha_prevista, tarea.logistica

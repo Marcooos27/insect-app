@@ -34,6 +34,7 @@ class RegisterRequest(BaseModel):
     username: str
     password: str
     admin_password: str
+    rol: str
 
 
 class LoginRequest(BaseModel):
@@ -71,6 +72,17 @@ def verify_password(plain_password: str, hashed_password: str):
 @router.post("/register")
 def register_user(data: RegisterRequest):
 
+    """
+    Registra un usuario solo si la contraseña admin_password coincide
+    con la de tu .env. El rol se toma del frontend.
+    """
+    ADMIN_PASSWORD = os.getenv("ADMIN_REGISTER_PASSWORD")
+    if data.admin_password != ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=403,
+            detail="Contraseña de administrador incorrecta. No se puede crear el usuario."
+        )
+
     conn = get_connection()
     try:
         cur = conn.cursor()
@@ -99,31 +111,30 @@ def register_user(data: RegisterRequest):
         # 3️⃣ Hash password
         hashed_pw = hash_password(data.password)
 
-        # 4️⃣ Rol
-        ADMIN_PASSWORD = os.getenv("ADMIN_REGISTER_PASSWORD")
 
-        if data.admin_password == ADMIN_PASSWORD:
+        # 5️⃣ Crear usuario
+        cur.execute("""
+            INSERT INTO usuarios
+            (email, username, password_hash, rol, id_operario)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (
+            data.email.lower().strip(),
+            data.username,
+            hashed_pw,
+            data.rol,
+            id_operario
+        ))
 
-            # 5️⃣ Crear usuario
-            cur.execute("""
-                INSERT INTO usuarios
-                (email, username, password_hash, rol, id_operario)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (
-                data.email.lower().strip(),
-                data.username,
-                hashed_pw,
-                data.rol,
-                id_operario
-            ))
+        user_id = cur.fetchone()[0]
+        conn.commit()
 
-            conn.commit()
-
-            return {
-                "message": "Usuario creado correctamente",
-                "id_operario": id_operario,
-                "rol": data.rol
-            }
+        return {
+            "message": "Usuario creado correctamente",
+            "id_operario": id_operario,
+            "rol": data.rol,
+            "id_usuario": user_id
+        }
 
     except:
         conn.rollback()
