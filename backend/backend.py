@@ -30,6 +30,21 @@ app.add_middleware(
 )
 
 
+
+import logging
+
+logging.basicConfig(
+    filename="/var/log/insect/backend.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+
+
+
+
 # Opcional: manejar explícitamente la petición OPTIONS a /evento como fallback
 from fastapi import Request, Response
 
@@ -231,8 +246,8 @@ from datetime import datetime, timedelta
 @app.post("/tarea")
 def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     import pprint
-    print("TAREA RECIBIDA (raw):", tarea)
-    pprint.pprint(tarea.dict())
+    logger.info("TAREA RECIBIDA (raw):", tarea)
+    #pprint.pprint(tarea.dict())
     conn = get_connection()
     cur = conn.cursor()
 
@@ -249,13 +264,13 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
 
     cur.execute("SELECT * FROM Tarea LIMIT 0")  # No devuelve filas, solo estructura
     cols = [desc[0] for desc in cur.description]
-    print("COLUMNAS EN TAREA:", cols)
+    logger.info("COLUMNAS EN TAREA:", cols)
 
     tarea_dict = tarea.dict()
     tarea_dict["fecha_creacion"] = fecha_creacion
     tarea_dict["fecha_prevista"] = fecha_prevista
 
-    print("VALORES A INSERTAR:", tarea_dict)
+    logger.info("VALORES A INSERTAR:", tarea_dict)
 
     try:
         cur.execute("""
@@ -273,7 +288,7 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
         conn.commit()
         return {"id_tarea": new_id}
     except Exception as e:
-        print("ERROR ORACLE:", e)
+        logger.info("ERROR ORACLE:", e)
         raise HTTPException(status_code=400, detail=str(e))
     finally:
         cur.close()

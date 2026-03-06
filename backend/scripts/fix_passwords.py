@@ -1,6 +1,10 @@
 from backend.database import get_connection
 from passlib.context import CryptContext
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 USER_EMAIL = "marcos_operario@insecteat.es"
 NEW_PASSWORD = "adminMarcosOperario"  # en claro
 MAX_BCRYPT_LEN = 72
@@ -26,7 +30,7 @@ def main():
     cursor.close()
     conn.close()
 
-    print("Contraseña actualizada correctamente.")
+    logger.info("Contraseña actualizada correctamente.")
 
 if __name__ == "__main__":
     main()
