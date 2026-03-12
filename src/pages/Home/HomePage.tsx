@@ -12,37 +12,83 @@ import {
 } from '@ionic/react';
 import TaskList from './TaskList';
 import AssignTask from './AssignTask';
+import CompletedTask from './CompletedTask';
+import UserTask from './UserTask';
+
+import { useAuth } from "../../context/AuthContext";
+
+type AdminSegments = "list" | "assign" | "completed"
+
+type UserSegments = "retrasadas" | "hoy" | "proximas"
+
+type SegmentType = AdminSegments | UserSegments
 
 const HomePage: React.FC = () => {
-  const [selectedSegment, setSelectedSegment] = useState<'list' | 'assign'>('list');
+
+  const { user } = useAuth();
+
+  const [selectedSegment, setSelectedSegment] =
+    useState<SegmentType>(user?.rol === "admin" ? "list" : "hoy");
 
   return (
     <IonPage className="homepage">
-      {/* <IonHeader>
-        <IonToolbar>
-          <IonTitle>MENÚ DE TAREAS</IonTitle>
-        </IonToolbar>
-      </IonHeader> */}
 
       <IonContent className="homepage-content">
-        {/* Segmento para elegir entre lista y asignar */}
-        <IonSegment className="homepage-segment"
+
+        <IonSegment
+          className="homepage-segment"
           value={selectedSegment}
-          onIonChange={(e) => setSelectedSegment(e.detail.value as 'list' | 'assign')}
+          onIonChange={(e) => setSelectedSegment(e.detail.value as SegmentType)}
         >
-          <IonSegmentButton value="list" className="segment-button list-button">
-            <IonLabel>Tareas asignadas</IonLabel>
-          </IonSegmentButton>
-          <IonSegmentButton value="assign" className="segment-button assign-button">
-            <IonLabel>Asignar tarea</IonLabel>
-          </IonSegmentButton>
+
+          {user?.rol === "admin" ? (
+            <>
+              <IonSegmentButton value="list">
+                <IonLabel>Tareas asignadas</IonLabel>
+              </IonSegmentButton>
+
+              <IonSegmentButton value="assign">
+                <IonLabel>Asignar tarea</IonLabel>
+              </IonSegmentButton>
+
+              <IonSegmentButton value="completed">
+                <IonLabel>Tareas completadas</IonLabel>
+              </IonSegmentButton>
+            </>
+          ) : (
+            <>
+              <IonSegmentButton value="retrasadas">
+                <IonLabel>Tareas Retrasadas</IonLabel>
+              </IonSegmentButton>
+
+              <IonSegmentButton value="hoy">
+                <IonLabel>Tareas de Hoy</IonLabel>
+              </IonSegmentButton>
+
+              <IonSegmentButton value="proximas">
+                <IonLabel>Tareas Próximas</IonLabel>
+              </IonSegmentButton>
+            </>
+          )}
+
         </IonSegment>
 
         <div className="card-container">
-          {/* Render condicional según el segmento */}
-          {selectedSegment === 'list' && <TaskList />}
-          {selectedSegment === 'assign' && <AssignTask />}
+
+          {user?.rol === "admin" ? (
+            <>
+              {selectedSegment === "list" && <TaskList />}
+              {selectedSegment === "assign" && <AssignTask />}
+              {selectedSegment === "completed" && <CompletedTask />}
+            </>
+          ) : (
+            <>
+              <UserTask tipo={selectedSegment as "retrasadas" | "hoy" | "proximas"} />
+            </>
+          )}
+
         </div>
+
       </IonContent>
     </IonPage>
   );
