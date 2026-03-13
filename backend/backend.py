@@ -32,9 +32,16 @@ app.add_middleware(
 
 
 import logging
+import os
+
+log_path = "/var/log/insect/backend.log"
+
+# Si estamos en Windows usar log local
+if os.name == "nt":
+    log_path = "backend.log"
 
 logging.basicConfig(
-    filename="/var/log/insect/backend.log",
+    filename=log_path,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )

@@ -9,6 +9,8 @@ __pycache__/
 venv/
 .env.*
 backend/.env
+.env.local
+.env.*.local
 
 # =========================
 # Node / Frontend
