@@ -94,24 +94,24 @@ const CompletedTasks: React.FC = () => {
               <IonLabel className="completed-task-label">
 
                 <div className="completed-task-row">
-                  <span className="completed-task-key">Operario</span>
+                  <span className="completed-task-key">Operario: </span>
                   <span className="completed-task-value">
                     {operarios.find(op => op.id_operario === t.id_operario)?.nombre ?? t.id_operario}
                   </span>
                 </div>
 
                 <div className="completed-task-row">
-                  <span className="completed-task-key">Tipo</span>
+                  <span className="completed-task-key">Tipo: </span>
                   <span className="completed-task-value">{t.tipo_tarea}</span>
                 </div>
 
                 <div className="completed-task-row">
-                  <span className="completed-task-key">Descripción</span>
+                  <span className="completed-task-key">Descripción: </span>
                   <span className="completed-task-value">{t.descripcion}</span>
                 </div>
 
                 <div className="completed-task-row">
-                  <span className="completed-task-key">Entrega</span>
+                  <span className="completed-task-key">Entrega: </span>
                   <span className="completed-task-value">
                     {t.fecha_prevista
                       ? (() => {
@@ -123,7 +123,7 @@ const CompletedTasks: React.FC = () => {
                 </div>
 
                 <div className="completed-task-row">
-                  <span className="completed-task-key">Completada</span>
+                  <span className="completed-task-key">Completada: </span>
                   <span className="completed-task-value">
                     {t.fecha_completada
                       ? (() => {
