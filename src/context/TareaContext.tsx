@@ -13,10 +13,11 @@ export interface Tarea {
   estado: string;
   tipo_tarea: string;
   descripcion: string;
-  cantidad?: number; //el ? es para que no sea obligatorio en new pedido de assignTask
+  cantidad?: number;
   fecha_entrega: string | null;
   fecha_prevista: string | null;
   fecha_creacion: string;
+  fecha_completada: string | null;  // ← nuevo
   logistica?: string;
 }
 

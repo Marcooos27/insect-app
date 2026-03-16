@@ -332,9 +332,13 @@ def update_tarea(id_tarea: int, estado: dict):
     conn = get_connection()
     cur = conn.cursor()
 
+    fecha_completada = None
+    if estado.get("estado") == "Completada":
+        fecha_completada = datetime.now().date()
+
     cur.execute(
-        "UPDATE Tarea SET estado = %s WHERE id_tarea = %s",
-        [estado["estado"], id_tarea]
+        "UPDATE Tarea SET estado = %s, fecha_completada = %s WHERE id_tarea = %s",
+        [estado["estado"], fecha_completada, id_tarea]
     )
 
     if cur.rowcount == 0:
@@ -342,7 +346,6 @@ def update_tarea(id_tarea: int, estado: dict):
 
     conn.commit()
 
-    # devolver tarea actualizada
     cur.execute("SELECT * FROM Tarea WHERE id_tarea = %s", [id_tarea])
     tarea = cur.fetchone()
 
