@@ -51,13 +51,42 @@
   gap: 20px;
 }
 
-/* Segmento de selección */
+
+
 .homepage-segment {
   --background: var(--glass-bg);
   --border-radius: 12px;
   margin-bottom: 20px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.35);
 }
+
+
+.homepage-seg-btn {
+  --color: var(--text-secondary);
+  --color-checked: var(--green-darkest);
+  --indicator-color: transparent;
+  --border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  min-width: 0;
+  flex: 1;
+}
+
+
+.homepage-seg-btn::part(indicator-background) {
+  background: linear-gradient(135deg, var(--green-accent), var(--green-light));
+  border-radius: 10px;
+}
+
+
+.homepage-seg-btn ion-label {
+  white-space: normal;
+  line-height: 1.2;
+  text-align: center;
+  padding: 4px 2px;
+}
+
 
 /* Botones del segmento */
 .segment-button {

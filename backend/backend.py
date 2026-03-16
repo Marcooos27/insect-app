@@ -241,7 +241,8 @@ class TareaIn(BaseModel):
     estado: str
     tipo_tarea: str
     descripcion: Optional[str] = None
-    frecuencia: Optional[str] = None  # diaria | semanal | mensual
+    # frecuencia: Optional[str] = None  # COMENTADO - diaria | semanal | mensual
+    fecha_prevista: Optional[str] = None  # fecha directa desde el frontend
     logistica: Optional[str] = None
 
 class TareaOut(TareaIn):
@@ -280,14 +281,16 @@ def add_tarea(tarea: TareaIn, user=Depends(require_admin)):
     cur = conn.cursor()
 
     fecha_creacion = datetime.now().date()
-    fecha_prevista = None
 
-    if tarea.frecuencia == "diaria":
-        fecha_prevista = fecha_creacion + timedelta(days=1)
-    elif tarea.frecuencia == "semanal":
-        fecha_prevista = fecha_creacion + timedelta(weeks=1)
-    elif tarea.frecuencia == "mensual":
-        fecha_prevista = fecha_creacion + timedelta(days=30)
+    # COMENTADO - lógica de frecuencia, puede usarse en el futuro
+    # if tarea.frecuencia == "diaria":
+    #     fecha_prevista = fecha_creacion + timedelta(days=1)
+    # elif tarea.frecuencia == "semanal":
+    #     fecha_prevista = fecha_creacion + timedelta(weeks=1)
+    # elif tarea.frecuencia == "mensual":
+    #     fecha_prevista = fecha_creacion + timedelta(days=30)
+
+    fecha_prevista = tarea.fecha_prevista  # fecha directa del frontend
 
 
     cur.execute("SELECT * FROM Tarea LIMIT 0")  # No devuelve filas, solo estructura

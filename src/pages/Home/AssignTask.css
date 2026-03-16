@@ -179,3 +179,9 @@
   display: block;
   border-radius: 8px;
 }
+
+
+/* Espacio extra al final para que el botón no quede tapado por la barra de navegación */
+.assign-task-container {
+  padding-bottom: 80px;
+}

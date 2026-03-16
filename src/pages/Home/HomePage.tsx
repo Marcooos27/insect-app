@@ -43,29 +43,25 @@ const HomePage: React.FC = () => {
 
           {user?.rol === "admin" ? (
             <>
-              <IonSegmentButton value="list">
+              <IonSegmentButton className="homepage-seg-btn" value="list">
                 <IonLabel>Tareas asignadas</IonLabel>
               </IonSegmentButton>
-
-              <IonSegmentButton value="assign">
+              <IonSegmentButton className="homepage-seg-btn" value="assign">
                 <IonLabel>Asignar tarea</IonLabel>
               </IonSegmentButton>
-
-              <IonSegmentButton value="completed">
+              <IonSegmentButton className="homepage-seg-btn" value="completed">
                 <IonLabel>Tareas completadas</IonLabel>
               </IonSegmentButton>
             </>
           ) : (
             <>
-              <IonSegmentButton value="retrasadas">
+              <IonSegmentButton className="homepage-seg-btn" value="retrasadas">
                 <IonLabel>Tareas Retrasadas</IonLabel>
               </IonSegmentButton>
-
-              <IonSegmentButton value="hoy">
+              <IonSegmentButton className="homepage-seg-btn" value="hoy">
                 <IonLabel>Tareas de Hoy</IonLabel>
               </IonSegmentButton>
-
-              <IonSegmentButton value="proximas">
+              <IonSegmentButton className="homepage-seg-btn" value="proximas">
                 <IonLabel>Tareas Próximas</IonLabel>
               </IonSegmentButton>
             </>

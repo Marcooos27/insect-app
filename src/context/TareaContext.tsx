@@ -26,7 +26,8 @@ export interface TareaCreate {
   estado: string;
   tipo_tarea: string;
   descripcion: string;
-  frecuencia: string;
+  // frecuencia: string;  // COMENTADO - puede usarse en el futuro
+  fecha_prevista: string;
   logistica: string;
 }
 

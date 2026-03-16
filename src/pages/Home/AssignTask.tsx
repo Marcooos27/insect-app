@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
 import {
-  IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonItem, IonLabel, IonSelect, IonSelectOption,
-  IonTextarea, IonButton, IonToast
+  IonTextarea, IonButton, IonToast,
+  IonDatetime, IonModal
 } from '@ionic/react';
 import { OperarioContext } from '../../context/OperarioContext';
 import { TareaContext } from '../../context/TareaContext';
@@ -16,11 +16,13 @@ const AssignTask: React.FC = () => {
   const [idOperario, setIdOperario] = useState<number | null>(null);
   const [tipoTarea, setTipoTarea] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [frecuenciaEntrega, setFrecuenciaEntrega] = useState('');
+  // const [frecuenciaEntrega, setFrecuenciaEntrega] = useState('');  // COMENTADO - puede usarse en el futuro
+  const [fechaPrevista, setFechaPrevista] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
 
   const handleSubmit = async () => {
-    if (!idOperario || !tipoTarea || !descripcion || !frecuenciaEntrega) {
+    // if (!idOperario || !tipoTarea || !descripcion || !frecuenciaEntrega) {  // COMENTADO
+    if (!idOperario || !tipoTarea || !descripcion || !fechaPrevista) {
       alert("Por favor, rellena todos los campos");
       return;
     }
@@ -31,7 +33,8 @@ const AssignTask: React.FC = () => {
       estado: "Pendiente",
       tipo_tarea: tipoTarea,
       descripcion: descripcion,
-      frecuencia: frecuenciaEntrega, // frecuencia de entrega
+      // frecuencia: frecuenciaEntrega,  // COMENTADO - puede usarse en el futuro
+      fecha_prevista: fechaPrevista,
       logistica: "Interna"
     };
 
@@ -42,7 +45,8 @@ const AssignTask: React.FC = () => {
     setIdOperario(null);
     setTipoTarea('');
     setDescripcion('');
-    setFrecuenciaEntrega('');
+    // setFrecuenciaEntrega('');  // COMENTADO
+    setFechaPrevista('');
   };
 
   return (
@@ -93,7 +97,7 @@ const AssignTask: React.FC = () => {
         </IonItem>
 
 
-        {/* Frecuencia de entrega */}
+        {/* Frecuencia de entrega - COMENTADO, puede usarse en el futuro
         <IonItem className="assign-task-item">
           <IonLabel position="stacked">Frecuencia de Entrega</IonLabel>
           <IonSelect
@@ -105,6 +109,19 @@ const AssignTask: React.FC = () => {
             <IonSelectOption value="semanal">Semanal</IonSelectOption>
             <IonSelectOption value="mensual">Mensual</IonSelectOption>
           </IonSelect>
+        </IonItem>
+        */}
+
+        {/* Fecha de entrega */}
+        <IonItem className="assign-task-item">
+          <IonLabel position="stacked">Fecha de Entrega</IonLabel>
+          <IonDatetime
+            presentation="date"
+            value={fechaPrevista}
+            min={new Date().toISOString().split('T')[0]}
+            onIonChange={e => setFechaPrevista(e.detail.value as string)}
+            style={{ '--background': 'var(--green-accent)', '--background-rgb': '234,239,157', color: 'var(--text-primary)' }}
+          />
         </IonItem>
 
 

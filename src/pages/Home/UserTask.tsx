@@ -1,4 +1,4 @@
-//import './UserTasks.css';
+import './TaskList.css';
 
 import React, { useContext } from "react";
 
@@ -94,50 +94,40 @@ const UserTasks: React.FC<Props> = ({ tipo }) => {
           <IonList>
 
             {tareasFiltradas.length > 0 ? (
-
               tareasFiltradas.map((t) => (
-
                 <IonItem key={t.id_tarea} className="task-item">
-
                   <IonCheckbox
                     slot="start"
                     checked={false}
                     onIonChange={() => toggleTarea(t.id_tarea)}
                   />
-
                   <IonLabel>
-
-                    <div>
-                      <strong>Tipo:</strong> {t.tipo_tarea}
+                    <div className="task-row">
+                      <span className="task-key">Tipo: </span>
+                      <span className="task-value">{t.tipo_tarea}</span>
                     </div>
-
-                    <div>
-                      <strong>Descripción:</strong> {t.descripcion}
+                    <div className="task-row">
+                      <span className="task-key">Descripción: </span>
+                      <span className="task-value">{t.descripcion}</span>
                     </div>
-
-                    <div>
-                      <strong>Entrega:</strong>{" "}
-                      {t.fecha_prevista
-                        ? (() => {
-                            const [y, m, d] =
-                              t.fecha_prevista.split("T")[0].split("-");
-                            return `${d}-${m}-${y}`;
-                          })()
-                        : "Sin fecha"}
+                    <div className="task-row">
+                      <span className="task-key">Entrega: </span>
+                      <span className="task-value">
+                        {t.fecha_prevista
+                          ? (() => {
+                              const [y, m, d] = t.fecha_prevista.split("T")[0].split("-");
+                              return `${d}-${m}-${y}`;
+                            })()
+                          : "Sin fecha"}
+                      </span>
                     </div>
-
                   </IonLabel>
-
                 </IonItem>
-
               ))
-
             ) : (
-
-              <IonItem>
-                <IonLabel>No hay tareas</IonLabel>
+              <IonItem className="no-tasks-item">
+                <IonLabel className="no-tasks-text">No hay tareas</IonLabel>
               </IonItem>
-
             )}
 
           </IonList>
