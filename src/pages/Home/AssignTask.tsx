@@ -56,6 +56,7 @@ const AssignTask: React.FC = () => {
         <IonItem className="assign-task-item">
           <IonLabel position="stacked">Operario</IonLabel>
           <IonSelect
+            className="assign-operario-tipo"
             value={idOperario}
             placeholder="Selecciona operario"
             onIonChange={e => setIdOperario(e.detail.value)}
@@ -72,6 +73,7 @@ const AssignTask: React.FC = () => {
         <IonItem className="assign-task-item">
           <IonLabel position="stacked">Tipo de Tarea</IonLabel>
           <IonSelect
+            className="assign-operario-tipo"
             value={tipoTarea}
             placeholder="Selecciona tipo de tarea"
             onIonChange={e => setTipoTarea(e.detail.value!)}
@@ -113,14 +115,14 @@ const AssignTask: React.FC = () => {
         */}
 
         {/* Fecha de entrega */}
-        <IonItem className="assign-task-item">
+        <IonItem className="assign-task-item assign-datetime-item">
           <IonLabel position="stacked">Fecha de Entrega</IonLabel>
           <IonDatetime
+            className="assign-datetime"
             presentation="date"
             value={fechaPrevista}
             min={new Date().toISOString().split('T')[0]}
             onIonChange={e => setFechaPrevista(e.detail.value as string)}
-            style={{ '--background': 'var(--green-accent)', '--background-rgb': '234,239,157', color: 'var(--text-primary)' }}
           />
         </IonItem>
 

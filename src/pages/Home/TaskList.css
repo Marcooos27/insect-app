@@ -1,17 +1,3 @@
-:root {
-  /* === PALETA VERDE PRINCIPAL === */
-  --green-darkest: #336A29;
-  --green-dark: #498528;
-  --green-mid: #80B155;
-  --green-light: #C1D95C;
-  --green-accent: #EAEF9D;
-
-  /* === TEXTO === */
-  --text-primary: #3b433c;
-  --text-secondary: #89a18a;
-}
-
-
 
 /* TÍTULO DE SECCIÓN (NO CARD) */
 .section-title {
@@ -25,8 +11,8 @@
 .task-card {
   background: linear-gradient(
     145deg,
-    var(--green-mid),
-    var(--green-dark)
+    var(--color-mid),
+    var(--color-dark)
   );
   border-radius: 12px;
   margin-bottom: 20px;
@@ -66,13 +52,13 @@
   margin-bottom: 10px;
   overflow: visible;
 
-  --background: var(--green-light);
+  --background: var(--color-light);
   --border-color: transparent;
   --inner-border-width: 0;
   --padding-start: 12px;
   --padding-end: 12px;
 
-  background-color: var(--green-accent);
+  background-color: var(--color-accent);
   border: 0.5px solid rgba(0,0,0,0.08);
 }
 
@@ -105,15 +91,15 @@
 
   overflow: visible; /* CLAVE */
 
-  background-color: var(--green-light);
-  --background: var(--green-light);
+  background-color: var(--color-light);
+  --background: var(--color-light);
   --border-color: transparent;
   --inner-border-width: 0;
   --padding-start: 12px;
   --padding-end: 12px;
   color: var(--text-primary);
   font-weight: 600;
-  border: 5px solid var(--green-accent);
+  border: 5px solid var(--color-accent);
 }
 
 
@@ -124,7 +110,7 @@ ion-list {
 
 /* Checkbox */
 .task-checkbox {
-  --checkmark-color: var(--green-accent);
+  --checkmark-color: var(--color-accent);
   --size: 22px;
   width: 22px;
   height: 22px;
@@ -158,7 +144,7 @@ ion-list {
 
 /* Botón editar */
 .edit-task-btn {
-  background-color: var(--green-accent);
+  background-color: var(--color-accent);
   color: var(--text-primary);
   border: none;
   border-radius: 6px;
@@ -171,7 +157,7 @@ ion-list {
 
 /* Efecto hover (verde oscuro cuando pasas el cursos por encima) botón editar */
 .edit-task-btn:hover {
-  background-color: var(--green-dark);
+  background-color: var(--color-dark);
 }
 
 /* Filas alineadas (rectangulos verde-light interiores)*/
@@ -181,8 +167,8 @@ ion-list {
   align-items: center;
   gap: 8px;
 
-  background-color: var(--green-accent);
-  border: 2px solid var(--green-light);
+  background-color: var(--color-accent);
+  border: 2px solid var(--color-light);
   padding: 6px 10px;
   border-radius: 10px;
   margin: 2px 0;

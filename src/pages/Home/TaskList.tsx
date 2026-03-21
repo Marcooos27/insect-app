@@ -127,7 +127,7 @@ const TaskList: React.FC = () => {
                         </IonItem>
                       ))) : (
                       <IonItem className="no-tasks-item">
-                        <IonLabel className="no-tasks-text">Sin tareas asignadas</IonLabel>
+                        <IonLabel className="no-tasks-text">Sin Tareas Asignadas</IonLabel>
                       </IonItem>
                     )}
                   </IonList>

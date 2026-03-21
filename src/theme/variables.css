@@ -1,2 +1,115 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
+
+
+/* ============================================
+   PALETAS DE COLORES - Descomenta la que uses
+   ============================================ */
+
+/* PALETA 1 - Oscura tierra */
+/*
+:root {
+  --color-darkest:  #121a1b;
+  --color-dark:     #505039;
+  --color-mid:      #a7aa63;
+  --color-light:    #eae6d2;
+  --color-accent:   #f5f2e8;
+
+  --text-primary:   #121a1b;
+  --text-secondary: #505039;
+  --text-white:     #eae6d2;
+}
+*/
+
+/* PALETA 2 - Verde profesional (RECOMENDADA) */
+/*
+:root {
+  --color-darkest:  #023337;
+  --color-dark:     #4ea674;
+  --color-mid:      #4ea674;
+  --color-light:    #c0e6b9;
+  --color-accent:   #e9f8e7;
+
+  --text-primary:   #3b433c;
+  --text-secondary: #89a18a;
+  --text-white:     #ffffff;
+}
+*/
+
+/* PALETA 3 - Verde madera */
+/*
+:root {
+  --color-darkest:  #2d5a27;
+  --color-dark:     #2d5a27;
+  --color-mid:      #96ad90;
+  --color-light:    #d2b48c;
+  --color-accent:   #fff8e7;
+
+  --text-primary:   #2d5a27;
+  --text-secondary: #96ad90;
+  --text-white:     #fff8e7;
+}
+*/
+
+/* PALETA 4 - Amarillo suave */
+/*
+:root {
+  --color-darkest:  #423f20;
+  --color-dark:     #423f20;
+  --color-mid:      #d1d57d;
+  --color-light:    #e3e2c1;
+  --color-accent:   #fff9ec;
+
+  --text-primary:   #423f20;
+  --text-secondary: #d1d57d;
+  --text-white:     #fff9ec;
+}
+*/
+
+
+/* PALETA 5 - verde con blanco oscuro */
+/*
+:root {
+  --color-darkest:  #374426;
+  --color-dark:     #47622a;
+  --color-mid:      #799851;
+  --color-light:    #9fb878;
+  --color-accent:   #dfddd1;
+
+  --text-primary:   #423f20;
+  --text-secondary: #d1d57d;
+  --text-white:     #fff9ec;
+}
+*/
+
+/* PALETA 6 - verde total */
+
+:root {
+  --color-darkest:  #27301b;
+  --color-dark:     #41521e;
+  --color-mid:      #909632;
+  --color-light:    #99a558;
+  --color-accent:   #d8dda8;
+  --color-white:    #f1f2e3;
+
+  --text-primary:   #13160f;
+  --text-secondary: #36441b;
+  --text-white:     #e5e7d2;
+}
+
+
+
+
+
+
+/* ------------------------------------------------------- */
+ion-tab-bar {
+  --background: var(--color-darkest);
+  --color: var(--color-light);
+  --color-selected: var(--color-white);
+}
+
+ion-tab-button {
+  --color: var(--color-light);
+  --color-selected: var(--color-white);
+}

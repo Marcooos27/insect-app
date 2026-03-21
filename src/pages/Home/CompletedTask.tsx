@@ -15,6 +15,16 @@ import { TareaContext } from "../../context/TareaContext";
 import { OperarioContext } from "../../context/OperarioContext";
 import "./CompletedTask.css";
 
+
+  // Función helper fuera del componente
+  const getEstadoPuntualidad = (fecha_prevista: string | null, fecha_completada: string | null) => {
+    if (!fecha_prevista || !fecha_completada) return "sin-datos";
+    const prevista = new Date(fecha_prevista.split("T")[0]);
+    const completada = new Date(fecha_completada.split("T")[0]);
+    return completada <= prevista ? "a-tiempo" : "tarde";
+  };
+
+
 const CompletedTasks: React.FC = () => {
 
   const { tareas } = useContext(TareaContext);
@@ -70,7 +80,7 @@ const CompletedTasks: React.FC = () => {
             value={fechaFiltro}
             onIonChange={e => setFechaFiltro(e.detail.value as string)}
             style={{
-              '--background': 'var(--green-accent)',
+              '--background': 'var(--color-accent)',
               color: 'var(--text-primary)'
             }}
           />
@@ -89,54 +99,68 @@ const CompletedTasks: React.FC = () => {
       {/* Lista de tareas completadas */}
       <IonList className="completed-list">
         {tareasFiltradas.length > 0 ? (
-          tareasFiltradas.map(t => (
-            <IonItem key={t.id_tarea} className="completed-task-item">
-              <IonLabel className="completed-task-label">
+          tareasFiltradas.map(t => {
+            const puntualidad = getEstadoPuntualidad(t.fecha_prevista, t.fecha_completada);
+            return (
+              <IonItem
+                key={t.id_tarea}
+                className={`completed-task-item puntualidad-${puntualidad}`}
+              >
+                <IonLabel className="completed-task-label">
 
-                <div className="completed-task-row">
-                  <span className="completed-task-key">Operario: </span>
-                  <span className="completed-task-value">
-                    {operarios.find(op => op.id_operario === t.id_operario)?.nombre ?? t.id_operario}
-                  </span>
-                </div>
+                  {/* Badge de puntualidad */}
+                  <div className="puntualidad-badge">
+                    {puntualidad === "a-tiempo" && (
+                      <span className="badge badge-ok">✓ A tiempo</span>
+                    )}
+                    {puntualidad === "tarde" && (
+                      <span className="badge badge-tarde">✗ Tarde</span>
+                    )}
+                    {puntualidad === "sin-datos" && (
+                      <span className="badge badge-sin-datos">— Sin datos</span>
+                    )}
+                  </div>
 
-                <div className="completed-task-row">
-                  <span className="completed-task-key">Tipo: </span>
-                  <span className="completed-task-value">{t.tipo_tarea}</span>
-                </div>
+                  <div className="completed-task-row">
+                    <span className="completed-task-key">Operario: </span>
+                    <span className="completed-task-value">
+                      {operarios.find(op => op.id_operario === t.id_operario)?.nombre ?? t.id_operario}
+                    </span>
+                  </div>
 
-                <div className="completed-task-row">
-                  <span className="completed-task-key">Descripción: </span>
-                  <span className="completed-task-value">{t.descripcion}</span>
-                </div>
+                  <div className="completed-task-row">
+                    <span className="completed-task-key">Descripción: </span>
+                    <span className="completed-task-value">{t.descripcion}</span>
+                  </div>
 
-                <div className="completed-task-row">
-                  <span className="completed-task-key">Entrega: </span>
-                  <span className="completed-task-value">
-                    {t.fecha_prevista
-                      ? (() => {
-                          const [y, m, d] = t.fecha_prevista.split("T")[0].split("-");
-                          return `${d}-${m}-${y}`;
-                        })()
-                      : "Sin fecha"}
-                  </span>
-                </div>
+                  <div className="completed-task-row">
+                    <span className="completed-task-key">Entrega: </span>
+                    <span className="completed-task-value">
+                      {t.fecha_prevista
+                        ? (() => {
+                            const [y, m, d] = t.fecha_prevista.split("T")[0].split("-");
+                            return `${d}-${m}-${y}`;
+                          })()
+                        : "Sin fecha"}
+                    </span>
+                  </div>
 
-                <div className="completed-task-row">
-                  <span className="completed-task-key">Completada: </span>
-                  <span className="completed-task-value">
-                    {t.fecha_completada
-                      ? (() => {
-                          const [y, m, d] = t.fecha_completada.split("T")[0].split("-");
-                          return `${d}-${m}-${y}`;
-                        })()
-                      : "Sin fecha"}
-                  </span>
-                </div>
+                  <div className="completed-task-row">
+                    <span className="completed-task-key">Completada: </span>
+                    <span className="completed-task-value">
+                      {t.fecha_completada
+                        ? (() => {
+                            const [y, m, d] = t.fecha_completada.split("T")[0].split("-");
+                            return `${d}-${m}-${y}`;
+                          })()
+                        : "Sin fecha"}
+                    </span>
+                  </div>
 
-              </IonLabel>
-            </IonItem>
-          ))
+                </IonLabel>
+              </IonItem>
+            );
+          })
         ) : (
           <IonItem className="completed-no-tasks-item">
             <IonLabel className="completed-no-tasks-text">No hay tareas completadas</IonLabel>

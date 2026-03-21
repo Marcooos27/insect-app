@@ -1,14 +1,4 @@
 :root {
-  /* === PALETA VERDE PRINCIPAL === */
-  --green-darkest: #336A29;
-  --green-dark: #498528;
-  --green-mid: #80B155;
-  --green-light: #C1D95C;
-  --green-accent: #EAEF9D;
-
-  /* === TEXTO === */
-  --text-primary: #546355;
-  --text-secondary: #c8e6c9;
 
   /* === GRADIENTE HOME === */
   --home-gradient-start: #80B155;
@@ -63,7 +53,7 @@
 
 .homepage-seg-btn {
   --color: var(--text-secondary);
-  --color-checked: var(--green-darkest);
+  --color-checked: var(--color-darkest);
   --indicator-color: transparent;
   --border-radius: 10px;
   font-weight: 600;
@@ -75,7 +65,7 @@
 
 
 .homepage-seg-btn::part(indicator-background) {
-  background: linear-gradient(135deg, var(--green-accent), var(--green-light));
+  background: linear-gradient(135deg, var(--color-accent), var(--color-light));
   border-radius: 10px;
 }
 
@@ -106,34 +96,27 @@
   color: #fff !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
-/*
---green-darkest: #336A29;
-  --green-dark: #498528;
-  --green-mid: #80B155;
-  --green-light: #C1D95C;
-  --green-accent: #EAEF9D;
 
-  background-color: var(--green-accent);*/
 
 /* Botón LIST */
 .segment-button.list-button {
-  --color-checked: var(--green-dark);
-  --btn-bg: var(--green-dark);
-  --btn-bg-active: var(--green-light);
+  --color-checked: var(--color-dark);
+  --btn-bg: var(--color-dark);
+  --btn-bg-active: var(--color-light);
 }
 .segment-button.list-button.activated {
-  background: linear-gradient(135deg, var(--green-accent), var(--green-light));
+  background: linear-gradient(135deg, var(--color-accent), var(--color-light));
   color: #fff !important;
 }
 
 /* Botón ASSIGN */
 .segment-button.assign-button {
-  --color-checked: var(--green-light);
-  --btn-bg: var(--green-light);
-  --btn-bg-active: var(--green-light);
+  --color-checked: var(--color-light);
+  --btn-bg: var(--color-light);
+  --btn-bg-active: var(--color-light);
 }
 .segment-button.assign-button.activated {
-  background: linear-gradient(135deg, var(--green-accent), var(--green-light));
+  background: linear-gradient(135deg, var(--color-accent), var(--color-light));
   color: #fff !important;
 }
 
