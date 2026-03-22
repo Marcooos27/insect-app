@@ -1,3 +1,5 @@
+/*
+
 import React from "react";
 import {
   IonPage,
@@ -54,6 +56,103 @@ const ManagementPage: React.FC = () => {
             <IonLabel>Otros</IonLabel>
           </IonItem>
         </IonList>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default ManagementPage;
+
+
+*/
+
+
+
+
+
+
+
+
+import React from "react";
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonIcon
+} from "@ionic/react";
+import { people, cube, cart, layers, settings, leaf } from "ionicons/icons";
+import { useHistory } from "react-router-dom";
+import "./ManagementPage.css";
+
+const secciones = [
+  {
+    path: "/management/clientes",
+    icon: people,
+    titulo: "Clientes",
+    descripcion: "Gestiona tus clientes"
+  },
+  {
+    path: "/management/pedidos",
+    icon: cart,
+    titulo: "Pedidos",
+    descripcion: "Gestiona los pedidos"
+  },
+  {
+    path: "/management/operarios",
+    icon: people,
+    titulo: "Operarios",
+    descripcion: "Gestiona el equipo"
+  },
+  {
+    path: "/management/lotes",
+    icon: layers,
+    titulo: "Lotes",
+    descripcion: "Control de lotes"
+  },
+  {
+    path: "/management/incubacion",
+    icon: cube,
+    titulo: "Incubación",
+    descripcion: "Control de incubación"
+  },
+  {
+    path: "/management/otros",
+    icon: settings,
+    titulo: "Otros",
+    descripcion: "Configuración adicional"
+  }
+];
+
+const ManagementPage: React.FC = () => {
+  const history = useHistory();
+
+  return (
+    <IonPage className="management-page">
+      {/*
+      <IonHeader>
+        <IonToolbar className="management-toolbar">
+          <IonTitle className="management-title">Gestión</IonTitle>
+        </IonToolbar>
+      </IonHeader>*/}
+
+      <IonContent className="management-content">
+        <div className="management-grid">
+          {secciones.map((s) => (
+            <div
+              key={s.path}
+              className="management-card"
+              onClick={() => history.push(s.path)}
+            >
+              <div className="management-card-icon">
+                <IonIcon icon={s.icon} />
+              </div>
+              <h3 className="management-card-titulo">{s.titulo}</h3>
+              <p className="management-card-descripcion">{s.descripcion}</p>
+            </div>
+          ))}
+        </div>
       </IonContent>
     </IonPage>
   );

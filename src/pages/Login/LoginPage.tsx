@@ -4,12 +4,12 @@ import {
   IonContent,
   IonInput,
   IonButton,
-  IonItem,
-  IonLabel
+  IonIcon,
 } from "@ionic/react";
-
+import { mailOutline, lockClosedOutline, leafOutline } from "ionicons/icons";
 import { useAuth } from "../../context/AuthContext";
 import { useHistory } from "react-router";
+import "./LoginPage.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,40 +20,68 @@ const Login = () => {
 
   const handleLogin = async () => {
     const ok = await login(email, password);
-
     if (ok) history.push("/home");
     else alert("Login incorrecto");
   };
 
-  const handleRegister = async () => {
-
-    history.push("/register");
-  };
-
   return (
     <IonPage>
-      <IonContent className="ion-padding">
+      <IonContent className="login-content">
 
-        <IonItem>
-          <IonLabel position="floating">Email</IonLabel>
-          <IonInput onIonChange={e => setEmail(e.detail.value!)} />
-        </IonItem>
+        <div className="login-container">
 
-        <IonItem>
-          <IonLabel position="floating">Contraseña</IonLabel>
-          <IonInput
-            type="password"
-            onIonChange={e => setPassword(e.detail.value!)}
-          />
-        </IonItem>
+          {/* Logo / título */}
+          <div className="login-header">
+            <IonIcon icon={leafOutline} className="login-logo-icon" />
+            <h1 className="login-title">InsectEat</h1>
+            <p className="login-subtitle">Gestión de producción</p>
+          </div>
 
-        <IonButton expand="full" onClick={handleLogin}>
-          Login
-        </IonButton>
+          {/* Formulario */}
+          <div className="login-form">
 
-        <IonButton expand="full" onClick={handleRegister}>
-          Register
-        </IonButton>
+            <div className="login-field">
+              <IonIcon icon={mailOutline} className="login-field-icon" />
+              <IonInput
+                type="email"
+                placeholder="Email"
+                value={email}
+                onIonChange={e => setEmail(e.detail.value!)}
+                className="login-input"
+              />
+            </div>
+
+            <div className="login-field">
+              <IonIcon icon={lockClosedOutline} className="login-field-icon" />
+              <IonInput
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onIonChange={e => setPassword(e.detail.value!)}
+                className="login-input"
+              />
+            </div>
+
+            <IonButton
+              expand="block"
+              className="login-btn-primary"
+              onClick={handleLogin}
+            >
+              Iniciar sesión
+            </IonButton>
+
+            <IonButton
+              expand="block"
+              fill="clear"
+              className="login-btn-secondary"
+              onClick={() => history.push("/register")}
+            >
+              Crear cuenta nueva
+            </IonButton>
+
+          </div>
+
+        </div>
 
       </IonContent>
     </IonPage>

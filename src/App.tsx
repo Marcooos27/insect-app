@@ -172,14 +172,15 @@ const App: React.FC = () => {
                     </IonTabButton>
 
 
-                    {/* SOLO ADMIN */}
-                    {!user ||user?.rol === "admin" && (
+                    {/* DESPUÉS - todos los usuarios logueados */}
+                    {user && (
                         <IonTabButton tab="calendar" href="/calendar">
                           <IonIcon aria-hidden="true" icon={calendar} />
                           <IonLabel>Calendario</IonLabel>
                         </IonTabButton>
                     )}
 
+                    {/* SOLO ADMIN */}
                     {user?.rol === "admin" && (
                         <IonTabButton tab="dashboard" href="/dashboard">
                           <IonIcon aria-hidden="true" icon={barChart} />

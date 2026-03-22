@@ -1,0 +1,122 @@
+.login-content {
+  --background: linear-gradient(160deg, var(--color-darkest) 0%, var(--color-dark) 60%, var(--color-mid) 100%);
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 24px;
+  gap: 40px;
+}
+
+/* Header */
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-logo-icon {
+  font-size: 72px;
+  color: var(--color-accent);
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+
+.login-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--text-white);
+  letter-spacing: 3px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.login-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  opacity: 0.8;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* Formulario */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 4px 16px;
+  backdrop-filter: blur(6px);
+  transition: border-color 0.2s ease;
+}
+
+.login-field:focus-within {
+  border-color: var(--color-accent);
+}
+
+.login-field-icon {
+  font-size: 1.2rem;
+  color: var(--color-accent);
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.login-input {
+  --color: var(--text-white);
+  --placeholder-color: rgba(255,255,255,0.4);
+  --background: transparent;
+  --padding-start: 0;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+/* Botones */
+.login-btn-primary {
+  --background: var(--color-mid);
+  --background-activated: var(--color-dark);
+  --background-hover: var(--color-dark);
+  --ripple-color: transparent;
+  --border-radius: 12px;
+  --color: var(--text-white);
+  --box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.login-btn-secondary {
+  --color: var(--color-accent);
+  --ripple-color: transparent;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.login-btn-secondary:hover {
+  opacity: 1;
+}
+
+
+
+
+
+
+
+/* REGISTER */
+
+.login-select {
+  --color: var(--text-white);
+  --placeholder-color: rgba(255,255,255,0.4);
+  flex: 1;
+  font-size: 0.95rem;
+}

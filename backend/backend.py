@@ -250,6 +250,14 @@ class TareaOut(TareaIn):
     fecha_creacion: datetime
     fecha_prevista: datetime | None
 
+
+class TareaEdit(BaseModel):
+    id_operario: int
+    tipo_tarea: str
+    descripcion: Optional[str] = None
+    fecha_prevista: Optional[str] = None
+
+
 @app.get("/tarea")
 def get_tareas(user = Depends(get_current_user)):
     conn = get_connection()
@@ -354,6 +362,43 @@ def update_tarea(id_tarea: int, estado: dict):
 
     return tarea
 
+
+
+@app.put("/tarea/{id_tarea}/editar")
+def editar_tarea(id_tarea: int, tarea: TareaEdit, user=Depends(require_admin)):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            UPDATE Tarea
+            SET id_operario = %s,
+                tipo_tarea = %s,
+                descripcion = %s,
+                fecha_prevista = %s
+            WHERE id_tarea = %s
+        """, (
+            tarea.id_operario,
+            tarea.tipo_tarea,
+            tarea.descripcion,
+            tarea.fecha_prevista,
+            id_tarea
+        ))
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Tarea no encontrada")
+
+        conn.commit()
+        return {"message": "Tarea actualizada correctamente"}
+
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+        
 
 
 @app.delete("/tarea/{id_tarea}")

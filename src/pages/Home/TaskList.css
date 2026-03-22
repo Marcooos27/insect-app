@@ -158,6 +158,7 @@ ion-list {
 /* Efecto hover (verde oscuro cuando pasas el cursos por encima) botón editar */
 .edit-task-btn:hover {
   background-color: var(--color-dark);
+  color: var(--text-white);
 }
 
 /* Filas alineadas (rectangulos verde-light interiores)*/

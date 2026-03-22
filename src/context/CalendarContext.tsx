@@ -1,7 +1,7 @@
-// src/context/CalendarContext.tsx
 import React, { createContext, useContext, useMemo, useState } from "react";
-//import { getEventos, addEvento } from "../services/calendarService";
 import { TareaContext } from "./TareaContext";
+import { OperarioContext } from "./OperarioContext";
+import { useAuth } from "./AuthContext";
 
 interface Event {
   id: number;
@@ -9,45 +9,73 @@ interface Event {
   start: Date;
   end: Date;
   description?: string;
-  assigned_to?: string; // nombre o id del operario
-  created_by?: string;  // 'empresa' o 'trabajador'
+  id_operario?: number;
+  estado?: string;
 }
 
 interface CalendarContextType {
   events: Event[];
-  isOwnerView: boolean;
-  toggleView: () => void;
+  operarioSeleccionado: number | null;
+  setOperarioSeleccionado: (id: number | null) => void;
   addEvent: (event: Event) => void;
+  mostrarCompletadas: boolean;
+  setMostrarCompletadas: (v: boolean) => void;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
 export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { tareas } = useContext(TareaContext);
-  const [isOwnerView, setIsOwnerView] = useState(true);
+  const { user } = useAuth();
   const [eventsState, setEventsState] = useState<Event[]>([]);
+  const [operarioSeleccionado, setOperarioSeleccionado] = useState<number | null>(null);
+  const [mostrarCompletadas, setMostrarCompletadas] = useState<boolean>(false);
 
   const addEvent = (event: Event) => {
     setEventsState(prev => [...prev, event]);
   };
 
   const events = useMemo(() => {
-  const tareasEvents = tareas
-    .filter(t => t.fecha_prevista !== null)
-    .map(t => ({
-      id: t.id_tarea,
-      title: t.tipo_tarea,
-      start: new Date(t.fecha_prevista!),
-      end: new Date(t.fecha_prevista!),
-      description: t.descripcion,
-    }));
-  return [...tareasEvents, ...eventsState];
-}, [tareas, eventsState]);
+    const tareasEvents = tareas
+      .filter(t => t.fecha_prevista !== null)
+      .map(t => ({
+        id: t.id_tarea,
+        title: t.tipo_tarea,
+        start: new Date(t.fecha_prevista!),
+        end: new Date(t.fecha_prevista!),
+        description: t.descripcion,
+        id_operario: t.id_operario,
+        estado: t.estado,
+      }));
 
-  const toggleView = () => setIsOwnerView(prev => !prev);
+    const todosEvents = [...tareasEvents, ...eventsState];
+
+    // Filtrar completadas si no se quieren mostrar
+    const filtradoPorEstado = mostrarCompletadas
+      ? todosEvents
+      : todosEvents.filter(e => e.estado !== "Completada");
+
+    if (user?.rol === "admin" && operarioSeleccionado !== null) {
+      return filtradoPorEstado.filter(e => e.id_operario === operarioSeleccionado);
+    }
+
+    if (user?.rol === "admin") {
+      return filtradoPorEstado;
+    }
+
+    return filtradoPorEstado.filter(e => e.id_operario === user?.id_operario);
+
+  }, [tareas, eventsState, user, operarioSeleccionado, mostrarCompletadas]);
 
   return (
-    <CalendarContext.Provider value={{ events, isOwnerView, toggleView, addEvent}}>
+    <CalendarContext.Provider value={{
+      events,
+      operarioSeleccionado,
+      setOperarioSeleccionado,
+      addEvent,
+      mostrarCompletadas,
+      setMostrarCompletadas,
+    }}>
       {children}
     </CalendarContext.Provider>
   );

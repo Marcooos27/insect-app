@@ -1,0 +1,98 @@
+/* Toolbar */
+.management-toolbar {
+  --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
+  --color: var(--text-white);
+}
+
+.management-title {
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Fondo del contenido */
+.management-content {
+  /*
+  --background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));*/
+  background-color: var(--color-accent);
+}
+
+/* Grid 2 columnas */
+.management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 20px;
+  padding-bottom: 80px;
+}
+
+/* Tarjeta */
+.management-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  background: linear-gradient(145deg, var(--color-mid), var(--color-dark));
+  border-radius: 18px;
+  padding: 24px 16px;
+
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  border: 2px solid var(--color-light);
+
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+
+  min-height: 140px;
+}
+
+.management-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  filter: brightness(1.08);
+}
+
+.management-card:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Icono */
+.management-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: var(--color-accent);
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+.management-card-icon ion-icon {
+  font-size: 28px;
+  color: var(--color-darkest);
+}
+
+/* Título */
+.management-card-titulo {
+  color: var(--text-white);
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Descripción */
+.management-card-descripcion {
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  text-align: center;
+  margin: 0;
+  opacity: 0.85;
+}

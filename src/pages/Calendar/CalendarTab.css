@@ -1,0 +1,324 @@
+/* Toolbar */
+.calendar-toolbar {
+  --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
+  --color: var(--text-white);
+}
+
+.calendar-title {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+/* Fondo contenido */
+.calendar-content {
+  --background: var(--color-white);
+}
+
+/* Wrapper del calendario */
+.calendar-wrapper {
+  height: 78vh;
+  padding: 10px;
+}
+
+/* Selector operario en toolbar */
+.calendar-operario-selector {
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+}
+
+.calendar-select {
+  --color: var(--text-white);
+  --placeholder-color: var(--color-accent);
+  color: var(--text-white);
+  font-weight: 600;
+  font-size: 0.9rem;
+  max-width: 160px;
+}
+
+/* ================================
+   REACT-BIG-CALENDAR ESTILOS
+================================ */
+
+/* Barra de navegación (Hoy, Atrás, Siguiente, Mes, Semana, Día) */
+.rbc-toolbar {
+  background-color: var(--color-accent);
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.rbc-toolbar-label {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary) !important;
+}
+
+.rbc-toolbar button {
+  background-color: var(--color-mid);
+  color: var(--text-white);
+  border: 1px solid var(--color-dark);
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin: 0 3px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.rbc-toolbar button:hover {
+  background-color: var(--color-dark);
+  color: var(--text-white);
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: var(--color-darkest);
+  color: var(--text-white);
+  border-color: var(--color-darkest);
+}
+
+/* ================================
+   CABECERAS DE DÍAS (Mon, Tue...)
+================================ */
+.rbc-header {
+  background-color: var(--color-dark);
+  color: var(--text-white) !important;
+  font-weight: 700;
+  padding: 8px 4px;
+  border-color: var(--color-darkest) !important;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rbc-header + .rbc-header {
+  border-left: 1px solid var(--color-darkest) !important;
+}
+
+/* ================================
+   CELDAS DE DÍAS
+================================ */
+
+/* Fondo general de todas las celdas */
+.rbc-day-bg {
+  background-color: var(--color-white) !important;
+  border-color: var(--color-light) !important;
+}
+
+/* Separadores entre celdas */
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 2px solid var(--color-light) !important;
+}
+
+/* Separadores entre filas */
+.rbc-month-row + .rbc-month-row {
+  border-top: 2px solid var(--color-light) !important;
+}
+
+/* Día de hoy */
+.rbc-today {
+  background-color: rgba(144, 150, 50, 0.15) !important;
+}
+
+/* Número del día — fondo verde suave */
+.rbc-date-cell {
+  padding: 2px 3px;
+}
+
+.rbc-date-cell a,
+.rbc-date-cell span {
+  display: inline-block;
+  background-color: rgba(144, 150, 50, 0.18);
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  padding: 2px 7px;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Número del día de hoy */
+.rbc-now .rbc-date-cell a,
+.rbc-now .rbc-date-cell span {
+  background-color: var(--color-mid);
+  color: var(--text-white) !important;
+  font-weight: 800;
+}
+
+/* Días fuera del mes actual */
+.rbc-off-range-bg {
+  background-color: rgba(0,0,0,0.2) !important;
+}
+
+.rbc-off-range .rbc-date-cell a,
+.rbc-off-range .rbc-date-cell span {
+  opacity: 0.4;
+}
+
+/* ================================
+   BORDE GENERAL DEL CALENDARIO
+================================ */
+.rbc-month-view {
+  border: 2px solid var(--color-light) !important;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rbc-time-view {
+  border: 1px solid var(--color-light) !important;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ================================
+   EVENTOS
+================================ */
+.rbc-event {
+  background-color: var(--color-mid) !important;
+  border: none !important;
+  border-left: 3px solid var(--color-darkest) !important;
+  color: var(--text-white) !important;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 5px;
+  /*box-shadow: 0 1px 3px rgba(0,0,0,0.2);*/
+  outline: none !important;
+}
+
+.rbc-event:hover {
+  background-color: var(--color-dark) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.rbc-event.rbc-selected {
+  background-color: var(--color-darkest) !important;
+}
+
+/* Quita el outline negro al seleccionar */
+.rbc-event:focus {
+  outline: none !important;
+}
+
+/* "+X more" */
+.rbc-show-more {
+  color: var(--color-dark) !important;
+  font-weight: 700;
+  font-size: 0.65rem;
+  background: transparent !important;
+  outline: none !important;
+  border: none !important;
+}
+
+.rbc-show-more:hover {
+  color: var(--color-darkest) !important;
+  text-decoration: underline;
+  border: none !important;
+}
+
+/* ================================
+   VISTA SEMANA / DÍA
+================================ */
+.rbc-time-header-content {
+  border-color: var(--color-light) !important;
+}
+
+.rbc-timeslot-group {
+  border-color: var(--color-light) !important;
+}
+
+.rbc-time-content {
+  border-color: var(--color-light) !important;
+}
+
+.rbc-time-slot {
+  border-color: var(--color-accent) !important;
+}
+
+.rbc-current-time-indicator {
+  background-color: var(--color-mid) !important;
+}
+
+
+
+
+
+/* Eliminar TODAS las líneas negras */
+.rbc-month-row,
+.rbc-row,
+.rbc-row-content,
+.rbc-row-segment,
+.rbc-event-row,
+.rbc-events-container,
+.rbc-row-bg,
+.rbc-date-cell,
+.rbc-month-header {
+  /*border-color: var(--color-light) !important;*/
+  border-bottom: 0px solid var(--color-light) !important;
+  outline: none !important;
+}
+
+/* La línea negra específica que aparece debajo del número del día */
+.rbc-row-content .rbc-row:first-child {
+  border-bottom: 2px solid var(--color-light) !important;
+}
+
+/* Eliminar outline/border de eventos seleccionados */
+.rbc-event,
+.rbc-event:focus,
+.rbc-event:active,
+.rbc-event.rbc-selected {
+  outline: none !important;
+  box-shadow: none !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+}
+
+/* Forzar borde solo izquierdo en eventos */
+.rbc-event {
+  border-left: 3px solid var(--color-darkest) !important;
+}
+
+
+
+/* ================================
+   BOTÓN MOSTRAR/OCULTAR COMPLETADAS
+================================ */
+.btn-completadas {
+  --color: var(--color-accent);
+  --background: var(--color-light);
+  --background-hover: var(--color-light);
+  --border-radius: 0%;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  filter: drop-shadow(0 0 4px var(--color-accent));
+  /*
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  */
+}
+
+.btn-completadas:hover {
+  --color: var(--text-white);
+  --background: var(--color-light);
+  --background-hover: var(--color-light);
+  --border-radius: 100%;
+}
+
+/* Cuando está activo (mostrando completadas) */
+.btn-completadas--activo {
+  --color: var(--text-white);
+  --background: var(--color-light);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px var(--color-accent));
+}
+
+
+
+

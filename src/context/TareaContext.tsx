@@ -27,9 +27,15 @@ export interface TareaCreate {
   estado: string;
   tipo_tarea: string;
   descripcion: string;
-  // frecuencia: string;  // COMENTADO - puede usarse en el futuro
   fecha_prevista: string;
   logistica: string;
+}
+
+export interface TareaEdit {
+  id_operario: number;
+  tipo_tarea: string;
+  descripcion: string;
+  fecha_prevista: string;
 }
 
 
@@ -42,6 +48,7 @@ interface TareaContextType {
   loading: boolean;
   addTarea: (tarea: TareaCreate) => Promise<void>;
   completarTarea: (id_tarea: number) => Promise<void>;
+  editarTarea: (id_tarea: number, tarea: TareaEdit) => Promise<void>;
 }
 
 export const TareaContext  = createContext<TareaContextType>({
@@ -49,6 +56,7 @@ export const TareaContext  = createContext<TareaContextType>({
   loading: true,
   addTarea: async () => {},
   completarTarea: async (id_tarea: number) => {},
+  editarTarea: async () => {},
 });
 
 
@@ -179,8 +187,35 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+
+  const editarTarea = async (id_tarea: number, tarea: TareaEdit) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`/api/tarea/${id_tarea}/editar`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(tarea),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Error editando tarea:", text);
+        throw new Error(`Error editando tarea: ${res.status}`);
+      }
+
+      await fetchTareas();
+    } catch (err) {
+      console.error("Error editarTarea:", err);
+    }
+  };
+
   return (
-    <TareaContext.Provider value={{ tareas, loading, addTarea, completarTarea }}>
+    <TareaContext.Provider value={{ tareas, loading, addTarea, completarTarea, editarTarea }}>
       {children}
     </TareaContext.Provider>
   );
