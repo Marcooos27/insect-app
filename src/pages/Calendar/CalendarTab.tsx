@@ -104,6 +104,7 @@ const CalendarTab: React.FC = () => {
         <div className="calendar-wrapper">
           <Calendar
             localizer={localizer}
+            culture="es"
             events={events}
             startAccessor="start"
             endAccessor="end"
