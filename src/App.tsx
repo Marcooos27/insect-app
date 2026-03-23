@@ -158,7 +158,7 @@ const App: React.FC = () => {
                     <Redirect exact from="/" to="/login" />
                   </IonRouterOutlet>
 
-                  <IonTabBar slot="bottom">
+                  <IonTabBar slot="bottom" style={{ display: user ? 'flex' : 'none' }}>
                     {!user && (
                       <IonTabButton tab="login" href="/login">
                         <IonIcon aria-hidden="true" icon={logIn} />

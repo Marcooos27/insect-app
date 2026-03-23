@@ -2,22 +2,22 @@ import { useState } from "react";
 import {
   IonPage,
   IonContent,
-  IonItem,
-  IonLabel,
   IonInput,
   IonButton,
   IonSelect,
   IonSelectOption,
-  IonToast
+  IonToast,
+  IonIcon,
 } from "@ionic/react";
-
+import { mailOutline, lockClosedOutline, personOutline, shieldOutline, keyOutline, leafOutline } from "ionicons/icons";
 import { useHistory } from "react-router";
+import "./LoginPage.css";
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("user"); // por defecto
+  const [rol, setRol] = useState("user");
   const [toastMsg, setToastMsg] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
@@ -43,7 +43,6 @@ const Register: React.FC = () => {
       }
 
       setToastMsg("Usuario creado correctamente. Vuelve al login.");
-      // opcional: redirigir automáticamente después de 2 seg
       setTimeout(() => history.push("/login"), 2000);
 
     } catch (err) {
@@ -54,63 +53,93 @@ const Register: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent className="ion-padding">
+      <IonContent className="login-content">
 
-        <h2>Crear Usuario</h2>
+        <div className="login-container">
 
-        <IonItem>
-          <IonLabel position="floating">Email</IonLabel>
-          <IonInput
-            value={email}
-            onIonChange={e => setEmail(e.detail.value!)}
-          />
-        </IonItem>
+          <div className="login-header">
+            <IonIcon icon={leafOutline} className="login-logo-icon" />
+            <h1 className="login-title">InsectEat</h1>
+            <p className="login-subtitle">Crear cuenta nueva</p>
+          </div>
 
-        <IonItem>
-          <IonLabel position="floating">Nombre de Usuario</IonLabel>
-          <IonInput
-            value={username}
-            onIonChange={e => setUsername(e.detail.value!)}
-          />
-        </IonItem>
+          <div className="login-form">
 
-        <IonItem>
-          <IonLabel position="floating">Contraseña</IonLabel>
-          <IonInput
-            type="password"
-            value={password}
-            onIonChange={e => setPassword(e.detail.value!)}
-          />
-        </IonItem>
+            <div className="login-field">
+              <IonIcon icon={mailOutline} className="login-field-icon" />
+              <IonInput
+                type="email"
+                placeholder="Email"
+                value={email}
+                onIonChange={e => setEmail(e.detail.value!)}
+                className="login-input"
+              />
+            </div>
 
-        <IonItem>
-          <IonLabel>Rol</IonLabel>
-          <IonSelect
-            value={rol}
-            placeholder="Selecciona un rol"
-            onIonChange={e => setRol(e.detail.value)}
-          >
-            <IonSelectOption value="user">Usuario</IonSelectOption>
-            <IonSelectOption value="admin">Administrador</IonSelectOption>
-          </IonSelect>
-        </IonItem>
+            <div className="login-field">
+              <IonIcon icon={personOutline} className="login-field-icon" />
+              <IonInput
+                placeholder="Nombre de usuario"
+                value={username}
+                onIonChange={e => setUsername(e.detail.value!)}
+                className="login-input"
+              />
+            </div>
 
-        <IonItem>
-          <IonLabel position="floating">Contraseña de Administrador</IonLabel>
-          <IonInput
-            type="password"
-            onIonChange={e => setAdminPassword(e.detail.value!)}
-          />
-        </IonItem>
+            <div className="login-field">
+              <IonIcon icon={lockClosedOutline} className="login-field-icon" />
+              <IonInput
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onIonChange={e => setPassword(e.detail.value!)}
+                className="login-input"
+              />
+            </div>
 
+            <div className="login-field">
+              <IonIcon icon={shieldOutline} className="login-field-icon" />
+              <IonSelect
+                value={rol}
+                placeholder="Selecciona un rol"
+                onIonChange={e => setRol(e.detail.value)}
+                className="login-select"
+              >
+                <IonSelectOption value="user">Operario</IonSelectOption>
+                <IonSelectOption value="admin">Administrador</IonSelectOption>
+              </IonSelect>
+            </div>
 
-        <IonButton expand="full" onClick={handleRegister}>
-          Crear Usuario
-        </IonButton>
+            <div className="login-field">
+              <IonIcon icon={keyOutline} className="login-field-icon" />
+              <IonInput
+                type="password"
+                placeholder="Contraseña de administrador"
+                onIonChange={e => setAdminPassword(e.detail.value!)}
+                className="login-input"
+              />
+            </div>
 
-        <IonButton expand="full" fill="outline" onClick={() => history.push("/login")}>
-          Volver al Login
-        </IonButton>
+            <IonButton
+              expand="block"
+              className="login-btn-primary"
+              onClick={handleRegister}
+            >
+              Crear cuenta
+            </IonButton>
+
+            <IonButton
+              expand="block"
+              fill="clear"
+              className="login-btn-secondary"
+              onClick={() => history.push("/login")}
+            >
+              Volver al login
+            </IonButton>
+
+          </div>
+
+        </div>
 
         <IonToast
           isOpen={!!toastMsg}

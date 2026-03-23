@@ -18,7 +18,7 @@ const AssignTask: React.FC = () => {
   const [descripcion, setDescripcion] = useState('');
   const [fechaPrevista, setFechaPrevista] = useState<string>('');
 
-  const [frecuencia, setFrecuencia] = useState<'sin-frecuencia' | 'diaria' | 'semanal'>('sin-frecuencia');
+  const [frecuencia, setFrecuencia] = useState<'sin-frecuencia' | 'diaria' | 'semanal' | ''>('');
   const [fechaInicio, setFechaInicio] = useState<string>('');
   const [showModalInicio, setShowModalInicio] = useState(false);
   const [showConfirmAlert, setShowConfirmAlert] = useState(false);
@@ -29,16 +29,16 @@ const AssignTask: React.FC = () => {
 
   const ultimaAsignacion = useRef<number | null>(null);
 
-  const handleFrecuenciaChange = (val: 'sin-frecuencia' | 'diaria' | 'semanal') => {
+  const handleFrecuenciaChange = (val: 'sin-frecuencia' | 'diaria' | 'semanal' | '') => {
     setFrecuencia(val);
     setFechaInicio('');
-    if (val !== 'sin-frecuencia') {
+    if (val !== 'sin-frecuencia' && val !== '') {
       setShowModalInicio(true);
     }
   };
 
   const validarCampos = () => {
-    if (!idOperario || !tipoTarea || !descripcion || !fechaPrevista) {
+    if (!idOperario || !tipoTarea || !descripcion || !fechaPrevista || frecuencia === '') {
       setToastMsg("Por favor, rellena todos los campos");
       setShowToast(true);
       return false;
@@ -203,6 +203,7 @@ const AssignTask: React.FC = () => {
           <IonLabel position="stacked">Frecuencia</IonLabel>
           <IonSelect
             value={frecuencia}
+            placeholder="Selecciona frecuencia"
             onIonChange={e => handleFrecuenciaChange(e.detail.value)}
           >
             <IonSelectOption value="sin-frecuencia">Sin frecuencia</IonSelectOption>

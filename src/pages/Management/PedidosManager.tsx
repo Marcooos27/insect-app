@@ -46,7 +46,7 @@ const PedidosManager = () => {
   };
 
   return (
-    <IonPage>
+    <IonPage className="pedidos-page">
       <IonHeader>
         <IonToolbar>
           <IonTitle>Gestión de Pedidos</IonTitle>

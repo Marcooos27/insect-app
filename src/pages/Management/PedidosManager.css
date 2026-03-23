@@ -1,22 +1,73 @@
-.pedidos-page .ion-padding {
-  padding: 16px;
+/* Fondo */
+.pedidos-page ion-content {
+  --background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
 }
 
-.pedidos-page .ion-text-center {
-  text-align: center;
+/* Toolbar */
+.pedidos-page ion-toolbar {
+  --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
+  --color: var(--text-white);
 }
 
-.pedidos-page ion-item h2 {
-  margin: 0;
+.pedidos-page ion-title {
+  font-weight: 700;
+  letter-spacing: 0.5px;
   font-size: 1rem;
+  text-transform: uppercase;
 }
 
-.pedidos-page ion-item p {
+/* Botón añadir en toolbar */
+.pedidos-page ion-toolbar ion-button {
+  --background: var(--color-mid);
+  --color: var(--text-white);
+  --border-radius: 50%;
+  --ripple-color: transparent;
+}
+
+/* Lista */
+.pedidos-page ion-list {
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  padding-bottom: 80px;
+}
+
+/* Cada item */
+.pedidos-page ion-item {
+  --background: rgba(255,255,255,0.07);
+  --border-color: transparent;
+  --inner-border-width: 0;
+  --padding-start: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.pedidos-page ion-item::part(native) {
+  border-radius: 12px;
+}
+
+.pedidos-page ion-item:hover {
+  --background: rgba(255,255,255,0.12);
+  transform: translateX(4px);
+}
+
+.pedidos-page ion-label h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.pedidos-page ion-label p {
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  opacity: 0.8;
   margin: 2px 0;
-  font-size: 0.85rem;
 }
 
-/* adaptación de botones en lista */
-.pedidos-page ion-button[fill="clear"] {
-  margin-left: 6px;
+.pedidos-page ion-button[color="danger"] {
+  --color: #e74c3c;
+  --ripple-color: transparent;
 }

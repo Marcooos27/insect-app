@@ -7,37 +7,46 @@ import {
   IonSelectOption,
   IonDatetime,
   IonButton,
-  IonList
+  IonList,
+  IonToast
 } from "@ionic/react";
 
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { TareaContext } from "../../context/TareaContext";
 import { OperarioContext } from "../../context/OperarioContext";
 import "./CompletedTask.css";
 
-
-  // Función helper fuera del componente
-  const getEstadoPuntualidad = (fecha_prevista: string | null, fecha_completada: string | null) => {
-    if (!fecha_prevista || !fecha_completada) return "sin-datos";
-    const prevista = new Date(fecha_prevista.split("T")[0]);
-    const completada = new Date(fecha_completada.split("T")[0]);
-    return completada <= prevista ? "a-tiempo" : "tarde";
-  };
-
+const getEstadoPuntualidad = (fecha_prevista: string | null, fecha_completada: string | null) => {
+  if (!fecha_prevista || !fecha_completada) return "sin-datos";
+  const prevista = new Date(fecha_prevista.split("T")[0]);
+  const completada = new Date(fecha_completada.split("T")[0]);
+  return completada <= prevista ? "a-tiempo" : "tarde";
+};
 
 const CompletedTasks: React.FC = () => {
 
   const { tareas } = useContext(TareaContext);
   const { operarios } = useContext(OperarioContext);
 
-  const [operarioFiltro, setOperarioFiltro] = useState<number | null>(null);
+  const [operarioFiltro, setOperarioFiltro] = useState<number | null | undefined>(undefined);
   const [fechaFiltro, setFechaFiltro] = useState<string>("");
   const [tareasFiltradas, setTareasFiltradas] = useState<any[]>([]);
+  const [toastMsg, setToastMsg] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  
 
   const filtrar = () => {
+    if (operarioFiltro === undefined && !fechaFiltro) {
+      setToastMsg("Selecciona al menos un operario o una fecha");
+      setShowToast(true);
+      return;
+    }
+
     let filtradas = tareas.filter(t => t.estado === "Completada");
 
-    if (operarioFiltro) {
+    // null = "Todos" → no filtra por operario
+    // number = operario concreto → filtra
+    if (operarioFiltro !== undefined && operarioFiltro !== null) {
       filtradas = filtradas.filter(t => t.id_operario === operarioFiltro);
     }
 
@@ -61,7 +70,7 @@ const CompletedTasks: React.FC = () => {
           <IonLabel position="stacked">Operario</IonLabel>
           <IonSelect
             value={operarioFiltro}
-            placeholder="Todos"
+            placeholder="Selecciona operario"
             onIonChange={e => setOperarioFiltro(e.detail.value)}
           >
             <IonSelectOption value={null}>Todos</IonSelectOption>
@@ -108,7 +117,6 @@ const CompletedTasks: React.FC = () => {
               >
                 <IonLabel className="completed-task-label">
 
-                  {/* Badge de puntualidad */}
                   <div className="puntualidad-badge">
                     {puntualidad === "a-tiempo" && (
                       <span className="badge badge-ok">✓ A tiempo</span>
@@ -122,19 +130,19 @@ const CompletedTasks: React.FC = () => {
                   </div>
 
                   <div className="completed-task-row">
-                    <span className="completed-task-key">Operario: </span>
+                    <span className="completed-task-key">Operario:</span>
                     <span className="completed-task-value">
                       {operarios.find(op => op.id_operario === t.id_operario)?.nombre ?? t.id_operario}
                     </span>
                   </div>
 
                   <div className="completed-task-row">
-                    <span className="completed-task-key">Descripción: </span>
+                    <span className="completed-task-key">Descripción:</span>
                     <span className="completed-task-value">{t.descripcion}</span>
                   </div>
 
                   <div className="completed-task-row">
-                    <span className="completed-task-key">Entrega: </span>
+                    <span className="completed-task-key">Entrega:</span>
                     <span className="completed-task-value">
                       {t.fecha_prevista
                         ? (() => {
@@ -146,7 +154,7 @@ const CompletedTasks: React.FC = () => {
                   </div>
 
                   <div className="completed-task-row">
-                    <span className="completed-task-key">Completada: </span>
+                    <span className="completed-task-key">Completada:</span>
                     <span className="completed-task-value">
                       {t.fecha_completada
                         ? (() => {
@@ -167,6 +175,14 @@ const CompletedTasks: React.FC = () => {
           </IonItem>
         )}
       </IonList>
+
+      <IonToast
+        isOpen={showToast}
+        onDidDismiss={() => setShowToast(false)}
+        message={toastMsg}
+        duration={2500}
+        color="warning"
+      />
 
     </div>
   );

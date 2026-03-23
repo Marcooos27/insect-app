@@ -1,4 +1,6 @@
-/* Toolbar */
+/* ================================
+   TOOLBAR
+================================ */
 .calendar-toolbar {
   --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
   --color: var(--text-white);
@@ -12,7 +14,7 @@
 
 /* Fondo contenido */
 .calendar-content {
-  --background: var(--color-white);
+  --background: var(--color-dark);
 }
 
 /* Wrapper del calendario */
@@ -127,6 +129,8 @@
 /* Número del día — fondo verde suave */
 .rbc-date-cell {
   padding: 2px 3px;
+  text-align: center;
+  background-color: rgba(144, 150, 50, 0.18) !important;
 }
 
 .rbc-date-cell a,

@@ -1,59 +1,42 @@
-:root {
 
-  /* === GRADIENTE HOME === */
-  --home-gradient-start: #80B155;
-  --home-gradient-end: #336A29;
-
-  /* === GLASS EFECTOS === */
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.12);
-
-  /* === SEGMENT ACTIVE === */
-  --segment-active-start: #EAEF9D;
-  --segment-active-end: #80B155;
-}
-
-
-
-
-
-
-
-/* Fondo de toda la página */
+/* ================================
+   PÁGINA Y FONDO
+================================ */
 .homepage {
   --background: linear-gradient(
-    135deg,
-    var(--home-gradient-start),
-    var(--home-gradient-end)
+    150deg,
+    var(--color-mid) 0%,
+    var(--color-dark) 50%,
+    var(--color-darkest) 100%
   );
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Contenido principal */
+
 .homepage-content {
-  padding: 20px;
-  background: var(--glass-bg);; /* efecto translúcido */
-  backdrop-filter: blur(12px); /* efecto glassmorphism */
-  min-height: 100vh; /* restando altura del header */
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  --background: transparent;
+  min-height: 100vh;
 }
 
 
 
+/* ================================
+   SEGMENTO
+================================ */
 .homepage-segment {
-  --background: var(--glass-bg);
-  --border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+  --background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  margin: 16px 16px 0 16px; /* igual a ambos lados */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+  width: calc(100% - 32px); /* ocupa todo menos los márgenes */
 }
 
 
 .homepage-seg-btn {
-  --color: var(--text-secondary);
-  --color-checked: var(--color-darkest);
+  --color: rgba(105, 140, 93, 1);
+  --color-checked: var(--color-white);
   --indicator-color: transparent;
   --border-radius: 10px;
   font-weight: 600;
@@ -78,100 +61,39 @@
 }
 
 
-/* Botones del segmento */
-.segment-button {
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  color: var(--text-secondary);
-}
-
-.segment-button.activated {
-  background: linear-gradient(
-    135deg,
-    var(--segment-active-start),
-    var(--segment-active-end)
-  );
-  color: #fff !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
 
 
-/* Botón LIST */
-.segment-button.list-button {
-  --color-checked: var(--color-dark);
-  --btn-bg: var(--color-dark);
-  --btn-bg-active: var(--color-light);
-}
-.segment-button.list-button.activated {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-light));
-  color: #fff !important;
-}
-
-/* Botón ASSIGN */
-.segment-button.assign-button {
-  --color-checked: var(--color-light);
-  --btn-bg: var(--color-light);
-  --btn-bg-active: var(--color-light);
-}
-.segment-button.assign-button.activated {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-light));
-  color: #fff !important;
-}
-
-
-
-/* Contenedor de las tarjetas (TaskList / AssignTask) */
+/* ================================
+   CONTENEDOR CARDS
+================================ */
 .card-container {
+  padding: 16px;
+  padding-bottom: 80px; /* margen inferior tab bar */
   display: grid;
+  flex-direction: column;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
 }
 
-/* Tarjetas internas */
-.home-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
 
-.home-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 35px rgba(0,0,0,0.45);
-}
 
-/* Títulos dentro de las tarjetas */
-.home-card h1,
-.home-card h2 {
-  color: var(--text-primary);
-}
 
-/* Texto normal */
-.home-card p,
-.home-card span {
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* Scroll */
+/* ================================
+   SCROLL
+================================ */
 .homepage-content::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .homepage-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
 }
 
 .homepage-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255,255,255,0.2);
   border-radius: 8px;
 }
 
 .homepage-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255,255,255,0.35);
 }

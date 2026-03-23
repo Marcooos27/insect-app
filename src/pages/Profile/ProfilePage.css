@@ -101,3 +101,17 @@
   font-weight: 700;
   letter-spacing: 0.5px;
 }
+
+
+.profile-logout-btn:hover {
+  --background: rgba(220, 50, 50, 0.6);/*
+  --background-hover: rgba(220, 50, 50, 0.9);
+  --background-activated: rgba(180, 30, 30, 0.9);*/
+  --ripple-color: transparent;
+  --border-radius: 12px;
+  --color: #fff;
+  --box-shadow: 0 4px 15px rgba(220, 50, 50, 0.4);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+  
