@@ -43,8 +43,9 @@ const Login = () => {
             <div className="login-field">
               <IonIcon icon={mailOutline} className="login-field-icon" />
               <IonInput
+                label="Email" // Texto que va a flotar
+                labelPlacement="floating" //Activo el efecto de flotar
                 type="email"
-                placeholder="Email"
                 value={email}
                 onIonChange={e => setEmail(e.detail.value!)}
                 className="login-input"
@@ -54,8 +55,9 @@ const Login = () => {
             <div className="login-field">
               <IonIcon icon={lockClosedOutline} className="login-field-icon" />
               <IonInput
+                label="Contraseña"
+                labelPlacement="floating"
                 type="password"
-                placeholder="Contraseña"
                 value={password}
                 onIonChange={e => setPassword(e.detail.value!)}
                 className="login-input"

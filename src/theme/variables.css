@@ -91,10 +91,12 @@ http://ionicframework.com/docs/theming/ */
   --color-light:    #99a558;
   --color-accent:   #d8dda8;
   --color-white:    #f1f2e3;
+  --color-black:    #000000;
 
   --text-primary:   #13160f;
   --text-secondary: #36441b;
   --text-white:     #e5e7d2;
+  --text-accent:    #d8dda8;
 }
 
 
@@ -105,11 +107,63 @@ http://ionicframework.com/docs/theming/ */
 /* ------------------------------------------------------- */
 ion-tab-bar {
   --background: var(--color-darkest);
-  --color: var(--color-light);
-  --color-selected: var(--color-white);
+  height: 75px;
+  position: relative;
+  border: none;
+  display: flex;
+  /*justify-content: space-around;*/
+  align-items: center;
+  overflow: visible !important;
 }
 
+
+/* --- ESTILOS DE LOS BOTONES --- */
 ion-tab-button {
-  --color: var(--color-light);
   --color-selected: var(--color-white);
+  --color: rgba(255, 255, 255, 0.7);
+  background: transparent !important;
+}
+
+ion-tab-button.tab-selected ion-icon {
+  transform: translateY(-5px) scale(1.15);
+  transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  color: white;
+}
+
+ion-tab-button.tab-selected ion-label {
+  font-weight: bold;
+  font-size: 11px;
+  transform: translateY(-2px);
+}
+
+
+
+
+
+
+
+/* Estilo base para todos los iconos */
+ion-tab-button ion-icon {
+  font-size: 28px;
+  transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), color 0.2s ease;
+  --ion-icon-stroke-width: 32px; /* Hace el delineado un poco más fino/grueso si quieres */
+}
+
+/* Cuando el botón está seleccionado */
+ion-tab-button.tab-selected ion-icon {
+  transform: translateY(-5px) scale(1.1); /* Efecto de salto sutil */
+  color: var(--color-white);
+}
+
+/* Efecto para el texto (Label) */
+ion-tab-button ion-label {
+  transition: all 0.2s ease;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+ion-tab-button.tab-selected ion-label {
+  opacity: 1;
+  font-weight: 700;
+  transform: translateY(-2px);
 }

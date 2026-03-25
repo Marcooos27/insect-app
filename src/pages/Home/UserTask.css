@@ -5,7 +5,28 @@
 .usertask-card {
   position: relative;
   overflow: hidden;
+
+  /* --- ESTO ES LO QUE DEBES AÑADIR --- */
+  margin-bottom: 20px;   /* Espacio entre cada tarjeta */
+  border-radius: 12px;   /* Para que las esquinas no se vean tan rectas al separarse */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Opcional: les da profundidad al estar sueltas */
 }
+
+/* Evita que la última tarea tenga margen extra al final */
+.usertask-card:last-child {
+  margin-bottom: 0;
+}
+
+
+/* Lista interna  añadido para la separacion entre tareas*/
+.user-list {
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
 
 /* Franja superior de color según tipo */
 .usertask-card::before {

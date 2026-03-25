@@ -91,7 +91,7 @@ const UserTasks: React.FC<Props> = ({ tipo }) => {
 
         <IonCardContent>
 
-          <IonList>
+          <IonList className="user-list">
 
             {tareasFiltradas.length > 0 ? (
               tareasFiltradas.map((t) => (

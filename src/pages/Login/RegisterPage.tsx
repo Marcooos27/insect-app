@@ -9,7 +9,7 @@ import {
   IonToast,
   IonIcon,
 } from "@ionic/react";
-import { mailOutline, lockClosedOutline, personOutline, shieldOutline, keyOutline, leafOutline } from "ionicons/icons";
+import { mailOutline, lockClosedOutline, personOutline, shieldOutline, keyOutline, leafOutline, chevronDownOutline } from "ionicons/icons";
 import { useHistory } from "react-router";
 import "./LoginPage.css";
 
@@ -17,7 +17,7 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("user");
+  const [rol, setRol] = useState("");
   const [toastMsg, setToastMsg] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
@@ -68,8 +68,9 @@ const Register: React.FC = () => {
             <div className="login-field">
               <IonIcon icon={mailOutline} className="login-field-icon" />
               <IonInput
+                label="Email"
+                labelPlacement="floating"
                 type="email"
-                placeholder="Email"
                 value={email}
                 onIonChange={e => setEmail(e.detail.value!)}
                 className="login-input"
@@ -79,7 +80,8 @@ const Register: React.FC = () => {
             <div className="login-field">
               <IonIcon icon={personOutline} className="login-field-icon" />
               <IonInput
-                placeholder="Nombre de usuario"
+                label="Nombre de usuario"
+                labelPlacement="floating"
                 value={username}
                 onIonChange={e => setUsername(e.detail.value!)}
                 className="login-input"
@@ -89,8 +91,9 @@ const Register: React.FC = () => {
             <div className="login-field">
               <IonIcon icon={lockClosedOutline} className="login-field-icon" />
               <IonInput
+                label="Contraseña"
+                labelPlacement="floating"
                 type="password"
-                placeholder="Contraseña"
                 value={password}
                 onIonChange={e => setPassword(e.detail.value!)}
                 className="login-input"
@@ -100,10 +103,13 @@ const Register: React.FC = () => {
             <div className="login-field">
               <IonIcon icon={shieldOutline} className="login-field-icon" />
               <IonSelect
+                label="Selecciona un rol"
+                labelPlacement="floating"
                 value={rol}
-                placeholder="Selecciona un rol"
                 onIonChange={e => setRol(e.detail.value)}
                 className="login-select"
+                toggleIcon={chevronDownOutline} // Opcional: icono de flecha
+                interface="popover" // Opcional: queda muy bien en móvil
               >
                 <IonSelectOption value="user">Operario</IonSelectOption>
                 <IonSelectOption value="admin">Administrador</IonSelectOption>
@@ -113,8 +119,9 @@ const Register: React.FC = () => {
             <div className="login-field">
               <IonIcon icon={keyOutline} className="login-field-icon" />
               <IonInput
+                label="Contraseña de administrador"
+                labelPlacement="floating"
                 type="password"
-                placeholder="Contraseña de administrador"
                 onIonChange={e => setAdminPassword(e.detail.value!)}
                 className="login-input"
               />

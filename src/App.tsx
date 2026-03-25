@@ -10,9 +10,17 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { home, calendar, barChart, settings, logIn, person} from 'ionicons/icons';
+import { 
+  receipt, receiptOutline,
+  calendar, calendarOutline, 
+  barChart, barChartOutline, 
+  settings, settingsOutline, 
+  logIn, logInOutline, 
+  person, personOutline, 
+} from 'ionicons/icons';
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import React, { useState } from 'react';
 
 
 /* Importamos las páginas principales */
@@ -59,6 +67,8 @@ setupIonicReact();
 
 const App: React.FC = () => {
   const { loading, user } = useAuth();
+
+  const [activeTab, setActiveTab] = useState('home'); 
 
   if (loading) {
     return <div>Cargando...</div>;
@@ -158,7 +168,12 @@ const App: React.FC = () => {
                     <Redirect exact from="/" to="/login" />
                   </IonRouterOutlet>
 
-                  <IonTabBar slot="bottom" style={{ display: user ? 'flex' : 'none' }}>
+                  <IonTabBar 
+                    slot="bottom" 
+                    style={{ display: user ? 'flex' : 'none' }} 
+                    onIonTabsDidChange={(e: any) => setActiveTab(e.detail.tab)} // Actualiza el estado
+                    >
+
                     {!user && (
                       <IonTabButton tab="login" href="/login">
                         <IonIcon aria-hidden="true" icon={logIn} />
@@ -167,7 +182,7 @@ const App: React.FC = () => {
                     )}
 
                     <IonTabButton tab="home" href="/home">
-                      <IonIcon aria-hidden="true" icon={home} />
+                      <IonIcon icon={activeTab === 'home' ? receipt : receiptOutline} />
                       <IonLabel>Tareas</IonLabel>
                     </IonTabButton>
 
@@ -175,7 +190,7 @@ const App: React.FC = () => {
                     {/* DESPUÉS - todos los usuarios logueados */}
                     {user && (
                         <IonTabButton tab="calendar" href="/calendar">
-                          <IonIcon aria-hidden="true" icon={calendar} />
+                          <IonIcon icon={activeTab === 'calendar' ? calendar : calendarOutline} />
                           <IonLabel>Calendario</IonLabel>
                         </IonTabButton>
                     )}
@@ -183,14 +198,14 @@ const App: React.FC = () => {
                     {/* SOLO ADMIN */}
                     {user?.rol === "admin" && (
                         <IonTabButton tab="dashboard" href="/dashboard">
-                          <IonIcon aria-hidden="true" icon={barChart} />
+                          <IonIcon icon={activeTab === 'dashboard' ? barChart : barChartOutline} />
                           <IonLabel>Gráficos</IonLabel>
                         </IonTabButton>
                     )}
 
                     {user?.rol === "admin" && (
                         <IonTabButton tab="managements" href="/managements">
-                          <IonIcon aria-hidden="true" icon={settings} />
+                          <IonIcon icon={activeTab === 'managements' ? settings : settingsOutline} />
                           <IonLabel>Gestión</IonLabel>
                         </IonTabButton>
                     )}
@@ -198,7 +213,7 @@ const App: React.FC = () => {
 
                     {user && (
                       <IonTabButton tab="Perfil" href="/profile">
-                        <IonIcon aria-hidden="true" icon={person} />
+                        <IonIcon icon={activeTab === 'Perfil' ? person : personOutline} />
                         <IonLabel>Perfil</IonLabel>
                       </IonTabButton>
                     )}

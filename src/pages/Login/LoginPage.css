@@ -42,11 +42,20 @@
   letter-spacing: 1px;
 }
 
-/* Formulario */
+
+
+/* ================================
+   FORMULARIO
+================================ */
 .login-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  /* --- ESTO ES LO QUE DEBES TOCAR --- */
+  width: 100%;           /* Ocupa el ancho disponible... */
+  max-width: 600px;      /* ...pero como máximo 400px (ajusta este número) */
+  margin: 0 auto;        /* Centra el bloque de los campos en el medio */
 }
 
 .login-field {
@@ -74,14 +83,34 @@
 
 .login-input {
   --color: var(--text-white);
-  --placeholder-color: rgba(255,255,255,0.4);
-  --background: transparent;
+  --highlight-color-focused: var(--color-accent); /* Color de la línea al clickar */
+  /*--background: transparent;
   --padding-start: 0;
-  font-size: 0.95rem;
+  font-size: 0.95rem;*/
   flex: 1;
 }
 
-/* Botones */
+
+/* Personalización de la etiqueta (label) */
+
+.login-input::part(label) {
+  color: rgba(255, 255, 255, 0.5); /* Color apagado cuando está quieta */
+  transition: all 0.3s ease;
+}
+
+/* Opcional: Si quieres que el contenedor brille cuando el input interno tiene foco */
+
+.login-field:focus-within {
+  border-color: var(--color-accent);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+
+
+
+/* ================================
+   BOTONES
+================================ */
 .login-btn-primary {
   --background: var(--color-mid);
   --background-activated: var(--color-dark);
@@ -93,6 +122,8 @@
   font-weight: 700;
   letter-spacing: 0.5px;
   margin-top: 8px;
+
+  width: 100%; /* Para que se ajusten al ancho del .login-form centrado */
 }
 
 .login-btn-secondary {
@@ -100,6 +131,8 @@
   --ripple-color: transparent;
   font-size: 0.85rem;
   opacity: 0.8;
+
+  width: 100%; /* Para que se ajusten al ancho del .login-form centrado */
 }
 
 .login-btn-secondary:hover {
@@ -112,11 +145,27 @@
 
 
 
-/* REGISTER */
+/* ================================
+   REGISTER
+================================ */
 
 .login-select {
-  --color: var(--text-white);
+  --color: var(--text-accent);
   --placeholder-color: rgba(255,255,255,0.4);
   flex: 1;
+  --highlight-color-focused: var(--color-accent);
   font-size: 0.95rem;
+}
+
+
+/* Color cuando está seleccionado o enfocado */
+.login-select.select-expanded::part(label),
+.login-select.has-value::part(label) {
+  color: var(--color-accent);
+}
+
+/* Ajuste para el texto seleccionado dentro del select */
+.login-select::part(placeholder),
+.login-select::part(text) {
+  padding-top: 8px; /* Espacio para que no choque con la etiqueta arriba */
 }
