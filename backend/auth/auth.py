@@ -158,6 +158,11 @@ def login(data: LoginRequest):
 
         email = data.email.strip().lower()
 
+        print(f">>> EMAIL recibido: '{email}'")
+        print(f">>> PASSWORD recibido: '{data.password}'")
+        print(f">>> PASSWORD longitud: {len(data.password)}")
+        print(f">>> PASSWORD bytes: {data.password.encode('utf-8')}")
+
         cur.execute("""
             SELECT id, password_hash, rol, username, email, id_operario
             FROM usuarios
@@ -167,7 +172,12 @@ def login(data: LoginRequest):
         user = cur.fetchone()
 
         if not user:
+            print(">>> USUARIO NO ENCONTRADO")
             raise HTTPException(status_code=401, detail="Usuario no encontrado")
+        
+        print(f">>> HASH EN BD: {user[1]}")
+        resultado = verify_password(data.password, user[1])
+        print(f">>> RESULTADO VERIFY: {resultado}")
 
         if not verify_password(data.password, user[1]):
             raise HTTPException(status_code=401, detail="Contraseña incorrecta")
