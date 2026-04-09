@@ -55,14 +55,14 @@ class ProfileUpdate(BaseModel):
 # HELPERS
 # ================================
 
-def hash_password(password: str):
-    truncated = password.encode("utf-8")[:72]
-    return pwd_context.hash(truncated)
-
-
 def verify_password(plain_password: str, hashed_password: str):
-    truncated = plain_password.encode("utf-8")[:72]
+    # Truncar a 72 caracteres (no bytes) y mantener como string
+    truncated = plain_password[:72]
     return pwd_context.verify(truncated, hashed_password)
+
+def hash_password(password: str):
+    truncated = password[:72]  # También aquí, string no bytes
+    return pwd_context.hash(truncated)
 
 
 # ================================
