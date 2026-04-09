@@ -6,7 +6,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 conn = get_connection()
 cur = conn.cursor()
 
-nueva_password = "la_password_que_quieras"
+nueva_password = "admin-Marcos"
 nuevo_hash = pwd_context.hash(nueva_password[:72])
 
 
