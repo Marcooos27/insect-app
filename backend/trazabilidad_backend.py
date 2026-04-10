@@ -46,7 +46,7 @@ def _get_lote_alimento_activo(cur):
         LIMIT 1
     """)
     row = cur.fetchone()
-    return dict(zip(["id_lote_alimento","descripcion"], row)) if row else None
+    return dict(zip(["id_lote_alimento", "descripcion"], row)) if row else None
 
 
 def _get_lote_huevo_activo(cur):
@@ -58,47 +58,40 @@ def _get_lote_huevo_activo(cur):
         LIMIT 1
     """)
     row = cur.fetchone()
-    return dict(zip(["id_lote_huevo","origen"], row)) if row else None
+    return dict(zip(["id_lote_huevo", "origen"], row)) if row else None
+
 
 
 def _get_pallet_y_engorde(cur, codigo_qr):
-
     try:
-        # Pallet
+        # Pallet + Engorde en una sola query (están en la misma tabla)
         cur.execute("""
-            SELECT id_pallet, estado, id_camara
-            FROM Pallet
+            SELECT id_pallet, estado, id_camara,
+                   id_lote_alimento_traz, id_lote_huevo_traz,
+                   fecha_entrada_camara, fecha_salida_prevista
+            FROM Engorde
             WHERE codigo_qr = %s
         """, [codigo_qr])
-        pallet = cur.fetchone()
+        row = cur.fetchone()
 
-        if not pallet:
+        if not row:
             return None, None
 
-        pallet_dict = dict(zip(["id_pallet", "estado", "id_camara"], pallet))
+        pallet_dict = {
+            "id_pallet": row[0],
+            "estado": row[1],
+            "id_camara": row[2],
+        }
 
-        # Último engorde
-        cur.execute("""
-            SELECT id_engorde, id_lote_alimento, id_lote_huevo,
-                fecha_entrada_camara, fecha_salida_prevista, estado
-            FROM Engorde
-            WHERE id_pallet = %s
-            ORDER BY id_engorde DESC
-            LIMIT 1
-        """, [pallet_dict["id_pallet"]])
-
-        engorde = cur.fetchone()
-
-        if engorde:
-            engorde_dict = dict(zip(
-                ["id_engorde","id_lote_alimento","id_lote_huevo",
-                "fecha_entrada_camara","fecha_salida_prevista","estado"],
-                engorde
-            ))
-        else:
-            engorde_dict = None
+        engorde_dict = {
+            "id_lote_alimento": row[3],
+            "id_lote_huevo": row[4],
+            "fecha_entrada_camara": row[5],
+            "fecha_salida_prevista": row[6],
+        }
 
         return pallet_dict, engorde_dict
+
     except Exception as e:
         print("ERROR EN FUNCION PALLET Y ENGORDE:", repr(e))
         raise
@@ -361,12 +354,15 @@ def montar_pallet(data: PalletMontadoIn):
 
         # Crear nuevo engorde
         cur.execute("""
-            INSERT INTO Engorde (id_pallet, id_lote_alimento, id_lote_huevo)
-            VALUES (%s, %s, %s)
+            UPDATE Engorde
+            SET id_lote_alimento_traz = %s,
+                id_lote_huevo_traz = %s,
+                estado = 'preparado'
+            WHERE codigo_qr = %s
         """, [
-            row[0],
             lote_alimento["id_lote_alimento"] if lote_alimento else None,
-            lote_huevo["id_lote_huevo"] if lote_huevo else None
+            lote_huevo["id_lote_huevo"] if lote_huevo else None,
+            data.codigo_qr_pallet
         ])
 
         # Cambiar estado pallet
@@ -472,9 +468,11 @@ def entrada_camara(data: EntradaCamaraIn):
         cur.execute("""
             UPDATE Engorde
             SET fecha_entrada_camara = %s,
-                fecha_salida_prevista = %s
-            WHERE id_pallet = %s
-        """, [hoy, salida, pallet[0]])
+                fecha_salida_prevista = %s,
+                estado = 'en_camara',
+                id_camara = %s
+            WHERE codigo_qr = %s
+        """, [hoy, salida, id_camara, data.codigo_qr_pallet])
 
         # Pallet
         cur.execute("""
@@ -510,14 +508,7 @@ def update_fecha_salida(codigo_qr: str, data: FechaSalidaUpdate):
         cur.execute("""
             UPDATE Engorde
             SET fecha_salida_prevista = %s
-            WHERE id_engorde = (
-                SELECT e.id_engorde
-                FROM Engorde e
-                JOIN Pallet p ON p.id_pallet = e.id_pallet
-                WHERE p.codigo_qr = %s
-                ORDER BY e.id_engorde DESC
-                LIMIT 1
-            )
+            WHERE codigo_qr = %s
         """, [data.fecha_salida_prevista, codigo_qr])
 
         if cur.rowcount == 0:
@@ -563,10 +554,10 @@ def salida_camara(data: SalidaCamaraIn):
 
         if data.confirmar:
             cur.execute("""
-                UPDATE Pallet
+                UPDATE Engorde
                 SET estado = 'desmontar', id_camara = NULL
-                WHERE id_pallet = %s
-            """, [pallet["id_pallet"]])
+                WHERE codigo_qr = %s
+            """, [data.codigo_qr_pallet])
 
             conn.commit()
 
