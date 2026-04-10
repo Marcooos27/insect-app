@@ -113,7 +113,7 @@ def _get_pallet_y_engorde(cur, codigo_qr):
     logger.info(f"EXEC _get_pallet_y_engorde con: {codigo_qr}")
 
     try:
-        # 1. BUSCAR PALLET
+        # 1. PALLET
         cur.execute("""
             SELECT id_pallet, estado, id_camara
             FROM Pallet
@@ -131,12 +131,14 @@ def _get_pallet_y_engorde(cur, codigo_qr):
             "id_camara": row[2],
         }
 
-        # 2. BUSCAR ÚLTIMO EVENTO
+        # 2. ÚLTIMO EVENTO
         cur.execute("""
             SELECT 
                 id_lote_alimento,
                 id_lote_huevo,
                 id_camara,
+                estado_anterior,
+                estado_nuevo,
                 metadata,
                 timestamp
             FROM engorde
@@ -150,32 +152,22 @@ def _get_pallet_y_engorde(cur, codigo_qr):
         if not engorde_row:
             return pallet_dict, None
 
-        # -----------------------------
-        # METADATA SAFE PARSING
-        # -----------------------------
-        metadata = engorde_row[3]
+        metadata = engorde_row[5]
 
+        # 🔥 FIX JSON TYPE SAFETY
         if isinstance(metadata, str):
             metadata = json.loads(metadata)
         elif metadata is None:
             metadata = {}
 
-        # -----------------------------
-        # EXTRAER FECHAS DESDE METADATA
-        # -----------------------------
-        fecha_entrada = metadata.get("fecha_entrada")
-        fecha_salida = metadata.get("fecha_salida_prevista")
-
         engorde_dict = {
             "id_lote_alimento": engorde_row[0],
             "id_lote_huevo": engorde_row[1],
             "id_camara": engorde_row[2],
+            "estado_anterior": engorde_row[3],
+            "estado_nuevo": engorde_row[4],
             "metadata": metadata,
-            "timestamp": engorde_row[4],
-
-            # 👇 NORMALIZADO (lo que tú quieres usar en lógica)
-            "fecha_entrada": fecha_entrada,
-            "fecha_salida_prevista": fecha_salida,
+            "timestamp": engorde_row[6],
         }
 
         return pallet_dict, engorde_dict
@@ -242,11 +234,16 @@ def scan_qr(codigo_qr: str):
             data = {**pallet}
 
             if engorde:
+                metadata = engorde["metadata"]
+
+                fecha_entrada = metadata.get("fecha_entrada")
+                fecha_salida = metadata.get("fecha_salida_prevista")
+
                 data.update({
                     "id_lote_alimento_traz": engorde["id_lote_alimento"],
                     "id_lote_huevo_traz": engorde["id_lote_huevo"],
-                    "fecha_entrada_camara": engorde["fecha_entrada_camara"].strftime("%Y-%m-%d") if engorde["fecha_entrada_camara"] else None,
-                    "fecha_salida_prevista": engorde["fecha_salida_prevista"].strftime("%Y-%m-%d") if engorde["fecha_salida_prevista"] else None
+                    "fecha_entrada_camara": fecha_entrada,
+                    "fecha_salida_prevista": fecha_salida
                 })
 
             return {"tipo": "pallet", "datos": data}
