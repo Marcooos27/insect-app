@@ -8,6 +8,11 @@ from backend.database import get_connection
 
 router = APIRouter(tags=["trazabilidad"])
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+logger.info("TRAZABILIDAD CARGADA")
 
 # ============================================================
 # MODELOS
@@ -63,6 +68,7 @@ def _get_lote_huevo_activo(cur):
 
 
 def _get_pallet_y_engorde(cur, codigo_qr):
+    print("EXEC _get_pallet_y_engorde con:", codigo_qr)
     try:
         # Pallet + Engorde en una sola query (están en la misma tabla)
         cur.execute("""
@@ -107,7 +113,7 @@ def scan_qr(codigo_qr: str):
     cur = conn.cursor()
 
     print("QR recibido:", codigo_qr)
-    codigo_qr = codigo_qr.strip().upper()
+    codigo_qr = codigo_qr.strip().upper().replace(" ", "")
     print("QR recibido:", codigo_qr)
 
     try:
@@ -144,7 +150,11 @@ def scan_qr(codigo_qr: str):
         # ───────────────
         # ¿ES PALLET?
         # ───────────────
-        pallet, engorde = _get_pallet_y_engorde(cur, codigo_qr)
+        try:
+            pallet, engorde = _get_pallet_y_engorde(cur, codigo_qr)
+        except Exception as e:
+            print("💥 ERROR _get_pallet_y_engorde:", repr(e))
+            raise
 
         if pallet:
             data = {**pallet}

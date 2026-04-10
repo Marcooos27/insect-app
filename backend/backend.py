@@ -32,8 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 import logging
 import os
 
@@ -53,6 +51,7 @@ logger = logging.getLogger(__name__)
 
 
 
+logger.info("BACKEND CARGADO")
 
 
 # Opcional: manejar explícitamente la petición OPTIONS a /evento como fallback
