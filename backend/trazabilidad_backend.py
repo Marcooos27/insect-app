@@ -380,9 +380,14 @@ def montar_pallet(data: PalletMontadoIn):
         lote_alimento = _get_lote_alimento_activo(cur)
         lote_huevo = _get_lote_huevo_activo(cur)
 
+        print("lote_alimento:", lote_alimento)
+        print("lote_huevo:", lote_huevo)
+        logger.info(f"LOTE ALIMENTO: {lote_alimento}")
+        logger.info(f"LOTE HUEVO: {lote_huevo}")
+
         # Crear nuevo engorde
         cur.execute("""
-            INSERT INTO Engorde (id_pallet, id_lote_alimento, id_lote_huevo)
+            INSERT INTO Engorde (id_pallet, id_lote_alimento_traz, id_lote_huevo_traz)
             VALUES (%s, %s, %s)
         """, [
             row[0],
