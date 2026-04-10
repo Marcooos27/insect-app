@@ -68,16 +68,16 @@ def _get_lote_huevo_activo(cur):
 
 
 def _get_pallet_y_engorde(cur, codigo_qr):
-    print("EXEC _get_pallet_y_engorde con:", codigo_qr)
+    logger.info(f"EXEC _get_pallet_y_engorde con: {codigo_qr}")
+
     try:
-        # Pallet + Engorde en una sola query (están en la misma tabla)
+        # 1. BUSCAR PALLET PRIMERO
         cur.execute("""
-            SELECT id_pallet, estado, id_camara,
-                   id_lote_alimento_traz, id_lote_huevo_traz,
-                   fecha_entrada_camara, fecha_salida_prevista
-            FROM Engorde
+            SELECT id_pallet, estado, id_camara
+            FROM Pallet
             WHERE codigo_qr = %s
         """, [codigo_qr])
+
         row = cur.fetchone()
 
         if not row:
@@ -89,11 +89,30 @@ def _get_pallet_y_engorde(cur, codigo_qr):
             "id_camara": row[2],
         }
 
+        logger.info(f"Pallet dict: {pallet_dict}")
+
+        # 2. BUSCAR ENGORDE DESPUÉS
+        cur.execute("""
+            SELECT id_lote_alimento_traz,
+                id_lote_huevo_traz,
+                fecha_entrada_camara,
+                fecha_salida_prevista
+            FROM Engorde
+            WHERE id_pallet = %s
+            ORDER BY id_engorde DESC
+            LIMIT 1
+        """, [row[0]])
+
+        engorde_row = cur.fetchone()
+
+        if not engorde_row:
+            return pallet_dict, None
+
         engorde_dict = {
-            "id_lote_alimento": row[3],
-            "id_lote_huevo": row[4],
-            "fecha_entrada_camara": row[5],
-            "fecha_salida_prevista": row[6],
+            "id_lote_alimento": engorde_row[0],
+            "id_lote_huevo": engorde_row[1],
+            "fecha_entrada_camara": engorde_row[2],
+            "fecha_salida_prevista": engorde_row[3],
         }
 
         return pallet_dict, engorde_dict
@@ -112,9 +131,9 @@ def scan_qr(codigo_qr: str):
     conn = get_connection()
     cur = conn.cursor()
 
-    print("QR recibido:", codigo_qr)
+    logger.info(f"QR recibido: {codigo_qr}")
     codigo_qr = codigo_qr.strip().upper().replace(" ", "")
-    print("QR recibido:", codigo_qr)
+    logger.info(f"QR recibido: {codigo_qr}")
 
     try:
         # ───────────────

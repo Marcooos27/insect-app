@@ -33,21 +33,14 @@ app.add_middleware(
 )
 
 import logging
-import os
-
-log_path = "/var/log/insect/backend.log"
-
-# Si estamos en Windows usar log local
-if os.name == "nt":
-    log_path = "backend.log"
 
 logging.basicConfig(
-    filename=log_path,
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("insect-backend")
+logger.setLevel(logging.INFO)
 
 
 
