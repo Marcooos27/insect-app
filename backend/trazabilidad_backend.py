@@ -62,42 +62,46 @@ def _get_lote_huevo_activo(cur):
 
 
 def _get_pallet_y_engorde(cur, codigo_qr):
-    # Pallet
-    cur.execute("""
-        SELECT id_pallet, estado, id_camara
-        FROM Pallet
-        WHERE codigo_qr = %s
-    """, [codigo_qr])
-    pallet = cur.fetchone()
 
-    if not pallet:
-        return None, None
+    try:
+        # Pallet
+        cur.execute("""
+            SELECT id_pallet, estado, id_camara
+            FROM Pallet
+            WHERE codigo_qr = %s
+        """, [codigo_qr])
+        pallet = cur.fetchone()
 
-    pallet_dict = dict(zip(["id_pallet", "estado", "id_camara"], pallet))
+        if not pallet:
+            return None, None
 
-    # Último engorde
-    cur.execute("""
-        SELECT id_engorde, id_lote_alimento, id_lote_huevo,
-               fecha_entrada_camara, fecha_salida_prevista, estado
-        FROM Engorde
-        WHERE id_pallet = %s
-        ORDER BY id_engorde DESC
-        LIMIT 1
-    """, [pallet_dict["id_pallet"]])
+        pallet_dict = dict(zip(["id_pallet", "estado", "id_camara"], pallet))
 
-    engorde = cur.fetchone()
+        # Último engorde
+        cur.execute("""
+            SELECT id_engorde, id_lote_alimento, id_lote_huevo,
+                fecha_entrada_camara, fecha_salida_prevista, estado
+            FROM Engorde
+            WHERE id_pallet = %s
+            ORDER BY id_engorde DESC
+            LIMIT 1
+        """, [pallet_dict["id_pallet"]])
 
-    if engorde:
-        engorde_dict = dict(zip(
-            ["id_engorde","id_lote_alimento","id_lote_huevo",
-             "fecha_entrada_camara","fecha_salida_prevista","estado"],
-            engorde
-        ))
-    else:
-        engorde_dict = None
+        engorde = cur.fetchone()
 
-    return pallet_dict, engorde_dict
+        if engorde:
+            engorde_dict = dict(zip(
+                ["id_engorde","id_lote_alimento","id_lote_huevo",
+                "fecha_entrada_camara","fecha_salida_prevista","estado"],
+                engorde
+            ))
+        else:
+            engorde_dict = None
 
+        return pallet_dict, engorde_dict
+    except Exception as e:
+        print("ERROR EN FUNCION PALLET Y ENGORDE:", repr(e))
+        raise
 
 
 # ============================================================
