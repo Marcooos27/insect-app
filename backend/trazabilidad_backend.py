@@ -99,7 +99,6 @@ def _get_pallet_y_engorde(cur, codigo_qr):
                 fecha_salida_prevista
             FROM Engorde
             WHERE id_pallet = %s
-            ORDER BY id_engorde DESC
             LIMIT 1
         """, [row[0]])
 
