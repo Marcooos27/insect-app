@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import api from "../services/api"; // 🔥 IMPORTANTE
 
 // ==============================
 // CONTEXTO
@@ -17,29 +18,24 @@ export const ManagementProvider = ({ children }: any) => {
 
   const fetchClientes = async () => {
     try {
-      const res = await fetch("/api/cliente");
-      setClientes(await res.json());
+      const res = await api.get("/cliente");
+      const data = Array.isArray(res.data) ? res.data : [];
+      setClientes(data);
     } catch (err) {
       console.error("Error cargando clientes:", err);
+      setClientes([]); // 🔥 evita .map crash
     }
   };
 
   const createCliente = async (cliente: any) => {
     try {
-      const res = await fetch("/api/cliente", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cliente),
-      });
-
-      if (res.ok) {
-        fetchClientes();
-        return true;
-      }
+      await api.post("/cliente", cliente);
+      await fetchClientes();
+      return true;
     } catch (err) {
       console.error("Error creando cliente:", err);
+      return false;
     }
-    return false;
   };
 
   // ----------------------
@@ -49,29 +45,24 @@ export const ManagementProvider = ({ children }: any) => {
 
   const fetchPedidos = async () => {
     try {
-      const res = await fetch("/api/pedido");
-      setPedidos(await res.json());
+      const res = await api.get("/pedido");
+      const data = Array.isArray(res.data) ? res.data : [];
+      setPedidos(data);
     } catch (err) {
       console.error("Error cargando pedidos:", err);
+      setPedidos([]);
     }
   };
 
   const createPedido = async (pedido: any) => {
     try {
-      const res = await fetch("/api/pedido", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pedido),
-      });
-
-      if (res.ok) {
-        fetchPedidos();
-        return true;
-      }
+      await api.post("/pedido", pedido);
+      await fetchPedidos();
+      return true;
     } catch (err) {
       console.error("Error creando pedido:", err);
+      return false;
     }
-    return false;
   };
 
   return (
@@ -85,6 +76,6 @@ export const ManagementProvider = ({ children }: any) => {
 };
 
 // ==============================
-// HOOK PARA USAR EL CONTEXTO
+// HOOK
 // ==============================
 export const useManagement = () => useContext(ManagementContext);

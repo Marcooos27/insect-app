@@ -17,6 +17,7 @@ import {
   settings, settingsOutline, 
   logIn, logInOutline, 
   person, personOutline, 
+  qrCode, qrCodeOutline,
 } from 'ionicons/icons';
 
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -31,6 +32,7 @@ import ManagementsPage from './pages/Management/ManagementPage';
 import LoginPage from './pages/Login/LoginPage';
 import RegisterPage from './pages/Login/RegisterPage';
 import ProfilePage from './pages/Profile/ProfilePage';
+import TraceabilityTab from './pages/Traceability/TraceabilityTab';
 
 
 /* Importamos los managers */
@@ -97,6 +99,13 @@ const App: React.FC = () => {
                     <Route exact path="/home">
                       <ProtectedRoute>
                         <HomePage />
+                      </ProtectedRoute>
+                    </Route>
+
+                    {/* QR - Trazabilidad de lotes */}
+                    <Route exact path="/trazabilidad">
+                      <ProtectedRoute>
+                        <TraceabilityTab />
                       </ProtectedRoute>
                     </Route>
 
@@ -184,6 +193,11 @@ const App: React.FC = () => {
                     <IonTabButton tab="home" href="/home">
                       <IonIcon icon={activeTab === 'home' ? receipt : receiptOutline} />
                       <IonLabel>Tareas</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="trazabilidad" href="/trazabilidad">
+                      <IonIcon icon={activeTab === 'home' ? qrCode : qrCodeOutline} />
+                      <IonLabel>Trazabilidad</IonLabel>
                     </IonTabButton>
 
 

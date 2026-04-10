@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import api from "../services/api";
 
 type User = {
   user_id: number;
@@ -18,13 +19,11 @@ const AuthContext = createContext<AuthContextType>(null!);
 
 export const useAuth = () => useContext(AuthContext);
 
-const API = "";
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // validar token al arrancar app
+  // Validar token al arrancar la app
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -33,36 +32,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    fetch("/api/auth/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => setUser(data))
+    api.get("/auth/me")
+      .then(res => setUser(res.data))
       .catch(() => logout())
       .finally(() => setLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      console.log("Intentando login a:", api.defaults.baseURL);
+      console.log("Enviando:", JSON.stringify({ email, password }));
+      const res = await api.post("/auth/login", { email, password });
+      console.log("Respuesta login:", JSON.stringify(res.data));
+      const { access_token } = res.data;
 
-    if (!res.ok) return false;
+      localStorage.setItem("token", access_token);
 
-    const data = await res.json();
-    localStorage.setItem("token", data.access_token);
+      // El interceptor ya añade el token, pero como acabamos de guardarlo
+      // hacemos la petición directamente con el header
+      const meRes = await api.get("/auth/me", {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
 
-    const me = await fetch("/api/auth/me", {
-      headers: { Authorization: `Bearer ${data.access_token}` },
-    });
-
-    setUser(await me.json());
-    return true;
-  };
+      setUser(meRes.data);
+      return true;
+    } catch (err: any) {
+    console.log("ERROR login status:", err.response?.status);
+    console.log("ERROR login data:", JSON.stringify(err.response?.data));
+    console.log("ERROR login message:", err.message);
+    console.log("Error completo:", JSON.stringify(err.response?.data));
+    console.log("Config usado:", JSON.stringify(err.config));  // 👈 esto muestra qué URL y body usó axios
+    return false;
+  }
+};
 
   const logout = () => {
     localStorage.removeItem("token");

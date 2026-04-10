@@ -52,9 +52,8 @@
   flex-direction: column;
   gap: 16px;
 
-  /* --- ESTO ES LO QUE DEBES TOCAR --- */
   width: 100%;           /* Ocupa el ancho disponible... */
-  max-width: 600px;      /* ...pero como máximo 400px (ajusta este número) */
+  max-width: 600px;      /* ...pero como máximo 600px (ajusta este número) */
   margin: 0 auto;        /* Centra el bloque de los campos en el medio */
 }
 

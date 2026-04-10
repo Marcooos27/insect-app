@@ -19,9 +19,23 @@ const Login = () => {
   const history = useHistory();
 
   const handleLogin = async () => {
-    const ok = await login(email, password);
-    if (ok) history.push("/home");
-    else alert("Login incorrecto");
+    console.log("LOGIN CLICK - Intentando entrar con:", email); // LOG 1: Ver si el botón funciona
+
+    try {
+      const ok = await login(email, password);
+      
+      console.log("RESULTADO LOGIN:", ok); // LOG 2: Ver si el contexto devuelve true o false
+
+      if (ok) {
+        console.log("Login exitoso, redirigiendo...");
+        history.push("/home");
+      } else {
+        console.warn("Login incorrecto: Las credenciales no coinciden");
+        alert("Login incorrecto");
+      }
+    } catch (error) {
+      console.error("ERROR LOGIN:", JSON.stringify(error, null, 2)); // LOG 3: Ver si la conexión falló
+    }
   };
 
   return (
@@ -47,6 +61,7 @@ const Login = () => {
                 labelPlacement="floating" //Activo el efecto de flotar
                 type="email"
                 value={email}
+                onIonInput={e => setEmail((e.target as HTMLIonInputElement).value as string)}
                 onIonChange={e => setEmail(e.detail.value!)}
                 className="login-input"
               />
@@ -59,6 +74,7 @@ const Login = () => {
                 labelPlacement="floating"
                 type="password"
                 value={password}
+                onIonInput={e => setPassword((e.target as HTMLIonInputElement).value as string)}
                 onIonChange={e => setPassword(e.detail.value!)}
                 className="login-input"
               />

@@ -11,6 +11,8 @@ venv/
 backend/.env
 .env.local
 .env.*.local
+.env.production
+.env.*.production
 
 # =========================
 # Node / Frontend

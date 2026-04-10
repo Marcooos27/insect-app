@@ -1,16 +1,11 @@
 import { useState } from "react";
 import {
-  IonPage,
-  IonContent,
-  IonInput,
-  IonButton,
-  IonSelect,
-  IonSelectOption,
-  IonToast,
-  IonIcon,
+  IonPage, IonContent, IonInput, IonButton, IonSelect,
+  IonSelectOption, IonToast, IonIcon,
 } from "@ionic/react";
 import { mailOutline, lockClosedOutline, personOutline, shieldOutline, keyOutline, leafOutline, chevronDownOutline } from "ionicons/icons";
 import { useHistory } from "react-router";
+import api from "../../services/api";
 import "./LoginPage.css";
 
 const Register: React.FC = () => {
@@ -30,31 +25,24 @@ const Register: React.FC = () => {
     }
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, password, rol, admin_password: adminPassword }),
+      await api.post("/auth/register", {
+        email,
+        username,
+        password,
+        rol,
+        admin_password: adminPassword,
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setToastMsg(data.detail || "Error creando usuario");
-        return;
-      }
 
       setToastMsg("Usuario creado correctamente. Vuelve al login.");
       setTimeout(() => history.push("/login"), 2000);
-
-    } catch (err) {
-      console.error(err);
-      setToastMsg("Error conectando con el backend");
+    } catch (err: any) {
+      setToastMsg(err.response?.data?.detail || "Error creando usuario");
     }
   };
 
   return (
     <IonPage>
       <IonContent className="login-content">
-
         <div className="login-container">
 
           <div className="login-header">
@@ -67,50 +55,27 @@ const Register: React.FC = () => {
 
             <div className="login-field">
               <IonIcon icon={mailOutline} className="login-field-icon" />
-              <IonInput
-                label="Email"
-                labelPlacement="floating"
-                type="email"
-                value={email}
-                onIonChange={e => setEmail(e.detail.value!)}
-                className="login-input"
-              />
+              <IonInput label="Email" labelPlacement="floating" type="email"
+                value={email} onIonChange={e => setEmail(e.detail.value!)} className="login-input" />
             </div>
 
             <div className="login-field">
               <IonIcon icon={personOutline} className="login-field-icon" />
-              <IonInput
-                label="Nombre de usuario"
-                labelPlacement="floating"
-                value={username}
-                onIonChange={e => setUsername(e.detail.value!)}
-                className="login-input"
-              />
+              <IonInput label="Nombre de usuario" labelPlacement="floating"
+                value={username} onIonChange={e => setUsername(e.detail.value!)} className="login-input" />
             </div>
 
             <div className="login-field">
               <IonIcon icon={lockClosedOutline} className="login-field-icon" />
-              <IonInput
-                label="Contraseña"
-                labelPlacement="floating"
-                type="password"
-                value={password}
-                onIonChange={e => setPassword(e.detail.value!)}
-                className="login-input"
-              />
+              <IonInput label="Contraseña" labelPlacement="floating" type="password"
+                value={password} onIonChange={e => setPassword(e.detail.value!)} className="login-input" />
             </div>
 
             <div className="login-field">
               <IonIcon icon={shieldOutline} className="login-field-icon" />
-              <IonSelect
-                label="Selecciona un rol"
-                labelPlacement="floating"
-                value={rol}
-                onIonChange={e => setRol(e.detail.value)}
-                className="login-select"
-                toggleIcon={chevronDownOutline} // Opcional: icono de flecha
-                interface="popover" // Opcional: queda muy bien en móvil
-              >
+              <IonSelect label="Selecciona un rol" labelPlacement="floating"
+                value={rol} onIonChange={e => setRol(e.detail.value)}
+                className="login-select" toggleIcon={chevronDownOutline} interface="popover">
                 <IonSelectOption value="user">Operario</IonSelectOption>
                 <IonSelectOption value="admin">Administrador</IonSelectOption>
               </IonSelect>
@@ -118,43 +83,23 @@ const Register: React.FC = () => {
 
             <div className="login-field">
               <IonIcon icon={keyOutline} className="login-field-icon" />
-              <IonInput
-                label="Contraseña de administrador"
-                labelPlacement="floating"
-                type="password"
-                onIonChange={e => setAdminPassword(e.detail.value!)}
-                className="login-input"
-              />
+              <IonInput label="Contraseña de administrador" labelPlacement="floating" type="password"
+                onIonChange={e => setAdminPassword(e.detail.value!)} className="login-input" />
             </div>
 
-            <IonButton
-              expand="block"
-              className="login-btn-primary"
-              onClick={handleRegister}
-            >
+            <IonButton expand="block" className="login-btn-primary" onClick={handleRegister}>
               Crear cuenta
             </IonButton>
 
-            <IonButton
-              expand="block"
-              fill="clear"
-              className="login-btn-secondary"
-              onClick={() => history.push("/login")}
-            >
+            <IonButton expand="block" fill="clear" className="login-btn-secondary"
+              onClick={() => history.push("/login")}>
               Volver al login
             </IonButton>
 
           </div>
-
         </div>
 
-        <IonToast
-          isOpen={!!toastMsg}
-          message={toastMsg}
-          duration={2000}
-          onDidDismiss={() => setToastMsg("")}
-        />
-
+        <IonToast isOpen={!!toastMsg} message={toastMsg} duration={2000} onDidDismiss={() => setToastMsg("")} />
       </IonContent>
     </IonPage>
   );

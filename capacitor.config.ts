@@ -1,9 +1,17 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'insect-app',
-  webDir: 'dist'
+  appName: 'InsectEat',
+  webDir: 'dist',
+  server: {
+    androidScheme: 'http'   // 👈 cambiar a http
+  },
+  plugins: {
+    CapacitorHttp: {
+      enabled: false
+    }
+  }
 };
 
 export default config;

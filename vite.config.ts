@@ -8,12 +8,12 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), legacy()],
   server: {
-    proxy: {
+    proxy: process.env.NODE_ENV === 'development' ? {
       '/api': {
         target: 'http://localhost:8000',
         rewrite: (path) => path.replace(/^\/api/, '')
       }
-    }
+    } : undefined
   },
   test: {
     globals: true,

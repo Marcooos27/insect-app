@@ -1,34 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem } from '@ionic/react';
+import React, { useEffect } from 'react';
+import {
+  IonPage, IonHeader, IonToolbar, IonTitle,
+  IonContent, IonList, IonItem
+} from '@ionic/react';
 
 import { useLocation } from 'react-router-dom';
+import { useManagement } from '../../context/ManagementContext'; // 🔥 usamos contexto
 
 const Tab1: React.FC = () => {
-  const [clientes, setClientes] = useState<any[]>([]);
+  const { clientes, fetchClientes } = useManagement();
   const location = useLocation<{ nuevoCliente?: any }>();
 
   useEffect(() => {
-    fetch("/api/cliente")   // aquí llamas a tu endpoint FastAPI
-      .then(res => res.json())
-      .then(data => {setClientes(data);})
-      .catch(err => console.error("Error cargando clientes:", err));
+    fetchClientes(); // 🔥 YA NO HAY FETCH DIRECTO
   }, []);
 
-
-  // si venimos de Tab2 con un cliente nuevo -> añadirlo a la lista
+  // si viene cliente nuevo
   useEffect(() => {
     if (location.state?.nuevoCliente) {
       const nuevo = location.state.nuevoCliente;
-      setClientes(prev => {
-        // evita duplicados (por si el backend lo devuelve al volver a cargar)
-        if (!prev.find(c => c.id_cliente === nuevo.id_cliente)) {
-          return [...prev, nuevo];
-        }
-        return prev;
-      });
+
+      // 🔥 esto ya no hace falta casi, pero lo dejo seguro
+      if (!clientes.find((c: any) => c.id_cliente === nuevo.id_cliente)) {
+        fetchClientes(); // mejor refrescar desde backend
+      }
     }
   }, [location.state]);
-  
 
   return (
     <IonPage>
@@ -37,11 +34,12 @@ const Tab1: React.FC = () => {
           <IonTitle>Clientes</IonTitle>
         </IonToolbar>
       </IonHeader>
+
       <IonContent>
         <IonList>
-          {clientes.map((c, idx) => (
+          {(Array.isArray(clientes) ? clientes : []).map((c: any, idx: number) => (
             <IonItem key={idx}>
-              {c.id_cliente} - {c.nombre} ({c.telefono}) 
+              {c.id_cliente} - {c.nombre} ({c.telefono})
             </IonItem>
           ))}
         </IonList>
@@ -51,4 +49,3 @@ const Tab1: React.FC = () => {
 };
 
 export default Tab1;
-

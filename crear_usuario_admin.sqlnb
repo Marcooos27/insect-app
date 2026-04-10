@@ -234,3 +234,35 @@ cells:
 
       DESC USUARIOS;"
     languageId: oracle-sql
+  - kind: 2
+    value: "CREATE TABLE Pallet (\r
+
+      \    id_pallet SERIAL PRIMARY KEY,\r
+
+      \    codigo_qr VARCHAR(100) UNIQUE NOT NULL,\r
+
+      \r
+
+      \    estado VARCHAR(20) NOT NULL DEFAULT 'vacio'\r
+
+      \        CHECK (estado IN
+      ('vacio','preparado','en_camara','desmontar')),\r
+
+      \r
+
+      \    id_camara INT REFERENCES Camara(id_camara),\r
+
+      \r
+
+      \    id_lote_alimento INT REFERENCES Lote_Alimento(id_lote_alimento),\r
+
+      \    id_lote_huevo INT REFERENCES Lote_Huevo(id_lote_huevo),\r
+
+      \r
+
+      \    fecha_entrada_camara DATE,\r
+
+      \    fecha_salida_prevista DATE\r
+
+      );"
+    languageId: oracle-sql

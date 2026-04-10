@@ -1,0 +1,565 @@
+/* ================================
+   TRAZABILIDAD — CSS
+   Paleta: variables.css PALETA 6
+================================ */
+
+/* PÁGINA Y TOOLBAR */
+.traz-page {
+  --background: var(--color-darkest);
+}
+
+.traz-toolbar {
+  --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
+  --color: var(--text-white);
+}
+
+.traz-toolbar-title {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+}
+
+.traz-content {
+  --background: linear-gradient(160deg, var(--color-darkest) 0%, var(--color-dark) 100%);
+}
+
+.traz-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 24px 20px;
+}
+
+/* ================================
+   ESTADO IDLE — pantalla inicial
+================================ */
+.traz-idle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+}
+
+.traz-idle-icon-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.traz-idle-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  opacity: 0.25;
+  animation: traz-pulse 2.4s ease-in-out infinite;
+}
+
+.traz-idle-ring.ring1 {
+  width: 100px;
+  height: 100px;
+  animation-delay: 0s;
+}
+
+.traz-idle-ring.ring2 {
+  width: 120px;
+  height: 120px;
+  animation-delay: 0.6s;
+  opacity: 0.12;
+}
+
+@keyframes traz-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50%       { transform: scale(1.08); opacity: 0.45; }
+}
+
+.traz-idle-icon {
+  font-size: 52px;
+  color: var(--color-accent);
+  filter: drop-shadow(0 0 16px rgba(144, 150, 50, 0.4));
+  z-index: 1;
+}
+
+.traz-idle-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-white);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.traz-idle-sub {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ================================
+   BOTÓN ESCANEAR
+================================ */
+.traz-scan-btn {
+  --background: var(--color-mid);
+  --background-activated: var(--color-dark);
+  --background-hover: var(--color-dark);
+  --color: var(--text-white);
+  --border-radius: 14px;
+  --ripple-color: transparent;
+  --box-shadow: 0 4px 20px rgba(144, 150, 50, 0.35);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 1rem;
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* ================================
+   TARJETA BASE
+================================ */
+.traz-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.traz-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.traz-card-icon {
+  font-size: 2.2rem;
+  color: var(--color-accent);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(144, 150, 50, 0.3));
+}
+
+.traz-card-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-white);
+  margin: 0 0 4px;
+  letter-spacing: 0.5px;
+}
+
+.traz-card-sub {
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  margin: 0;
+  opacity: 0.75;
+}
+
+/* ================================
+   ACCIONES DE CÁMARA
+================================ */
+.traz-camara-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.traz-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.traz-action-btn ion-icon {
+  font-size: 2rem;
+}
+
+.traz-action-add {
+  background: rgba(144, 150, 50, 0.15);
+  border-color: var(--color-mid);
+  color: var(--color-accent);
+}
+
+.traz-action-add:hover, .traz-action-add:active {
+  background: rgba(144, 150, 50, 0.3);
+  transform: scale(1.03);
+}
+
+.traz-action-remove {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: rgba(231, 76, 60, 0.5);
+  color: #e74c3c;
+}
+
+.traz-action-remove:hover, .traz-action-remove:active {
+  background: rgba(231, 76, 60, 0.2);
+  transform: scale(1.03);
+}
+
+/* ================================
+   BOTÓN CANCELAR
+================================ */
+.traz-cancel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.traz-cancel-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ================================
+   ESTADO ESPERANDO
+================================ */
+.traz-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+}
+
+.traz-waiting-anim {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.traz-waiting-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--color-mid);
+  animation: traz-scan-ring 1.5s ease-in-out infinite;
+}
+
+@keyframes traz-scan-ring {
+  0%   { transform: scale(0.85); opacity: 0.8; }
+  50%  { transform: scale(1.1); opacity: 0.3; }
+  100% { transform: scale(0.85); opacity: 0.8; }
+}
+
+.traz-waiting-icon {
+  font-size: 44px;
+  color: var(--color-mid);
+  z-index: 1;
+  animation: traz-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes traz-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.traz-waiting-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.traz-waiting-sub {
+  font-size: 0.82rem;
+  color: var(--color-accent);
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* ================================
+   RESULTADO
+================================ */
+.traz-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.traz-result-icon-wrap {
+  margin-bottom: 4px;
+}
+
+.traz-result-icon {
+  font-size: 56px;
+}
+
+.traz-result-icon.success { color: #2ecc71; filter: drop-shadow(0 0 12px rgba(46, 204, 113, 0.4)); }
+.traz-result-icon.warning { color: #f39c12; filter: drop-shadow(0 0 12px rgba(243, 156, 18, 0.4)); }
+
+.traz-result-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-white);
+  margin: 0;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.traz-result-sub {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  opacity: 0.75;
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ================================
+   GRID DE INFO
+================================ */
+.traz-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.traz-info-row {
+  display: grid;
+  grid-template-columns: 1rem 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.traz-info-row:last-child {
+  border-bottom: none;
+}
+
+.traz-info-row ion-icon {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  opacity: 0.7;
+}
+
+.traz-info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.traz-info-value {
+  font-size: 0.88rem;
+  color: var(--text-white);
+  font-weight: 600;
+  text-align: right;
+}
+
+.traz-lote-tag {
+  background: rgba(144, 150, 50, 0.2);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  color: var(--color-accent);
+}
+
+/* ================================
+   BADGES DE ESTADO DE PALLET
+================================ */
+.estado-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.badge-vacio      { background: rgba(150,150,150,0.2); color: #aaa; border: 1px solid #888; }
+.badge-preparado  { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid #2ecc71; }
+.badge-en-camara  { background: rgba(93,173,226,0.15); color: #5dade2; border: 1px solid #5dade2; }
+.badge-desmontar  { background: rgba(231,76,60,0.15);  color: #e74c3c; border: 1px solid #e74c3c; }
+
+/* ================================
+   BADGES DE PLAZO
+================================ */
+.traz-plazo-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.traz-plazo-ok  { background: rgba(46,204,113,0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+.traz-plazo-nok { background: rgba(243,156,18,0.2);  color: #f39c12; border: 1px solid #f39c12; }
+
+/* ================================
+   BOTÓN MODIFICAR FECHA
+================================ */
+.traz-modify-date-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.traz-modify-date-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: var(--color-accent);
+}
+
+/* ================================
+   BOTONES FINALES
+================================ */
+.traz-done-btn {
+  --background: var(--color-mid);
+  --color: var(--text-white);
+  --border-radius: 12px;
+  --ripple-color: transparent;
+  font-weight: 700;
+  width: 100%;
+}
+
+.traz-confirm-btn {
+  --background: #2ecc71;
+  --background-activated: #27ae60;
+  --color: #fff;
+  --border-radius: 12px;
+  --ripple-color: transparent;
+  font-weight: 700;
+  width: 100%;
+}
+
+.traz-action-primary {
+  --background: var(--color-mid);
+  --color: var(--text-white);
+  --border-radius: 12px;
+  font-weight: 700;
+  width: 100%;
+}
+
+.traz-action-danger {
+  --background: rgba(231,76,60,0.7);
+  --color: #fff;
+  --border-radius: 12px;
+  font-weight: 700;
+  width: 100%;
+}
+
+/* Bloque informativo (pallet preparado o en cámara) */
+.traz-info-only {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(93,173,226,0.1);
+  border: 1px solid rgba(93,173,226,0.3);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #5dade2;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.traz-info-only ion-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.traz-pallet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ================================
+   MODAL CALENDARIO
+================================ */
+.traz-modal-cal {
+  --height: auto;
+  --border-radius: 20px;
+  --background: var(--color-darkest);
+}
+
+.traz-modal-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 20px;
+  background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
+  border-radius: 20px;
+}
+
+.traz-modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+  text-align: center;
+}
+
+.traz-modal-confirm {
+  --background: var(--color-mid);
+  --color: var(--text-white);
+  --border-radius: 12px;
+  font-weight: 700;
+  width: 100%;
+}

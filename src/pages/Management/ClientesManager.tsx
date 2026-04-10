@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButtons,
-  IonButton,
-  IonIcon,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonSpinner,
-  IonAlert
+  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+  IonButtons, IonButton, IonIcon, IonList, IonItem,
+  IonLabel, IonSpinner, IonAlert
 } from "@ionic/react";
 import { add, create, trash } from "ionicons/icons";
+import api from "../../services/api";
 import "./ClientesManager.css";
 
 interface Cliente {
@@ -26,9 +17,7 @@ interface Cliente {
   satisfaccion?: string;
 }
 
-// Nuevo cliente SIN id_cliente
 type ClienteNuevo = Omit<Cliente, "id_cliente">;
-
 
 const ClientesManager: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -38,81 +27,50 @@ const ClientesManager: React.FC = () => {
   const [showAddAlert, setShowAddAlert] = useState(false);
   const [alertKey, setAlertKey] = useState(0);
 
-  // Cargar clientes desde tu backend
   useEffect(() => {
-    fetch("/api/cliente") // 👈 endpoint de FastAPI
-      .then((res) => res.json())
-      .then((data) => {
-        setClientes(data);
+    api.get("/cliente")
+      .then(res => {
+        setClientes(res.data);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(err => {
         console.error("Error cargando clientes:", err);
         setLoading(false);
       });
   }, []);
 
-  const handleAdd = () => {
-    setShowAddAlert(true);
-  };
-
   const getNextId = () => {
     if (clientes.length === 0) return 1;
-    const ids = clientes.map((c) => c.id_cliente);
+    const ids = clientes.map(c => c.id_cliente);
     let nextId = 1;
-    while (ids.includes(nextId)) {
-      nextId++;
-    }
+    while (ids.includes(nextId)) nextId++;
     return nextId;
-};
+  };
 
   const handleCreate = (nuevo: ClienteNuevo) => {
     const nuevoCliente: Cliente = { id_cliente: getNextId(), ...nuevo };
 
-    fetch("/api/cliente", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nuevoCliente),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Error insertando cliente");
-        return res.json();
-      })
+    api.post("/cliente", nuevoCliente)
       .then(() => {
         setClientes([...clientes, nuevoCliente]);
         setShowAddAlert(false);
-        setAlertKey((k) => k + 1);
+        setAlertKey(k => k + 1);
       })
-      .catch((err) => console.error(err));
-  };
-
-  const handleEdit = (cliente: Cliente) => {
-    setSelectedCliente(cliente);
-    setShowAlert(true);
+      .catch(err => console.error("Error creando cliente:", err));
   };
 
   const handleDelete = (id: number) => {
-    fetch(`/cliente/${id}`, { method: "DELETE" })
-      .then((res) => {
-        if (res.ok) {
-          setClientes(clientes.filter((c) => c.id_cliente !== id));
-        }
-      })
-      .catch((err) => console.error("Error eliminando cliente:", err));
+    api.delete(`/cliente/${id}`)
+      .then(() => setClientes(clientes.filter(c => c.id_cliente !== id)))
+      .catch(err => console.error("Error eliminando cliente:", err));
   };
 
   const handleUpdate = (cliente: Cliente) => {
-    fetch(`/cliente/${cliente.id_cliente}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cliente),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Cliente actualizado:", data);
-        setClientes(clientes.map((c) => (c.id_cliente === cliente.id_cliente ? cliente : c)));
+    api.put(`/cliente/${cliente.id_cliente}`, cliente)
+      .then(() => {
+        setClientes(clientes.map(c => c.id_cliente === cliente.id_cliente ? cliente : c));
       })
-      .catch((err) => console.error("Error actualizando cliente:", err));
+      .catch(err => console.error("Error actualizando cliente:", err));
   };
 
   return (
@@ -121,7 +79,7 @@ const ClientesManager: React.FC = () => {
         <IonToolbar>
           <IonTitle>Gestión de Clientes</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={handleAdd}>
+            <IonButton onClick={() => setShowAddAlert(true)}>
               <IonIcon icon={add} />
             </IonButton>
           </IonButtons>
@@ -136,25 +94,16 @@ const ClientesManager: React.FC = () => {
           </div>
         ) : (
           <IonList>
-            {clientes.map((cliente) => (
+            {clientes.map(cliente => (
               <IonItem key={cliente.id_cliente}>
                 <IonLabel>
                   <h2>{cliente.nombre}</h2>
                   <p>{cliente.telefono}</p>
                 </IonLabel>
-                <IonButton
-                  slot="end"
-                  fill="clear"
-                  onClick={() => handleEdit(cliente)}
-                >
+                <IonButton slot="end" fill="clear" onClick={() => { setSelectedCliente(cliente); setShowAlert(true); }}>
                   <IonIcon icon={create} />
                 </IonButton>
-                <IonButton
-                  slot="end"
-                  fill="clear"
-                  color="danger"
-                  onClick={() => handleDelete(cliente.id_cliente)}
-                >
+                <IonButton slot="end" fill="clear" color="danger" onClick={() => handleDelete(cliente.id_cliente)}>
                   <IonIcon icon={trash} />
                 </IonButton>
               </IonItem>
@@ -162,7 +111,6 @@ const ClientesManager: React.FC = () => {
           </IonList>
         )}
 
-        {/* Modal de edición con IonAlert */}
         <IonAlert
           isOpen={showAlert}
           onDidDismiss={() => setShowAlert(false)}
@@ -179,16 +127,12 @@ const ClientesManager: React.FC = () => {
             {
               text: "Guardar",
               handler: (data) => {
-                if (selectedCliente) {
-                  const updatedCliente: Cliente = { ...selectedCliente, ...data };
-                  handleUpdate(updatedCliente);
-                }
+                if (selectedCliente) handleUpdate({ ...selectedCliente, ...data });
               },
             },
           ]}
         />
 
-        {/* ALERTA PARA CREAR */}
         <IonAlert
           key={alertKey}
           isOpen={showAddAlert}
@@ -205,19 +149,10 @@ const ClientesManager: React.FC = () => {
             { text: "Cancelar", role: "cancel" },
             {
               text: "Añadir",
-              handler: (data) => {
-                handleCreate({
-                  nombre: data.nombre,
-                  telefono: data.telefono,
-                  direccion: data.direccion,
-                  pedido: data.pedido,
-                  satisfaccion: data.satisfaccion,
-                });
-              },
+              handler: (data) => handleCreate(data),
             },
           ]}
         />
-
       </IonContent>
     </IonPage>
   );
