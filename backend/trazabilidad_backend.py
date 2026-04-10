@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 logger.info("TRAZABILIDAD CARGADA")
 
+import json
+
 # ============================================================
 # MODELOS
 # ============================================================
@@ -42,6 +44,45 @@ class SalidaCamaraIn(BaseModel):
 # HELPER: obtener lotes activos
 # ============================================================
 
+def log_engorde_event(
+    cur,
+    id_pallet,
+    tipo_evento,
+    id_camara=None,
+    id_lote_alimento=None,
+    id_lote_huevo=None,
+    estado_anterior=None,
+    estado_nuevo=None,
+    usuario=None,
+    metadata=None
+):
+    cur.execute("""
+        INSERT INTO engorde (
+            id_pallet,
+            tipo_evento,
+            id_camara,
+            id_lote_alimento,
+            id_lote_huevo,
+            estado_anterior,
+            estado_nuevo,
+            usuario,
+            metadata
+        )
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    """, [
+        id_pallet,
+        tipo_evento,
+        id_camara,
+        id_lote_alimento,
+        id_lote_huevo,
+        estado_anterior,
+        estado_nuevo,
+        usuario,
+        json.dumps(metadata) if metadata else None
+    ])
+
+
+
 def _get_lote_alimento_activo(cur):
     cur.execute("""
         SELECT id_lote_alimento, descripcion
@@ -67,11 +108,12 @@ def _get_lote_huevo_activo(cur):
 
 
 
+
 def _get_pallet_y_engorde(cur, codigo_qr):
     logger.info(f"EXEC _get_pallet_y_engorde con: {codigo_qr}")
 
     try:
-        # 1. BUSCAR PALLET PRIMERO
+        # 1. BUSCAR PALLET
         cur.execute("""
             SELECT id_pallet, estado, id_camara
             FROM Pallet
@@ -89,16 +131,17 @@ def _get_pallet_y_engorde(cur, codigo_qr):
             "id_camara": row[2],
         }
 
-        logger.info(f"Pallet dict: {pallet_dict}")
-
-        # 2. BUSCAR ENGORDE DESPUÉS
+        # 2. BUSCAR ÚLTIMO EVENTO
         cur.execute("""
-            SELECT id_lote_alimento_traz,
-                id_lote_huevo_traz,
-                fecha_entrada_camara,
-                fecha_salida_prevista
-            FROM Engorde
+            SELECT 
+                id_lote_alimento,
+                id_lote_huevo,
+                id_camara,
+                metadata,
+                timestamp
+            FROM engorde
             WHERE id_pallet = %s
+            ORDER BY timestamp DESC
             LIMIT 1
         """, [row[0]])
 
@@ -107,11 +150,32 @@ def _get_pallet_y_engorde(cur, codigo_qr):
         if not engorde_row:
             return pallet_dict, None
 
+        # -----------------------------
+        # METADATA SAFE PARSING
+        # -----------------------------
+        metadata = engorde_row[3]
+
+        if isinstance(metadata, str):
+            metadata = json.loads(metadata)
+        elif metadata is None:
+            metadata = {}
+
+        # -----------------------------
+        # EXTRAER FECHAS DESDE METADATA
+        # -----------------------------
+        fecha_entrada = metadata.get("fecha_entrada")
+        fecha_salida = metadata.get("fecha_salida_prevista")
+
         engorde_dict = {
             "id_lote_alimento": engorde_row[0],
             "id_lote_huevo": engorde_row[1],
-            "fecha_entrada_camara": engorde_row[2],
-            "fecha_salida_prevista": engorde_row[3],
+            "id_camara": engorde_row[2],
+            "metadata": metadata,
+            "timestamp": engorde_row[4],
+
+            # 👇 NORMALIZADO (lo que tú quieres usar en lógica)
+            "fecha_entrada": fecha_entrada,
+            "fecha_salida_prevista": fecha_salida,
         }
 
         return pallet_dict, engorde_dict
@@ -386,14 +450,15 @@ def montar_pallet(data: PalletMontadoIn):
         logger.info(f"LOTE HUEVO: {lote_huevo}")
 
         # Crear nuevo engorde
-        cur.execute("""
-            INSERT INTO Engorde (id_pallet, id_lote_alimento_traz, id_lote_huevo_traz)
-            VALUES (%s, %s, %s)
-        """, [
+        log_engorde_event(
+            cur,
             row[0],
-            lote_alimento["id_lote_alimento"] if lote_alimento else None,
-            lote_huevo["id_lote_huevo"] if lote_huevo else None
-        ])
+            "MONTADO",
+            estado_anterior="vacio",
+            estado_nuevo="preparado",
+            id_lote_alimento=lote_alimento["id_lote_alimento"] if lote_alimento else None,
+            id_lote_huevo=lote_huevo["id_lote_huevo"] if lote_huevo else None
+        )
 
         # Cambiar estado pallet
         cur.execute("""
@@ -433,6 +498,14 @@ def desmontar_pallet(data: PalletMontadoIn):
             UPDATE Pallet SET estado = 'vacio'
             WHERE id_pallet = %s
         """, [row[0]])
+
+        log_engorde_event(
+            cur,
+            row[0],
+            "DESMONTADO",
+            estado_anterior="desmontar",
+            estado_nuevo="vacio"
+        )
 
         conn.commit()
 
@@ -495,12 +568,18 @@ def entrada_camara(data: EntradaCamaraIn):
         lote_huevo = _get_lote_huevo_activo(cur)
 
         # Engorde
-        cur.execute("""
-            UPDATE Engorde
-            SET fecha_entrada_camara = %s,
-                fecha_salida_prevista = %s
-            WHERE id_pallet = %s
-        """, [hoy, salida, pallet[0]])
+        log_engorde_event(
+            cur,
+            pallet[0],
+            "ENTRADA_CAMARA",
+            estado_anterior="preparado",
+            estado_nuevo="en_camara",
+            id_camara=id_camara,
+            metadata={
+                "fecha_entrada": str(hoy),
+                "fecha_salida_prevista": str(salida)
+            }
+        )
 
         # Pallet
         cur.execute("""
@@ -533,21 +612,35 @@ def update_fecha_salida(codigo_qr: str, data: FechaSalidaUpdate):
     cur = conn.cursor()
 
     try:
+        # -----------------------------
+        # VALIDAR PALLET EXISTE
+        # -----------------------------
         cur.execute("""
-            UPDATE Engorde
-            SET fecha_salida_prevista = %s
-            WHERE id_engorde = (
-                SELECT e.id_engorde
-                FROM Engorde e
-                JOIN Pallet p ON p.id_pallet = e.id_pallet
-                WHERE p.codigo_qr = %s
-                ORDER BY e.id_engorde DESC
-                LIMIT 1
-            )
-        """, [data.fecha_salida_prevista, codigo_qr])
+            SELECT id_pallet
+            FROM Pallet
+            WHERE codigo_qr = %s
+        """, [codigo_qr])
 
-        if cur.rowcount == 0:
+        row = cur.fetchone()
+
+        if not row:
             raise HTTPException(404, "Pallet no encontrado")
+
+        pallet_id = row[0]
+
+        # -----------------------------
+        # LOG EVENTO
+        # -----------------------------
+        log_engorde_event(
+            cur,
+            pallet_id,
+            "CAMBIO_FECHA_SALIDA",
+            estado_anterior=None,
+            estado_nuevo=None,
+            metadata={
+                "fecha_salida_prevista": str(data.fecha_salida_prevista)
+            }
+        )
 
         conn.commit()
 
@@ -568,25 +661,61 @@ def salida_camara(data: SalidaCamaraIn):
     cur = conn.cursor()
 
     try:
-        pallet, engorde = _get_pallet_y_engorde(cur, data.codigo_qr_pallet)
+        # -----------------------------
+        # PALLET + ESTADO ACTUAL
+        # -----------------------------
+        pallet, _ = _get_pallet_y_engorde(cur, data.codigo_qr_pallet)
 
         if not pallet:
             raise HTTPException(404, "Pallet no encontrado")
 
-        if not engorde:
-            raise HTTPException(400, "Sin trazabilidad")
-
         if pallet["estado"] != "en_camara":
             raise HTTPException(400, "No está en cámara")
 
+        # -----------------------------
+        # BUSCAR EVENTO ENTRADA REAL
+        # -----------------------------
+        cur.execute("""
+            SELECT metadata
+            FROM engorde
+            WHERE id_pallet = %s
+              AND tipo_evento = 'ENTRADA_CAMARA'
+            ORDER BY timestamp DESC
+            LIMIT 1
+        """, [pallet["id_pallet"]])
+
+        row = cur.fetchone()
+
+        metadata = {}
+
+        if row and row[0]:
+            metadata = row[0]
+
+            if isinstance(metadata, str):
+                metadata = json.loads(metadata)
+
+        # -----------------------------
+        # FECHAS SEGURAS
+        # -----------------------------
+        fecha_entrada = metadata.get("fecha_entrada")
+        fecha_salida = metadata.get("fecha_salida_prevista")
+
         hoy = date.today()
 
-        fecha_entrada = engorde["fecha_entrada_camara"]
-        fecha_salida = engorde["fecha_salida_prevista"]
+        dias = 0
+        cumplido = False
 
-        dias = (hoy - fecha_entrada).days if fecha_entrada else 0
-        cumplido = hoy >= fecha_salida if fecha_salida else False
+        if fecha_entrada:
+            fecha_entrada = date.fromisoformat(fecha_entrada)
+            dias = (hoy - fecha_entrada).days
 
+        if fecha_salida:
+            fecha_salida = date.fromisoformat(fecha_salida)
+            cumplido = hoy >= fecha_salida
+
+        # -----------------------------
+        # CONFIRMACIÓN SALIDA
+        # -----------------------------
         if data.confirmar:
             cur.execute("""
                 UPDATE Pallet
@@ -594,12 +723,24 @@ def salida_camara(data: SalidaCamaraIn):
                 WHERE id_pallet = %s
             """, [pallet["id_pallet"]])
 
+            log_engorde_event(
+                cur,
+                pallet["id_pallet"],
+                "SALIDA_CAMARA",
+                estado_anterior="en_camara",
+                estado_nuevo="desmontar",
+                id_camara=pallet.get("id_camara"),
+                metadata={
+                    "fecha_salida_real": str(hoy)
+                }
+            )
+
             conn.commit()
 
         return {
             "message": "Salida procesada",
-            "fecha_entrada_camara": fecha_entrada.strftime("%Y-%m-%d") if fecha_entrada else None,
-            "fecha_salida_prevista": fecha_salida.strftime("%Y-%m-%d") if fecha_salida else None,
+            "fecha_entrada_camara": metadata.get("fecha_entrada"),
+            "fecha_salida_prevista": metadata.get("fecha_salida_prevista"),
             "dias_en_camara": dias,
             "cumplido_plazo": cumplido
         }
