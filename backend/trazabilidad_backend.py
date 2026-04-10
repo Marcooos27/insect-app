@@ -6,7 +6,7 @@ from typing import Optional
 from datetime import date, timedelta
 from backend.database import get_connection
 
-router = APIRouter(prefix="/trazabilidad", tags=["trazabilidad"])
+router = APIRouter(tags=["trazabilidad"])
 
 
 # ============================================================
