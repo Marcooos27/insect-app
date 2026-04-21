@@ -1,19 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IonPage, IonContent, IonHeader, IonToolbar, IonTitle,
   IonButton, IonIcon, IonModal, IonDatetime, IonToast,
-  IonSpinner
+  IonSpinner, IonAlert
 } from "@ionic/react";
 import {
   qrCodeOutline, scanOutline, closeOutline, checkmarkCircleOutline,
   warningOutline, timeOutline, cubeOutline, leafOutline,
   addCircleOutline, removeCircleOutline, constructOutline,
   arrowBackOutline, calendarOutline, checkmarkDoneOutline,
-  informationCircleOutline
+  informationCircleOutline, cutOutline, bagHandleOutline,
+  stopCircleOutline, playOutline
 } from "ionicons/icons";
-import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
-import jsQR from "jsqr";
 import { API_URL } from "../../services/api";
 import "./TraceabilityTab.css";
 
@@ -22,7 +21,6 @@ import "./TraceabilityTab.css";
 // ─────────────────────────────────────────────
 type FlowState =
   | "idle"
-  | "scanning"
   | "camara_menu"
   | "camara_esperando_pallet"
   | "camara_confirmacion_entrada"
@@ -30,20 +28,28 @@ type FlowState =
   | "camara_confirmacion_salida"
   | "pallet_info"
   | "pallet_montando"
-  | "pallet_desmontando"
-  | "lote_activado";
+  | "lote_activado"
+  | "cribado_escaneando"
+  | "cribado_en_proceso"
+  | "cribado_big_bag_creado";
 
 interface ScanResult {
   tipo: "camara" | "pallet" | "lote_alimento" | "lote_huevo";
   datos: any;
 }
 
+interface SesionActiva {
+  id_sesion: number;
+  fecha_inicio: string;
+  pallets_cribados: { codigo_qr: string }[];
+  total_cribados: number;
+}
+
 // ─────────────────────────────────────────────
-// HELPERS API
+// API HELPER
 // ─────────────────────────────────────────────
 const apiFetch = async (path: string, options: RequestInit = {}) => {
   const token = localStorage.getItem("token");
-
   console.log("➡️ Request:", path);
 
   const res = await fetch(`${API_URL}${path}`, {
@@ -56,13 +62,12 @@ const apiFetch = async (path: string, options: RequestInit = {}) => {
   });
 
   const text = await res.text();
-
-  let data;
+  let data: any;
   try {
     data = JSON.parse(text);
-  } catch (e) {
+  } catch {
     console.error("❌ Respuesta no JSON:", text);
-    throw new Error("El servidor devolvió algo inválido (HTML o error)");
+    throw new Error("El servidor devolvió algo inválido");
   }
 
   if (res.status === 401) {
@@ -86,29 +91,63 @@ const TraceabilityTab: React.FC = () => {
   const [toastMsg, setToastMsg] = useState("");
   const [toastColor, setToastColor] = useState<"success" | "danger" | "warning">("success");
 
-  // Datos del flujo actual
+  // Datos flujo cámara
   const [camaraData, setCamaraData] = useState<any>(null);
   const [palletData, setPalletData] = useState<any>(null);
   const [entradaResult, setEntradaResult] = useState<any>(null);
   const [salidaResult, setSalidaResult] = useState<any>(null);
   const [loteActivado, setLoteActivado] = useState<any>(null);
 
-  // Fecha de salida modificable
+  // Fecha salida
   const [showCalModal, setShowCalModal] = useState(false);
   const [fechaSalidaEdit, setFechaSalidaEdit] = useState<string>("");
   const [fechaSalidaTemporal, setFechaSalidaTemporal] = useState<string>("");
+
+  // Cribado
+  const [sesionActiva, setSesionActiva] = useState<SesionActiva | null>(null);
+  const [palletCribandoActual, setPalletCribandoActual] = useState<any>(null);
+  const [bigBagResult, setBigBagResult] = useState<any>(null);
+
+  // Alertas de confirmación
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    header: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, header: "", message: "", onConfirm: () => {} });
 
   const showToast = (msg: string, color: "success" | "danger" | "warning" = "success") => {
     setToastMsg(msg);
     setToastColor(color);
   };
 
+  const showAlert = (header: string, message: string, onConfirm: () => void) => {
+    setAlertConfig({ isOpen: true, header, message, onConfirm });
+  };
+
+  // Comprobar sesión activa al montar
+  useEffect(() => {
+    apiFetch("/trazabilidad/procesado/sesion_activa")
+      .then(res => {
+        if (res.sesion_activa) {
+          setSesionActiva(res.sesion_activa);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // ─────────────────────────────────────────────
-  // ESCÁNER QR via Capacitor Camera + jsQR
+  // ESCÁNER QR
   // ─────────────────────────────────────────────
-  
   const scanQR = async (): Promise<string | null> => {
     try {
+      const { supported } = await BarcodeScanner.isSupported();
+      if (!supported) {
+        showToast("Escáner no soportado", "danger");
+        return null;
+      }
+      try { await BarcodeScanner.installGoogleBarcodeScannerModule(); } catch {}
+
       const { camera } = await BarcodeScanner.requestPermissions();
       if (camera !== "granted" && camera !== "limited") {
         showToast("Permiso de cámara denegado", "danger");
@@ -116,11 +155,9 @@ const TraceabilityTab: React.FC = () => {
       }
 
       const { barcodes } = await BarcodeScanner.scan();
-
       if (barcodes && barcodes.length > 0) {
         return barcodes[0].rawValue ?? null;
       }
-
       showToast("No se detectó ningún QR", "warning");
       return null;
     } catch (err) {
@@ -130,111 +167,21 @@ const TraceabilityTab: React.FC = () => {
     }
   };
 
-
-
   // ─────────────────────────────────────────────
-  // ESCÁNER QR via Capacitor Camera + jsQR
+  // ESCANEO INICIAL
   // ─────────────────────────────────────────────
-  /*
-  const scanQR = async (): Promise<string | null> => {
-    try {
-      // 🔥 pedir permisos primero
-      const permission = await BarcodeScanner.requestPermissions();
-
-      if (permission.camera !== 'granted') {
-        alert("Permiso de cámara denegado");
-        return null;
-      }
-
-      // 🔥 iniciar escaneo
-      const result = await BarcodeScanner.scan();
-
-      if (result.barcodes.length > 0) {
-        return result.barcodes[0].rawValue;
-      }
-
-      return null;
-
-    } catch (err) {
-      console.error("ERROR SCAN:", err);
-      alert("Error escaneando");
-      return null;
-    }
-  };
-  */
-
-  // ─────────────────────────────────────────────
-  // ESCANEO INICIAL — identifica el QR
-  // ─────────────────────────────────────────────
-  const ensureMLKitInstalled = async () => {
-    try {
-      const { supported } = await BarcodeScanner.isSupported();
-      if (!supported) {
-        showToast("Escáner no soportado en este dispositivo", "danger");
-        return false;
-      }
-
-      // Intentar instalar solo si es necesario
-      try {
-        await BarcodeScanner.installGoogleBarcodeScannerModule();
-        console.log("Módulo MLKit instalado ✅");
-      } catch (err: any) {
-        // Ignorar si ya estaba instalado
-        if (err.message.includes("already installed")) {
-          console.log("Módulo MLKit ya estaba instalado ✔");
-        } else {
-          throw err;
-        }
-      }
-
-      return true;
-    } catch (err: any) {
-      console.error("Error instalando MLKit:", err);
-      showToast("Error inicializando escáner", "danger");
-      return false;
-    }
-  };
-
-
   const handleScanInicial = async () => {
+    setLoading(true);
+    const codigo = await scanQR();
+    setLoading(false);
+    if (!codigo) return;
+
     try {
-      // Asegurarse que MLKit está listo
-      const ready = await ensureMLKitInstalled();
-      if (!ready) return;
-
-      // Verificar si está soportado
-      const { supported } = await BarcodeScanner.isSupported();
-      if (!supported) {
-        showToast("Escáner no soportado en este dispositivo", "danger");
-        return;
-      }
-
-      // Pedir permisos
-      const { camera } = await BarcodeScanner.requestPermissions();
-      if (camera !== "granted" && camera !== "limited") {
-        showToast("Permiso de cámara denegado", "danger");
-        return;
-      }
-
-      // Escanear
-      const { barcodes } = await BarcodeScanner.scan();
-
-      if (!barcodes || barcodes.length === 0) {
-        showToast("No se detectó ningún QR", "warning");
-        return;
-      }
-
-      const codigo = barcodes[0].rawValue?.trim();
-      if (!codigo) {
-        showToast("QR vacío", "warning");
-        return;
-      }
-
-      console.log("QR LEÍDO:", codigo);
-
+      setLoading(true);
       const resultApi: ScanResult = await apiFetch(
         `/trazabilidad/scan/${encodeURIComponent(codigo)}`
       );
+      setLoading(false);
 
       if (resultApi.tipo === "camara") {
         setCamaraData(resultApi.datos);
@@ -257,30 +204,21 @@ const TraceabilityTab: React.FC = () => {
         setLoteActivado({ tipo: "Lote de Huevo", ...resultApi.datos });
         setFlow("lote_activado");
       }
-
     } catch (err: any) {
-      console.error("Error escáner:", err);
+      setLoading(false);
       showToast(err.message || "Error al escanear", "danger");
     }
   };
 
   // ─────────────────────────────────────────────
-  // FLUJO CÁMARA — AÑADIR PALLET
+  // FLUJO CÁMARA
   // ─────────────────────────────────────────────
-  const handleEsperarPallet = () => {
-    setFlow("camara_esperando_pallet");
-  };
-
   const handleScanPalletEntrada = async () => {
     if (loading) return;
     setLoading(true);
     const codigo = await scanQR();
     setLoading(false);
-
-    if (!codigo) {
-      showToast("No se pudo leer el QR. Inténtalo de nuevo.", "warning");
-      return;
-    }
+    if (!codigo) return;
 
     try {
       setLoading(true);
@@ -301,23 +239,12 @@ const TraceabilityTab: React.FC = () => {
     }
   };
 
-  // ─────────────────────────────────────────────
-  // FLUJO CÁMARA — RETIRAR PALLET
-  // ─────────────────────────────────────────────
-  const handleEsperarRetiro = () => {
-    setFlow("camara_esperando_retiro");
-  };
-
   const handleScanPalletSalida = async () => {
     if (loading) return;
     setLoading(true);
     const codigo = await scanQR();
     setLoading(false);
-
-    if (!codigo) {
-      showToast("No se pudo leer el QR. Inténtalo de nuevo.", "warning");
-      return;
-    }
+    if (!codigo) return;
 
     try {
       setLoading(true);
@@ -335,34 +262,34 @@ const TraceabilityTab: React.FC = () => {
   };
 
   const handleConfirmarSalida = async () => {
-    try {
-      setLoading(true);
-      await apiFetch("/trazabilidad/camara/salida", {
-        method: "POST",
-        body: JSON.stringify({ codigo_qr_pallet: salidaResult.codigo_qr_pallet, confirmar: true }),
-      });
-      setLoading(false);
-      showToast("Pallet retirado correctamente", "success");
-      resetFlow();
-    } catch (err: any) {
-      setLoading(false);
-      showToast(err.message, "danger");
-    }
+    showAlert(
+      "Confirmar salida de cámara",
+      "¿Confirmas que este pallet sale de la cámara?",
+      async () => {
+        try {
+          setLoading(true);
+          await apiFetch("/trazabilidad/camara/salida", {
+            method: "POST",
+            body: JSON.stringify({ codigo_qr_pallet: salidaResult.codigo_qr_pallet, confirmar: true }),
+          });
+          setLoading(false);
+          showToast("Pallet retirado correctamente", "success");
+          resetFlow();
+        } catch (err: any) {
+          setLoading(false);
+          showToast(err.message, "danger");
+        }
+      }
+    );
   };
 
-  // ─────────────────────────────────────────────
-  // MODIFICAR FECHA DE SALIDA
-  // ─────────────────────────────────────────────
   const handleGuardarFecha = async () => {
     if (!fechaSalidaTemporal) return;
     try {
       setLoading(true);
       await apiFetch(
         `/trazabilidad/pallet/${encodeURIComponent(entradaResult.codigo_qr_pallet)}/fecha_salida`,
-        {
-          method: "PUT",
-          body: JSON.stringify({ fecha_salida_prevista: fechaSalidaTemporal.split("T")[0] }),
-        }
+        { method: "PUT", body: JSON.stringify({ fecha_salida_prevista: fechaSalidaTemporal.split("T")[0] }) }
       );
       setFechaSalidaEdit(fechaSalidaTemporal.split("T")[0]);
       setLoading(false);
@@ -374,19 +301,15 @@ const TraceabilityTab: React.FC = () => {
     }
   };
 
-  // ─────────────────────────────────────────────
-  // FLUJO PALLET — MONTAR
-  // ─────────────────────────────────────────────
   const handleMontarPallet = async () => {
     if (!palletData) return;
     try {
       setLoading(true);
-      const result = await apiFetch("/trazabilidad/pallet/montar", {
+      await apiFetch("/trazabilidad/pallet/montar", {
         method: "POST",
         body: JSON.stringify({ codigo_qr_pallet: palletData.codigo_qr }),
       });
       setLoading(false);
-      setPalletData({ ...palletData, estado: "preparado" });
       showToast("Pallet montado correctamente", "success");
       setFlow("pallet_montando");
     } catch (err: any) {
@@ -396,23 +319,156 @@ const TraceabilityTab: React.FC = () => {
   };
 
   // ─────────────────────────────────────────────
-  // FLUJO PALLET — DESMONTAR
+  // FLUJO CRIBADO
   // ─────────────────────────────────────────────
-  const handleDesmontarPallet = async () => {
-    if (!palletData) return;
+  const handleIniciarCribado = async () => {
     try {
       setLoading(true);
-      await apiFetch("/trazabilidad/pallet/desmontar", {
+      const res = await apiFetch("/trazabilidad/procesado/iniciar", {
         method: "POST",
-        body: JSON.stringify({ codigo_qr_pallet: palletData.codigo_qr }),
+        body: JSON.stringify({}),
       });
       setLoading(false);
-      showToast("Pallet desmontado y listo para nuevo ciclo", "success");
-      setFlow("pallet_desmontando");
+      setSesionActiva({
+        id_sesion: res.id_sesion,
+        fecha_inicio: res.fecha_inicio,
+        pallets_cribados: [],
+        total_cribados: 0,
+      });
+      setFlow("cribado_escaneando");
+      showToast(`Sesión #${res.id_sesion} iniciada`, "success");
     } catch (err: any) {
       setLoading(false);
       showToast(err.message, "danger");
     }
+  };
+
+  const handleScanPalletCribado = async () => {
+    if (!sesionActiva) return;
+    if (loading) return;
+
+    setLoading(true);
+    const codigo = await scanQR();
+    setLoading(false);
+    if (!codigo) return;
+
+    // Verificar que el pallet está en estado fuera_camara
+    try {
+      setLoading(true);
+      const info = await apiFetch(`/trazabilidad/scan/${encodeURIComponent(codigo)}`);
+      setLoading(false);
+
+      if (info.tipo !== "pallet") {
+        showToast("QR no es un pallet", "warning");
+        return;
+      }
+      if (info.datos.estado !== "fuera_camara") {
+        showToast(`Pallet en estado '${info.datos.estado}'. Debe estar 'fuera_camara'.`, "warning");
+        return;
+      }
+
+      setPalletCribandoActual({ ...info.datos, codigo_qr: codigo });
+      setFlow("cribado_en_proceso");
+    } catch (err: any) {
+      setLoading(false);
+      showToast(err.message, "danger");
+    }
+  };
+
+  const handlePalletCribado = () => {
+    showAlert(
+      "Confirmar pallet cribado",
+      `¿Confirmas que el pallet ${palletCribandoActual?.codigo_qr} ha sido cribado completamente?`,
+      async () => {
+        if (!sesionActiva || !palletCribandoActual) return;
+        try {
+          setLoading(true);
+          const res = await apiFetch("/trazabilidad/procesado/pallet_cribado", {
+            method: "POST",
+            body: JSON.stringify({
+              id_sesion: sesionActiva.id_sesion,
+              codigo_qr_pallet: palletCribandoActual.codigo_qr,
+            }),
+          });
+          setLoading(false);
+
+          const nuevaSesion: SesionActiva = {
+            ...sesionActiva,
+            pallets_cribados: [
+              ...sesionActiva.pallets_cribados,
+              { codigo_qr: palletCribandoActual.codigo_qr }
+            ],
+            total_cribados: res.total_cribados_sesion,
+          };
+          setSesionActiva(nuevaSesion);
+          setPalletCribandoActual(null);
+          showToast("Pallet cribado ✓", "success");
+          setFlow("cribado_escaneando");
+        } catch (err: any) {
+          setLoading(false);
+          showToast(err.message, "danger");
+        }
+      }
+    );
+  };
+
+  const handleCancelarPalletCribado = () => {
+    setPalletCribandoActual(null);
+    setFlow("cribado_escaneando");
+  };
+
+  const handleBigBagLleno = () => {
+    showAlert(
+      "Big bag lleno",
+      "¿Confirmas que el big bag está lleno? Se generará un lote final de Frass.",
+      async () => {
+        if (!sesionActiva) return;
+        try {
+          setLoading(true);
+          const res = await apiFetch("/trazabilidad/procesado/big_bag_lleno", {
+            method: "POST",
+            body: JSON.stringify({ id_sesion: sesionActiva.id_sesion }),
+          });
+          setLoading(false);
+          setBigBagResult(res);
+          setFlow("cribado_big_bag_creado");
+          showToast(`Lote ${res.codigo_lote} creado`, "success");
+        } catch (err: any) {
+          setLoading(false);
+          showToast(err.message, "danger");
+        }
+      }
+    );
+  };
+
+  const handleTerminarSesion = () => {
+    showAlert(
+      "Terminar sesión de cribado",
+      `¿Confirmas que quieres terminar la sesión? Se han cribado ${sesionActiva?.total_cribados ?? 0} pallets.`,
+      async () => {
+        if (!sesionActiva) return;
+        try {
+          setLoading(true);
+          const res = await apiFetch("/trazabilidad/procesado/terminar", {
+            method: "POST",
+            body: JSON.stringify({ id_sesion: sesionActiva.id_sesion }),
+          });
+          setLoading(false);
+
+          if (res.lote_final_creado) {
+            showToast(`Sesión finalizada. Lote ${res.lote_final_creado.codigo_lote} generado.`, "success");
+          } else {
+            showToast("Sesión de cribado finalizada", "success");
+          }
+
+          setSesionActiva(null);
+          resetFlow();
+        } catch (err: any) {
+          setLoading(false);
+          showToast(err.message, "danger");
+        }
+      }
+    );
   };
 
   // ─────────────────────────────────────────────
@@ -426,24 +482,26 @@ const TraceabilityTab: React.FC = () => {
     setSalidaResult(null);
     setLoteActivado(null);
     setFechaSalidaEdit("");
+    setPalletCribandoActual(null);
+    setBigBagResult(null);
   };
 
   // ─────────────────────────────────────────────
-  // ESTADO BADGE
+  // HELPERS UI
   // ─────────────────────────────────────────────
   const estadoBadge = (estado: string) => {
     const map: Record<string, { label: string; cls: string }> = {
       vacio: { label: "Vacío", cls: "badge-vacio" },
       preparado: { label: "Preparado", cls: "badge-preparado" },
       en_camara: { label: "En Cámara", cls: "badge-en-camara" },
-      desmontar: { label: "Desmontar", cls: "badge-desmontar" },
+      fuera_camara: { label: "Fuera de cámara", cls: "badge-desmontar" },
     };
     const info = map[estado] || { label: estado, cls: "" };
     return <span className={`estado-badge ${info.cls}`}>{info.label}</span>;
   };
 
   // ─────────────────────────────────────────────
-  // RENDER POR ESTADO
+  // RENDERS
   // ─────────────────────────────────────────────
 
   const renderIdle = () => (
@@ -454,20 +512,38 @@ const TraceabilityTab: React.FC = () => {
         <IonIcon icon={qrCodeOutline} className="traz-idle-icon" />
       </div>
       <h2 className="traz-idle-title">Trazabilidad</h2>
-      <p className="traz-idle-sub">Escanea un QR de cámara, pallet o lote para comenzar</p>
-      <IonButton
-        expand="block"
-        className="traz-scan-btn"
-        onClick={handleScanInicial}
-        disabled={loading}
-      >
+      <p className="traz-idle-sub">Escanea un QR o inicia una sesión de cribado</p>
+
+      <IonButton expand="block" className="traz-scan-btn" onClick={handleScanInicial} disabled={loading}>
         {loading ? <IonSpinner name="crescent" /> : (
-          <>
-            <IonIcon icon={scanOutline} slot="start" />
-            Escanear QR
-          </>
+          <><IonIcon icon={scanOutline} slot="start" />Escanear QR</>
         )}
       </IonButton>
+
+      {/* Botón de cribado */}
+      {sesionActiva ? (
+        <IonButton
+          expand="block"
+          className="traz-cribado-btn traz-cribado-btn--activo"
+          onClick={() => setFlow("cribado_escaneando")}
+          style={{ marginTop: 12 }}
+        >
+          <IonIcon icon={cutOutline} slot="start" />
+          Sesión activa #{sesionActiva.id_sesion} — continuar
+        </IonButton>
+      ) : (
+        <IonButton
+          expand="block"
+          className="traz-cribado-btn"
+          onClick={handleIniciarCribado}
+          disabled={loading}
+          style={{ marginTop: 12 }}
+        >
+          {loading ? <IonSpinner name="crescent" /> : (
+            <><IonIcon icon={cutOutline} slot="start" />Iniciar cribado</>
+          )}
+        </IonButton>
+      )}
     </div>
   );
 
@@ -483,21 +559,16 @@ const TraceabilityTab: React.FC = () => {
           </p>
         </div>
       </div>
-
       <div className="traz-camara-actions">
-        <button className="traz-action-btn traz-action-add" onClick={handleEsperarPallet}>
-          <IonIcon icon={addCircleOutline} />
-          <span>Añadir pallet</span>
+        <button className="traz-action-btn traz-action-add" onClick={() => setFlow("camara_esperando_pallet")}>
+          <IonIcon icon={addCircleOutline} /><span>Añadir pallet</span>
         </button>
-        <button className="traz-action-btn traz-action-remove" onClick={handleEsperarRetiro}>
-          <IonIcon icon={removeCircleOutline} />
-          <span>Retirar pallet</span>
+        <button className="traz-action-btn traz-action-remove" onClick={() => setFlow("camara_esperando_retiro")}>
+          <IonIcon icon={removeCircleOutline} /><span>Retirar pallet</span>
         </button>
       </div>
-
       <button className="traz-cancel-btn" onClick={resetFlow}>
-        <IonIcon icon={closeOutline} />
-        Cancelar escaneo
+        <IonIcon icon={closeOutline} />Cancelar escaneo
       </button>
     </div>
   );
@@ -509,27 +580,17 @@ const TraceabilityTab: React.FC = () => {
         <IonIcon icon={scanOutline} className="traz-waiting-icon" />
       </div>
       <h3 className="traz-waiting-title">
-        {modo === "entrada" ? "Esperando escaneo de pallet" : "Escanea el pallet a retirar"}
+        {modo === "entrada" ? "Escanea el pallet a añadir" : "Escanea el pallet a retirar"}
       </h3>
-      <p className="traz-waiting-sub">
-        Apunta la cámara al QR del pallet
-      </p>
-      <IonButton
-        expand="block"
-        className="traz-scan-btn"
+      <IonButton expand="block" className="traz-scan-btn"
         onClick={modo === "entrada" ? handleScanPalletEntrada : handleScanPalletSalida}
-        disabled={loading}
-      >
+        disabled={loading}>
         {loading ? <IonSpinner name="crescent" /> : (
-          <>
-            <IonIcon icon={scanOutline} slot="start" />
-            Escanear pallet
-          </>
+          <><IonIcon icon={scanOutline} slot="start" />Escanear pallet</>
         )}
       </IonButton>
       <button className="traz-cancel-btn" onClick={() => setFlow("camara_menu")}>
-        <IonIcon icon={arrowBackOutline} />
-        Volver al menú
+        <IonIcon icon={arrowBackOutline} />Volver al menú
       </button>
     </div>
   );
@@ -540,7 +601,6 @@ const TraceabilityTab: React.FC = () => {
         <IonIcon icon={checkmarkCircleOutline} className="traz-result-icon success" />
       </div>
       <h3 className="traz-result-title">Pallet insertado en cámara</h3>
-
       <div className="traz-info-grid">
         <div className="traz-info-row">
           <IonIcon icon={timeOutline} />
@@ -552,34 +612,12 @@ const TraceabilityTab: React.FC = () => {
           <span className="traz-info-label">Salida prevista</span>
           <span className="traz-info-value">{fechaSalidaEdit || entradaResult?.fecha_salida_prevista}</span>
         </div>
-        {entradaResult?.lote_alimento && (
-          <div className="traz-info-row">
-            <IonIcon icon={leafOutline} />
-            <span className="traz-info-label">Lote alimento</span>
-            <span className="traz-info-value traz-lote-tag">
-              #{entradaResult.lote_alimento.id_lote_alimento} — {entradaResult.lote_alimento.descripcion}
-            </span>
-          </div>
-        )}
-        {entradaResult?.lote_huevo && (
-          <div className="traz-info-row">
-            <IonIcon icon={cubeOutline} />
-            <span className="traz-info-label">Lote huevo</span>
-            <span className="traz-info-value traz-lote-tag">
-              #{entradaResult.lote_huevo.id_lote_huevo} — {entradaResult.lote_huevo.origen}
-            </span>
-          </div>
-        )}
       </div>
-
       <button className="traz-modify-date-btn" onClick={() => setShowCalModal(true)}>
-        <IonIcon icon={calendarOutline} />
-        Modificar fecha de salida
+        <IonIcon icon={calendarOutline} />Modificar fecha de salida
       </button>
-
       <IonButton expand="block" className="traz-done-btn" onClick={resetFlow}>
-        <IonIcon icon={checkmarkDoneOutline} slot="start" />
-        Listo
+        <IonIcon icon={checkmarkDoneOutline} slot="start" />Listo
       </IonButton>
     </div>
   );
@@ -589,24 +627,11 @@ const TraceabilityTab: React.FC = () => {
     return (
       <div className={`traz-result ${cumplido ? "traz-result--success" : "traz-result--warning"}`}>
         <div className="traz-result-icon-wrap">
-          <IonIcon
-            icon={cumplido ? checkmarkCircleOutline : warningOutline}
-            className={`traz-result-icon ${cumplido ? "success" : "warning"}`}
-          />
+          <IonIcon icon={cumplido ? checkmarkCircleOutline : warningOutline}
+            className={`traz-result-icon ${cumplido ? "success" : "warning"}`} />
         </div>
         <h3 className="traz-result-title">Información de retirada</h3>
-
         <div className="traz-info-grid">
-          <div className="traz-info-row">
-            <IonIcon icon={timeOutline} />
-            <span className="traz-info-label">Entrada</span>
-            <span className="traz-info-value">{salidaResult?.fecha_entrada_camara}</span>
-          </div>
-          <div className="traz-info-row">
-            <IonIcon icon={calendarOutline} />
-            <span className="traz-info-label">Salida prevista</span>
-            <span className="traz-info-value">{salidaResult?.fecha_salida_prevista}</span>
-          </div>
           <div className="traz-info-row">
             <IonIcon icon={timeOutline} />
             <span className="traz-info-label">Días en cámara</span>
@@ -619,18 +644,13 @@ const TraceabilityTab: React.FC = () => {
             </span>
           </div>
         </div>
-
         <IonButton expand="block" className="traz-confirm-btn" onClick={handleConfirmarSalida} disabled={loading}>
           {loading ? <IonSpinner name="crescent" /> : (
-            <>
-              <IonIcon icon={checkmarkCircleOutline} slot="start" />
-              Confirmar retirada
-            </>
+            <><IonIcon icon={checkmarkCircleOutline} slot="start" />Confirmar retirada</>
           )}
         </IonButton>
         <button className="traz-cancel-btn" onClick={resetFlow}>
-          <IonIcon icon={closeOutline} />
-          Cancelar
+          <IonIcon icon={closeOutline} />Cancelar
         </button>
       </div>
     );
@@ -647,22 +667,7 @@ const TraceabilityTab: React.FC = () => {
             {estadoBadge(estado)}
           </div>
         </div>
-
         <div className="traz-info-grid">
-          {palletData?.lote_alimento_desc && (
-            <div className="traz-info-row">
-              <IonIcon icon={leafOutline} />
-              <span className="traz-info-label">Alimento</span>
-              <span className="traz-info-value">{palletData.lote_alimento_desc}</span>
-            </div>
-          )}
-          {palletData?.lote_huevo_origen && (
-            <div className="traz-info-row">
-              <IonIcon icon={cubeOutline} />
-              <span className="traz-info-label">Huevo</span>
-              <span className="traz-info-value">{palletData.lote_huevo_origen}</span>
-            </div>
-          )}
           {palletData?.fecha_entrada_camara && (
             <div className="traz-info-row">
               <IonIcon icon={timeOutline} />
@@ -678,31 +683,25 @@ const TraceabilityTab: React.FC = () => {
             </div>
           )}
         </div>
-
         <div className="traz-pallet-actions">
           {estado === "vacio" && (
             <IonButton expand="block" className="traz-action-primary" onClick={handleMontarPallet} disabled={loading}>
-              <IonIcon icon={constructOutline} slot="start" />
-              Montar pallet
+              <IonIcon icon={constructOutline} slot="start" />Montar pallet
             </IonButton>
           )}
-          {estado === "desmontar" && (
-            <IonButton expand="block" className="traz-action-danger" onClick={handleDesmontarPallet} disabled={loading}>
-              <IonIcon icon={removeCircleOutline} slot="start" />
-              Desmontar pallet
-            </IonButton>
-          )}
-          {(estado === "preparado" || estado === "en_camara") && (
+          {(estado === "preparado" || estado === "en_camara" || estado === "fuera_camara") && (
             <div className="traz-info-only">
               <IonIcon icon={informationCircleOutline} />
-              <span>Este pallet está {estado === "preparado" ? "listo para cámara" : "dentro de una cámara"}</span>
+              <span>
+                {estado === "preparado" && "Listo para entrar a cámara"}
+                {estado === "en_camara" && "Dentro de una cámara"}
+                {estado === "fuera_camara" && "Fuera de cámara — pendiente de cribar"}
+              </span>
             </div>
           )}
         </div>
-
         <button className="traz-cancel-btn" onClick={resetFlow}>
-          <IonIcon icon={arrowBackOutline} />
-          Volver
+          <IonIcon icon={arrowBackOutline} />Volver
         </button>
       </div>
     );
@@ -712,22 +711,9 @@ const TraceabilityTab: React.FC = () => {
     <div className="traz-result traz-result--success">
       <IonIcon icon={checkmarkCircleOutline} className="traz-result-icon success" />
       <h3 className="traz-result-title">Pallet montado</h3>
-      <p className="traz-result-sub">El pallet está listo para entrar a cámara. Ya tiene asignado el lote de alimento y de huevo activos.</p>
+      <p className="traz-result-sub">El pallet está listo para entrar a cámara.</p>
       <IonButton expand="block" className="traz-done-btn" onClick={resetFlow}>
-        <IonIcon icon={checkmarkDoneOutline} slot="start" />
-        Listo
-      </IonButton>
-    </div>
-  );
-
-  const renderPalletDesmontando = () => (
-    <div className="traz-result traz-result--neutral">
-      <IonIcon icon={checkmarkCircleOutline} className="traz-result-icon success" />
-      <h3 className="traz-result-title">Pallet desmontado</h3>
-      <p className="traz-result-sub">Los lotes se han desasignado. El pallet está vacío y listo para un nuevo ciclo.</p>
-      <IonButton expand="block" className="traz-done-btn" onClick={resetFlow}>
-        <IonIcon icon={checkmarkDoneOutline} slot="start" />
-        Listo
+        <IonIcon icon={checkmarkDoneOutline} slot="start" />Listo
       </IonButton>
     </div>
   );
@@ -736,26 +722,157 @@ const TraceabilityTab: React.FC = () => {
     <div className="traz-result traz-result--success">
       <IonIcon icon={leafOutline} className="traz-result-icon success" />
       <h3 className="traz-result-title">{loteActivado?.tipo} activado</h3>
-      <p className="traz-result-sub">
-        El lote anterior ha sido finalizado. El nuevo lote queda como activo y será asignado a los próximos pallets.
-      </p>
-      <div className="traz-info-grid">
-        {loteActivado?.descripcion && (
-          <div className="traz-info-row">
-            <span className="traz-info-label">Descripción</span>
-            <span className="traz-info-value">{loteActivado.descripcion}</span>
-          </div>
-        )}
-        {loteActivado?.origen && (
-          <div className="traz-info-row">
-            <span className="traz-info-label">Origen</span>
-            <span className="traz-info-value">{loteActivado.origen}</span>
-          </div>
-        )}
-      </div>
+      <p className="traz-result-sub">El nuevo lote queda activo y será asignado a los próximos pallets.</p>
       <IonButton expand="block" className="traz-done-btn" onClick={resetFlow}>
-        <IonIcon icon={checkmarkDoneOutline} slot="start" />
-        Listo
+        <IonIcon icon={checkmarkDoneOutline} slot="start" />Listo
+      </IonButton>
+    </div>
+  );
+
+  // ── CRIBADO: pantalla escanear pallet ──
+  const renderCribadoEscaneando = () => (
+    <div className="traz-cribado-wrap">
+      {/* Cabecera sesión */}
+      <div className="traz-cribado-header">
+        <IonIcon icon={cutOutline} className="traz-cribado-icon" />
+        <div>
+          <h3 className="traz-cribado-title">Sesión #{sesionActiva?.id_sesion}</h3>
+          <p className="traz-cribado-sub">
+            {sesionActiva?.total_cribados ?? 0} pallets cribados · iniciada {sesionActiva?.fecha_inicio}
+          </p>
+        </div>
+      </div>
+
+      {/* Lista pallets cribados */}
+      {sesionActiva && sesionActiva.pallets_cribados.length > 0 && (
+        <div className="traz-cribado-lista">
+          {sesionActiva.pallets_cribados.map((p, i) => (
+            <div key={i} className="traz-cribado-pallet-item">
+              <IonIcon icon={checkmarkCircleOutline} style={{ color: "#2ecc71" }} />
+              <span>{p.codigo_qr}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="traz-waiting-sub" style={{ marginTop: 16 }}>
+        Escanea el QR del próximo pallet a cribar
+      </p>
+
+      <IonButton expand="block" className="traz-scan-btn" onClick={handleScanPalletCribado} disabled={loading}>
+        {loading ? <IonSpinner name="crescent" /> : (
+          <><IonIcon icon={scanOutline} slot="start" />Escanear pallet</>
+        )}
+      </IonButton>
+
+      {/* Botones big bag y terminar — solo si hay al menos 1 cribado */}
+      {sesionActiva && sesionActiva.total_cribados > 0 && (
+        <>
+          <IonButton
+            expand="block"
+            className="traz-bigbag-btn"
+            onClick={handleBigBagLleno}
+            disabled={loading}
+            style={{ marginTop: 10 }}
+          >
+            <IonIcon icon={bagHandleOutline} slot="start" />
+            Big bag lleno
+          </IonButton>
+
+          <IonButton
+            expand="block"
+            fill="outline"
+            className="traz-terminar-btn"
+            onClick={handleTerminarSesion}
+            disabled={loading}
+            style={{ marginTop: 8 }}
+          >
+            <IonIcon icon={stopCircleOutline} slot="start" />
+            Terminar sesión de cribado
+          </IonButton>
+        </>
+      )}
+
+      <button className="traz-cancel-btn" onClick={resetFlow}>
+        <IonIcon icon={arrowBackOutline} />Volver al inicio
+      </button>
+    </div>
+  );
+
+  // ── CRIBADO: pallet en proceso ──
+  const renderCribadoEnProceso = () => (
+    <div className="traz-card">
+      <div className="traz-card-header">
+        <IonIcon icon={cutOutline} className="traz-card-icon" style={{ color: "var(--color-mid)" }} />
+        <div>
+          <h3 className="traz-card-title">Pallet en cribado</h3>
+          <p className="traz-card-sub">{palletCribandoActual?.codigo_qr}</p>
+        </div>
+      </div>
+
+      <div className="traz-info-grid" style={{ marginTop: 12 }}>
+        <div className="traz-info-row">
+          <span className="traz-info-label">Estado actual</span>
+          <span className="traz-info-value">Fuera de cámara → en proceso</span>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
+        <IonButton
+          expand="block"
+          className="traz-confirm-btn"
+          onClick={handlePalletCribado}
+          disabled={loading}
+        >
+          {loading ? <IonSpinner name="crescent" /> : (
+            <><IonIcon icon={checkmarkCircleOutline} slot="start" />Pallet cribado</>
+          )}
+        </IonButton>
+
+        <IonButton
+          expand="block"
+          color="medium"
+          fill="outline"
+          onClick={handleCancelarPalletCribado}
+          disabled={loading}
+        >
+          <IonIcon icon={closeOutline} slot="start" />
+          Cancelar cribado
+        </IonButton>
+      </div>
+    </div>
+  );
+
+  // ── CRIBADO: big bag creado ──
+  const renderCribadoBigBagCreado = () => (
+    <div className="traz-result traz-result--success">
+      <IonIcon icon={bagHandleOutline} className="traz-result-icon success" />
+      <h3 className="traz-result-title">Big bag registrado</h3>
+      <div className="traz-info-grid">
+        <div className="traz-info-row">
+          <span className="traz-info-label">Código lote</span>
+          <span className="traz-info-value" style={{ fontWeight: 800 }}>{bigBagResult?.codigo_lote}</span>
+        </div>
+        <div className="traz-info-row">
+          <span className="traz-info-label">Producto</span>
+          <span className="traz-info-value">{bigBagResult?.tipo_producto}</span>
+        </div>
+        <div className="traz-info-row">
+          <span className="traz-info-label">Fecha</span>
+          <span className="traz-info-value">{bigBagResult?.fecha_produccion}</span>
+        </div>
+        <div className="traz-info-row">
+          <span className="traz-info-label">Destino</span>
+          <span className="traz-info-value">{bigBagResult?.destino}</span>
+        </div>
+      </div>
+      <IonButton expand="block" className="traz-done-btn"
+        onClick={() => { setBigBagResult(null); setFlow("cribado_escaneando"); }}>
+        <IonIcon icon={playOutline} slot="start" />Continuar cribando
+      </IonButton>
+      <IonButton expand="block" fill="outline" style={{ marginTop: 8 }}
+        onClick={handleTerminarSesion} disabled={loading}>
+        <IonIcon icon={stopCircleOutline} slot="start" />Terminar sesión
       </IonButton>
     </div>
   );
@@ -784,11 +901,13 @@ const TraceabilityTab: React.FC = () => {
           {flow === "camara_confirmacion_salida" && renderConfirmacionSalida()}
           {flow === "pallet_info" && renderPalletInfo()}
           {flow === "pallet_montando" && renderPalletMontando()}
-          {flow === "pallet_desmontando" && renderPalletDesmontando()}
           {flow === "lote_activado" && renderLoteActivado()}
+          {flow === "cribado_escaneando" && renderCribadoEscaneando()}
+          {flow === "cribado_en_proceso" && renderCribadoEnProceso()}
+          {flow === "cribado_big_bag_creado" && renderCribadoBigBagCreado()}
         </div>
 
-        {/* Modal calendario fecha salida */}
+        {/* Modal fecha salida */}
         <IonModal isOpen={showCalModal} onDidDismiss={() => setShowCalModal(false)} className="traz-modal-cal">
           <div className="traz-modal-inner">
             <h3 className="traz-modal-title">Modificar fecha de salida</h3>
@@ -802,11 +921,27 @@ const TraceabilityTab: React.FC = () => {
             <IonButton expand="block" className="traz-modal-confirm" onClick={handleGuardarFecha} disabled={loading}>
               {loading ? <IonSpinner name="crescent" /> : "Confirmar fecha"}
             </IonButton>
-            <IonButton expand="block" fill="clear" onClick={() => setShowCalModal(false)}>
-              Cancelar
-            </IonButton>
+            <IonButton expand="block" fill="clear" onClick={() => setShowCalModal(false)}>Cancelar</IonButton>
           </div>
         </IonModal>
+
+        {/* Alert de confirmación genérico */}
+        <IonAlert
+          isOpen={alertConfig.isOpen}
+          header={alertConfig.header}
+          message={alertConfig.message}
+          buttons={[
+            { text: "Cancelar", role: "cancel", handler: () => setAlertConfig(prev => ({ ...prev, isOpen: false })) },
+            {
+              text: "Confirmar",
+              handler: () => {
+                setAlertConfig(prev => ({ ...prev, isOpen: false }));
+                alertConfig.onConfirm();
+              }
+            }
+          ]}
+          onDidDismiss={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+        />
 
         <IonToast
           isOpen={!!toastMsg}

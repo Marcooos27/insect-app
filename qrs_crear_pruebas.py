@@ -19,5 +19,24 @@ def generar_qr(texto, nombre_archivo):
     img.save(f"qrs/{nombre_archivo}.png")
 
 # Ejemplos
-generar_qr("PALLET-001", "pallet_001")
 generar_qr("CAMARA-01", "camara_01")
+
+
+
+# Generar 25 Pallets (del 001 al 025)
+for i in range(1, 34):
+    # El :03d rellena con ceros a la izquierda (001, 002...)
+    codigo = f"PALLET-{i:03d}"
+    archivo = f"pallet_{i:03d}"
+    generar_qr(codigo, archivo)
+    print(f"Generado: {archivo}")
+
+
+# Ejemplo si quieres generar varias cámaras (del 01 al 05)
+'''
+for i in range(1, 6):
+    codigo = f"CAMARA-{i:02d}"
+    archivo = f"camara_{i:02d}"
+    generar_qr(codigo, archivo)
+
+    '''

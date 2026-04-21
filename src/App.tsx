@@ -63,6 +63,8 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.system.css';
 
 import './theme/variables.css';
+import RegisterQRPage from './pages/Profile/RegisterQR';
+import IncidenciasPage from './pages/Profile/InicidenciasPage';
 
 setupIonicReact();
 
@@ -134,6 +136,20 @@ const App: React.FC = () => {
                     <Route exact path="/profile">
                       <ProtectedRoute>
                         <ProfilePage />
+                      </ProtectedRoute>
+                    </Route>
+
+                    {/* Registrar QR */}
+                    <Route exact path="/registrar-qr">
+                      <ProtectedRoute>
+                        <RegisterQRPage />
+                      </ProtectedRoute>
+                    </Route>
+
+                    {/* Registrar QR */}
+                    <Route exact path="/incidencias">
+                      <ProtectedRoute>
+                        <IncidenciasPage />
                       </ProtectedRoute>
                     </Route>
 

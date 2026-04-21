@@ -1,0 +1,110 @@
+/* ================================
+   INCIDENCIAS — CSS (PALETA 6)
+================================ */
+
+.incidencias-content {
+  --background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
+}
+
+/* CONTENEDOR PRINCIPAL */
+.incidencias-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  margin-top: 30px;
+
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+}
+
+/* ================================
+   INPUTS (IonInput / IonTextarea)
+================================ */
+
+.incidencias-container ion-input,
+.incidencias-container ion-textarea {
+  --background: rgba(255,255,255,0.06);
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+
+  color: var(--text-white);
+  font-size: 0.9rem;
+}
+
+/* placeholder */
+.incidencias-container ion-input::part(placeholder),
+.incidencias-container ion-textarea::part(placeholder) {
+  color: rgba(255,255,255,0.35);
+}
+
+/* focus / activo */
+.incidencias-container ion-input:focus-within,
+.incidencias-container ion-textarea:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(144,150,50,0.25);
+}
+
+/* textarea más alto */
+.incidencias-container ion-textarea {
+  min-height: 120px;
+}
+
+/* ================================
+   BOTÓN ENVIAR
+================================ */
+
+.incidencias-container ion-button {
+  --background: var(--color-mid);
+  --background-activated: var(--color-dark);
+  --background-hover: var(--color-dark);
+  --color: var(--text-white);
+  --border-radius: 14px;
+
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  margin-top: 8px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+}
+
+.incidencias-container ion-button::part(native) {
+  border-radius: 14px;
+}
+
+/* hover efecto suave */
+.incidencias-container ion-button:hover {
+  filter: brightness(1.1);
+}
+
+/* ================================
+   HEADER TOOLBAR (opcional coherencia)
+================================ */
+
+.incidencias-toolbar {
+  --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
+  --color: var(--text-white);
+}
+
+.incidencias-title {
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* ================================
+   TOAST (opcional coherencia visual)
+================================ */
+
+ion-toast {
+  --border-radius: 12px;
+}

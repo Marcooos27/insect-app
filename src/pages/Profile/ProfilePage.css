@@ -16,6 +16,13 @@
   gap: 10px;
 }
 
+.profile-menu-btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  --color: var(--text-white);
+}
+
 .profile-avatar {
   font-size: 96px;
   color: var(--color-accent);
@@ -30,6 +37,69 @@
   margin: 0;
   text-transform: capitalize;
 }
+
+
+
+/* POPOVER */
+.profile-popover {
+  background: var(--color-darkest);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 180px;
+}
+
+.profile-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--text-white);
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.profile-popover-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.profile-popover-item ion-icon {
+  color: var(--color-accent);
+}
+
+/* ================================
+   BOTÓN DE INCIDENCIAS
+================================ */
+
+.profile-danger-fab {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  color: #e74c3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+  z-index: 999;
+}
+
+.profile-danger-fab ion-icon {
+  font-size: 1.6rem;
+}
+
+.profile-danger-fab:active {
+  transform: scale(0.95);
+}
+
+
 
 /* ================================
    TARJETA DE DATOS
@@ -125,3 +195,12 @@
   letter-spacing: 0.5px;
 }
   
+
+.clickable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clickable:active {
+  background: rgba(0, 0, 0, 0.05);
+}

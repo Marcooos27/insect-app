@@ -79,6 +79,7 @@ async def log_requests(request: Request, call_next):
 
 
 
+
 # ================================
 # TABLA: CLIENTE
 # ================================
