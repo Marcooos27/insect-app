@@ -20,6 +20,11 @@
   gap: 18px;
 }
 
+.registerqr-toolbar {
+  --background: var(--color-mid);
+  --color: var(--text-white);
+}
+
 /* ================================
    TARJETA QR LEÍDO
 ================================ */

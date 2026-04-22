@@ -101,10 +101,10 @@ const RegisterQRPage: React.FC = () => {
       // ─────────────────────────────────────────
       let tipo = null;
 
-      if (value.startsWith("CAM-")) tipo = "Cámara";
-      else if (value.startsWith("PAL-")) tipo = "Pallet";
-      else if (value.startsWith("LA-")) tipo = "Lote de Alimento";
-      else if (value.startsWith("LH-")) tipo = "Lote de Huevo";
+      if (value.startsWith("CAMARA-")) tipo = "Cámara";
+      else if (value.startsWith("PALLET-")) tipo = "Pallet";
+      else if (value.startsWith("LO-AL-")) tipo = "Lote de Alimento";
+      else if (value.startsWith("LO-HU-")) tipo = "Lote de Huevo";
 
       setTipoDetectado(tipo);
       setShowConfirm(true);
@@ -150,7 +150,7 @@ const RegisterQRPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="registerqr-toolbar">
           <IonTitle>
             <IonIcon icon={qrCodeOutline} style={{ marginRight: 8 }} />
             Registrar QR
@@ -186,46 +186,47 @@ const RegisterQRPage: React.FC = () => {
         </div>
 
         {/* ───────────── MODAL CONFIRMACIÓN ───────────── */}
-        <IonModal isOpen={showConfirm} onDidDismiss={() => setShowConfirm(false)}>
-          <div className="confirm-modal">
+        {showConfirm && (
+          <div className="registerqr-modal-backdrop">
+            <div className="registerqr-modal">
 
-            <IonIcon icon={checkmarkCircleOutline} className="confirm-icon" />
+              <h3 className="registerqr-modal-title">
+                Confirmar registro
+              </h3>
 
-            <h2>Confirmar registro</h2>
-
-            <p><strong>QR:</strong> {qrValue}</p>
-
-            <p>
-              <strong>Tipo detectado:</strong>{" "}
-              {tipoDetectado || "Desconocido"}
-            </p>
-
-            {!tipoDetectado && (
-              <p className="warning-text">
-                ⚠️ No se pudo detectar el tipo automáticamente
+              <p className="registerqr-modal-text">
+                <strong>QR:</strong><br /> {qrValue}
               </p>
-            )}
 
-            <IonButton
-              expand="block"
-              color="success"
-              onClick={confirmarRegistro}
-              disabled={loading}
-            >
-              {loading ? <IonSpinner /> : "Confirmar"}
-            </IonButton>
+              <p className="registerqr-modal-text">
+                <strong>Tipo:</strong> {tipoDetectado || "Desconocido"}
+              </p>
 
-            <IonButton
-              expand="block"
-              fill="clear"
-              onClick={() => setShowConfirm(false)}
-            >
-              <IonIcon icon={closeOutline} slot="start" />
-              Cancelar
-            </IonButton>
+              {!tipoDetectado && (
+                <p className="warning-text">
+                  ⚠️ No se pudo detectar el tipo automáticamente
+                </p>
+              )}
 
+              <div className="registerqr-modal-actions">
+                <IonButton
+                  className="registerqr-confirm-btn"
+                  onClick={confirmarRegistro}
+                >
+                  Confirmar
+                </IonButton>
+
+                <IonButton
+                  className="registerqr-cancel-btn"
+                  onClick={() => setShowConfirm(false)}
+                >
+                  Cancelar
+                </IonButton>
+              </div>
+
+            </div>
           </div>
-        </IonModal>
+        )}
 
         {/* ───────────── TOAST ───────────── */}
         <IonToast

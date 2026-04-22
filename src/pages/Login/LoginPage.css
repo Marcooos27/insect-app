@@ -27,7 +27,7 @@
 
 .login-logo {
   width: 660px;
-  height: 160px;
+  height: auto;
 
   margin-bottom: 10px;
 
@@ -60,6 +60,18 @@
   margin-top: 6px;
 }
 
+
+/* Especifico para MOVIL */
+@media (max-width: 768px) {
+  .login-logo {
+    /* Ajustamos el tamaño para que quepa en el móvil */
+    width: 480px; 
+    height: auto; /* IMPORTANTE: Deja el alto en auto para que no se deforme */
+    
+    margin-bottom: 5px;
+    filter: drop-shadow(0 0 10px rgba(144, 150, 50, 0.35)); /* Sombra más pequeña */
+  }
+}
 
 
 /* ================================
