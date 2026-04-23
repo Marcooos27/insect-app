@@ -144,24 +144,21 @@
 }
 
 
-.traz-cribado-icon {
-  color: var(--text-white);
-  /*
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  font-size: 1rem;
-  width: 100%;
-  margin-top: 8px;*/
+.traz-cribado-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
 }
 
-.traz-cribado-title, .traz-cribado-sub {
+
+.traz-cribado-icon {
+  color: var(--text-white) !important;
+}
+
+.traz-cribado-title,
+.traz-cribado-sub {
   color: var(--text-white);
-  /*
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  font-size: 1rem;
-  width: 100%;
-  margin-top: 8px;*/
 }
 
 
