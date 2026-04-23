@@ -107,6 +107,7 @@ const TraceabilityTab: React.FC = () => {
   const [sesionActiva, setSesionActiva] = useState<SesionActiva | null>(null);
   const [palletCribandoActual, setPalletCribandoActual] = useState<any>(null);
   const [bigBagResult, setBigBagResult] = useState<any>(null);
+  const [cancelAlertOpen, setCancelAlertOpen] = useState(false);
   
 
   // Alertas de confirmación
@@ -346,7 +347,7 @@ const TraceabilityTab: React.FC = () => {
 
 
 
-  const cancelarSesion = async (motivo: string) => {
+  const cancelarSesion = async () => {
     if (!sesionActiva) return;
 
     try {
@@ -356,18 +357,18 @@ const TraceabilityTab: React.FC = () => {
         method: "POST",
         body: JSON.stringify({
           id_sesion: sesionActiva.id_sesion,
-          motivo
         }),
       });
 
-      setLoading(false);
-      showToast("Sesión cancelada", "warning");
-
+      setCancelAlertOpen(false);
       setSesionActiva(null);
       resetFlow();
+      showToast("Sesión cancelada", "warning");
+
     } catch (err: any) {
-      setLoading(false);
       showToast(err.message, "danger");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -851,7 +852,7 @@ const TraceabilityTab: React.FC = () => {
       <button className="traz-cancel-btn" onClick={resetFlow}>
         <IonIcon icon={arrowBackOutline} />Volver al inicio
       </button>
-{/*
+
       <IonButton
         expand="block"
         color="danger"
@@ -861,7 +862,7 @@ const TraceabilityTab: React.FC = () => {
         style={{ marginTop: 8 }}
       >
         Cancelar sesión
-      </IonButton>*/}
+      </IonButton>
     </div>
   );
 
@@ -1007,6 +1008,25 @@ const TraceabilityTab: React.FC = () => {
             }
           ]}
           onDidDismiss={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+        />
+
+        {/* Alert de cancelacion de sesion de cribado */}
+        <IonAlert
+          isOpen={cancelAlertOpen}
+          header="Cancelar sesión de cribado"
+          message="¿Seguro que quieres cancelar la sesión?"
+          buttons={[
+            {
+              text: "No",
+              role: "cancel",
+              handler: () => setCancelAlertOpen(false),
+            },
+            {
+              text: "Sí, cancelar",
+              handler: () => cancelarSesion(),
+            },
+          ]}
+          onDidDismiss={() => setCancelAlertOpen(false)}
         />
 
         <IonToast

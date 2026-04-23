@@ -907,8 +907,6 @@ def cancelar_sesion_procesado(data: CancelarSesionIn, request: Request):
         # 👇 Ajusta esto a tu sistema de auth
         id_operario = request.state.user["id"]  # o como lo tengas
 
-        observaciones = _mapear_motivo_cancelacion(data.motivo)
-
         cur.execute("""
             UPDATE procesado_sesion
             SET estado = 'cancelada',
@@ -917,7 +915,7 @@ def cancelar_sesion_procesado(data: CancelarSesionIn, request: Request):
                 id_operario_cancelacion = %s
             WHERE id = %s AND estado = 'activa'
             RETURNING id
-        """, [observaciones, id_operario, data.id_sesion])
+        """, ["Cancelada manualmente por operario", id_operario, data.id_sesion])
 
         if not cur.fetchone():
             raise HTTPException(404, "Sesión no activa o no existe")
