@@ -1,6 +1,7 @@
 # backend/trazabilidad_backend.py
 
 from fastapi import APIRouter, HTTPException, Depends
+from typing import Optional, Literal
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import date, datetime, timedelta
@@ -64,6 +65,14 @@ class IncidenciaIn(BaseModel):
     titulo: str
     descripcion: str
 
+class CancelarSesionIn(BaseModel):
+    id_sesion: int
+    motivo: Literal[
+        "manual",
+        "error_escaneo",
+        "mantenimiento"
+    ] = "manual"
+
 
 # ============================================================
 # HELPERS
@@ -107,6 +116,15 @@ def qr_exists(cur, codigo):
             return True
 
     return False
+
+
+def _mapear_motivo_cancelacion(motivo: str) -> str:
+    mapping = {
+        "manual": "Cancelada manualmente por operario",
+        "error_escaneo": "Cancelada por error de escaneo",
+        "mantenimiento": "Cancelada por mantenimiento"
+    }
+    return mapping.get(motivo, "Cancelada")
 
 
 
@@ -650,26 +668,25 @@ def iniciar_sesion_procesado(data: IniciarSesionIn):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Verificar que no hay sesión activa
-        cur.execute("""
-            SELECT id FROM procesado_sesion WHERE estado = 'activa' LIMIT 1
-        """)
-        activa = cur.fetchone()
-        if activa:
-            raise HTTPException(400, f"Ya hay una sesión activa (ID {activa[0]}). Ciérrala antes de iniciar una nueva.")
+        try:
+            cur.execute("""
+                INSERT INTO procesado_sesion (id_operario, estado)
+                VALUES (%s, 'activa')
+                RETURNING id, fecha_inicio
+            """, [data.id_operario])
+        except Exception as e:
+            conn.rollback()
+            raise HTTPException(400, "Ya hay una sesión activa")
 
-        cur.execute("""
-            INSERT INTO procesado_sesion (id_operario, estado)
-            VALUES (%s, 'activa')
-            RETURNING id, fecha_inicio
-        """, [data.id_operario])
         row = cur.fetchone()
         conn.commit()
+
         return {
             "message": "Sesión de cribado iniciada",
             "id_sesion": row[0],
             "fecha_inicio": row[1].strftime("%Y-%m-%d %H:%M")
         }
+    
     finally:
         cur.close()
         conn.close()
@@ -865,7 +882,7 @@ def terminar_sesion_procesado(data: TerminarSesionIn):
         cur.execute("""
             UPDATE procesado_sesion
             SET estado = 'finalizada', fecha_fin = NOW()
-            WHERE id = %s
+            WHERE id = %s AND estado = 'activa'
         """, [data.id_sesion])
 
         conn.commit()
@@ -879,6 +896,45 @@ def terminar_sesion_procesado(data: TerminarSesionIn):
     finally:
         cur.close()
         conn.close()
+
+
+
+@router.post("/procesado/cancelar")
+def cancelar_sesion_procesado(data: CancelarSesionIn, request: Request):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        # 👇 Ajusta esto a tu sistema de auth
+        id_operario = request.state.user["id"]  # o como lo tengas
+
+        observaciones = _mapear_motivo_cancelacion(data.motivo)
+
+        cur.execute("""
+            UPDATE procesado_sesion
+            SET estado = 'cancelada',
+                fecha_fin = NOW(),
+                observaciones = %s,
+                id_operario_cancelacion = %s
+            WHERE id = %s AND estado = 'activa'
+            RETURNING id
+        """, [observaciones, id_operario, data.id_sesion])
+
+        if not cur.fetchone():
+            raise HTTPException(404, "Sesión no activa o no existe")
+
+        conn.commit()
+
+        return {
+            "message": "Sesión cancelada correctamente",
+            "id_sesion": data.id_sesion,
+            "motivo": observaciones,
+            "cancelado_por": id_operario
+        }
+    finally:
+        cur.close()
+        conn.close()
+
+
 
 
 @router.get("/procesado/sesion_activa")

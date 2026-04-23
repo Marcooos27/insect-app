@@ -107,6 +107,7 @@ const TraceabilityTab: React.FC = () => {
   const [sesionActiva, setSesionActiva] = useState<SesionActiva | null>(null);
   const [palletCribandoActual, setPalletCribandoActual] = useState<any>(null);
   const [bigBagResult, setBigBagResult] = useState<any>(null);
+  const [cancelAlertOpen, setCancelAlertOpen] = useState(false);
 
   // Alertas de confirmación
   const [alertConfig, setAlertConfig] = useState<{
@@ -342,6 +343,35 @@ const TraceabilityTab: React.FC = () => {
       showToast(err.message, "danger");
     }
   };
+
+
+
+  const cancelarSesion = async (motivo: string) => {
+    if (!sesionActiva) return;
+
+    try {
+      setLoading(true);
+
+      await apiFetch("/trazabilidad/procesado/cancelar", {
+        method: "POST",
+        body: JSON.stringify({
+          id_sesion: sesionActiva.id_sesion,
+          motivo
+        }),
+      });
+
+      setCancelAlertOpen(false);
+      setSesionActiva(null);
+      resetFlow();
+      showToast("Sesión cancelada", "warning");
+
+    } catch (err: any) {
+      showToast(err.message, "danger");
+    }
+  };
+
+
+
 
   const handleScanPalletCribado = async () => {
     if (!sesionActiva) return;
@@ -796,6 +826,17 @@ const TraceabilityTab: React.FC = () => {
       <button className="traz-cancel-btn" onClick={resetFlow}>
         <IonIcon icon={arrowBackOutline} />Volver al inicio
       </button>
+
+      <IonButton
+        expand="block"
+        color="danger"
+        fill="outline"
+        onClick={() => setCancelAlertOpen(true)}
+        disabled={loading}
+        style={{ marginTop: 8 }}
+      >
+        Cancelar sesión
+      </IonButton>
     </div>
   );
 
@@ -941,6 +982,34 @@ const TraceabilityTab: React.FC = () => {
             }
           ]}
           onDidDismiss={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+        />
+
+
+        {/* Alert de cancelacion de sesion de cribado */}
+        <IonAlert
+          isOpen={cancelAlertOpen}
+          header="Cancelar sesión de cribado"
+          message="Selecciona el motivo de cancelación"
+          buttons={[
+            {
+              text: "Operario (error humano)",
+              handler: async () => {
+                await cancelarSesion("operario");
+              }
+            },
+            {
+              text: "Mantenimiento",
+              handler: async () => {
+                await cancelarSesion("mantenimiento");
+              }
+            },
+            {
+              text: "Cancelar",
+              role: "cancel",
+              handler: () => setCancelAlertOpen(false)
+            }
+          ]}
+          onDidDismiss={() => setCancelAlertOpen(false)}
         />
 
         <IonToast
