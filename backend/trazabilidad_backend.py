@@ -69,6 +69,30 @@ class IncidenciaIn(BaseModel):
 # HELPERS
 # ============================================================
 
+import re
+
+def parse_qr(codigo: str):
+    """
+    Devuelve (tipo, numero) a partir del QR.
+    Ej: CAMARA-01 → ("camara", 1)
+    """
+    codigo = codigo.strip().upper()
+
+    patrones = {
+        "camara": r"^CAMARA-(\d+)$",
+        "pallet": r"^PALLET-(\d+)$",
+        "lote_alimento": r"^LO-AL-(\d+)$",
+        "lote_huevo": r"^LO-HU-(\d+)$",
+    }
+
+    for tipo, pattern in patrones.items():
+        match = re.match(pattern, codigo)
+        if match:
+            return tipo, int(match.group(1))
+
+    return None, None
+
+
 def qr_exists(cur, codigo):
     tables = [
         "Camara",
@@ -548,33 +572,44 @@ def registrar_qr_auto(data: RegistrarQRIn):
     logger.info(f"QR recibido: {codigo}")
 
     try:
-        try:
-            if qr_exists(cur, codigo):
-                raise HTTPException(400, "El QR ya está registrado")
-        except HTTPException as e:
-            if e.status_code != 404:
-                raise
+        if qr_exists(cur, codigo):
+            raise HTTPException(400, "El QR ya está registrado")
 
-        if codigo.startswith("CAMARA-"):
-            cur.execute("INSERT INTO Camara (codigo_qr, nombre, capacidad_max) VALUES (%s, %s, %s)",
-                        [codigo, "Nueva Cámara", 100])
-            tipo = "camara"
-        elif codigo.startswith("PALLET-"):
-            cur.execute("INSERT INTO Pallet (codigo_qr, estado) VALUES (%s, 'vacio')", [codigo])
-            tipo = "pallet"
-        elif codigo.startswith("LO-AL-"):
-            cur.execute("INSERT INTO Lote_Alimento (codigo_qr, descripcion, activo) VALUES (%s, %s, FALSE)",
-                        [codigo, "Nuevo lote alimento"])
-            tipo = "lote_alimento"
-        elif codigo.startswith("LO-HU-"):
-            cur.execute("INSERT INTO Lote_Huevo (codigo_qr, origen, activo) VALUES (%s, %s, FALSE)",
-                        [codigo, "Origen desconocido"])
-            tipo = "lote_huevo"
+        tipo, numero = parse_qr(codigo)
+
+        if tipo == "camara":
+            nombre = f"Cámara {numero}" if numero else "Cámara"
+            cur.execute(
+                "INSERT INTO Camara (codigo_qr, nombre, capacidad_max) VALUES (%s, %s, %s)",
+                [codigo, nombre, 40]
+            )
+
+        elif tipo == "pallet":
+            cur.execute(
+                "INSERT INTO Pallet (codigo_qr, estado) VALUES (%s, 'vacio')",
+                [codigo]
+            )
+
+        elif tipo == "lote_alimento":
+            descripcion = f"Lote alimento {numero}" if numero else "Nuevo lote alimento"
+            cur.execute(
+                "INSERT INTO Lote_Alimento (codigo_qr, descripcion, activo) VALUES (%s, %s, FALSE)",
+                [codigo, descripcion]
+            )
+
+        elif tipo == "lote_huevo":
+            origen = f"Lote huevo {numero}" if numero else "Origen desconocido"
+            cur.execute(
+                "INSERT INTO Lote_Huevo (codigo_qr, origen, activo) VALUES (%s, %s, FALSE)",
+                [codigo, origen]
+            )
+
         else:
-            raise HTTPException(400, "Prefijos válidos: CAMARA-, PALLET-, LO-AL-, LO-HU-")
+            raise HTTPException(400, "Formato QR no válido")
 
         conn.commit()
         return {"message": "QR registrado", "tipo": tipo}
+
     finally:
         cur.close()
         conn.close()
