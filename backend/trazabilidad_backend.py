@@ -660,17 +660,18 @@ def registrar_qr_auto(data: RegistrarQRIn):
 
 
 @router.post("/procesado/iniciar")
-def iniciar_sesion_procesado(data: IniciarSesionIn):
+def iniciar_sesion_procesado(user = Depends(get_current_user)):
     """Crea una nueva sesión de cribado/procesado."""
     conn = get_connection()
     cur = conn.cursor()
     try:
+        id_operario = user["id_operario"]
         try:
             cur.execute("""
                 INSERT INTO procesado_sesion (id_operario, estado)
                 VALUES (%s, 'activa')
                 RETURNING id, fecha_inicio
-            """, [data.id_operario])
+            """, (id_operario,))
         except Exception as e:
             conn.rollback()
             raise HTTPException(400, "Ya hay una sesión activa")

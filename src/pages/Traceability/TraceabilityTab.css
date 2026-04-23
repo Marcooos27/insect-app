@@ -145,7 +145,7 @@
 
 
 .traz-cribado-icon {
-  --color: var(--text-white);
+  color: var(--text-white);
   /*
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -155,7 +155,7 @@
 }
 
 .traz-cribado-title, .traz-cribado-sub {
-  --color: var(--text-white);
+  color: var(--text-white);
   /*
   font-weight: 700;
   letter-spacing: 0.5px;
