@@ -5,7 +5,10 @@ const config: CapacitorConfig = {
   appName: 'InsectEat',
   webDir: 'dist',
   server: {
-    androidScheme: 'http'   // 👈 cambiar a http
+    androidScheme: 'http',
+    allowNavigation: [
+      "http://13.63.160.85",
+    ]   
   },
   plugins: {
     CapacitorHttp: {
