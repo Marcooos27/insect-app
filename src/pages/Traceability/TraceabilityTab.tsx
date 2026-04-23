@@ -853,6 +853,7 @@ const TraceabilityTab: React.FC = () => {
         <IonIcon icon={arrowBackOutline} />Volver al inicio
       </button>
 
+      <div style={{ background: "red" }}>DEBUG</div>
       <IonButton
         expand="block"
         color="danger"
