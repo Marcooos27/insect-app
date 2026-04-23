@@ -14,9 +14,6 @@ from backend.trazabilidad_backend import router as traz_router
 
 app = FastAPI(title="INSECT SOFTWARE")
 
-app.include_router(auth_router)
-app.include_router(traz_router, prefix="/trazabilidad")
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +28,12 @@ app.add_middleware(
     allow_methods=["*"],  # Permitir GET, POST, PUT, DELETE, OPTIONS
     allow_headers=["*"],
 )
+
+
+app.include_router(auth_router)
+app.include_router(traz_router, prefix="/trazabilidad")
+
+
 
 import logging
 

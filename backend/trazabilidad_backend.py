@@ -7,6 +7,7 @@ from typing import Optional, List
 from datetime import date, datetime, timedelta
 from backend.database import get_connection
 from backend.auth.dependencies import get_current_user
+from fastapi import Request
 
 import logging
 import json
