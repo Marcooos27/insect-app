@@ -13,6 +13,7 @@ import json
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+#router = APIRouter(tags=["trazabilidad"])
 router = APIRouter(tags=["trazabilidad"])
 
 logger.info("TRAZABILIDAD CARGADA")
@@ -67,6 +68,23 @@ class IncidenciaIn(BaseModel):
 # ============================================================
 # HELPERS
 # ============================================================
+
+def qr_exists(cur, codigo):
+    tables = [
+        "Camara",
+        "Pallet",
+        "Lote_Alimento",
+        "Lote_Huevo"
+    ]
+
+    for t in tables:
+        cur.execute(f"SELECT 1 FROM {t} WHERE codigo_qr = %s", [codigo])
+        if cur.fetchone():
+            return True
+
+    return False
+
+
 
 def log_engorde_event(
     cur, id_pallet, tipo_evento,
@@ -521,35 +539,39 @@ def estado_camaras():
 
 @router.post("/registrar_qr_auto")
 def registrar_qr_auto(data: RegistrarQRIn):
+    logger.info("🔥 ENTRANDO A registrar_qr_auto")
+
     conn = get_connection()
     cur = conn.cursor()
     codigo = data.codigo_qr.strip().upper().replace(" ", "")
+
+    logger.info(f"QR recibido: {codigo}")
+
     try:
         try:
-            scan_result = scan_qr(codigo)
-            if scan_result:
+            if qr_exists(cur, codigo):
                 raise HTTPException(400, "El QR ya está registrado")
         except HTTPException as e:
             if e.status_code != 404:
                 raise
 
-        if codigo.startswith("CAM-"):
+        if codigo.startswith("CAMARA-"):
             cur.execute("INSERT INTO Camara (codigo_qr, nombre, capacidad_max) VALUES (%s, %s, %s)",
                         [codigo, "Nueva Cámara", 100])
             tipo = "camara"
-        elif codigo.startswith("PAL-"):
+        elif codigo.startswith("PALLET-"):
             cur.execute("INSERT INTO Pallet (codigo_qr, estado) VALUES (%s, 'vacio')", [codigo])
             tipo = "pallet"
-        elif codigo.startswith("LA-"):
+        elif codigo.startswith("LO-AL-"):
             cur.execute("INSERT INTO Lote_Alimento (codigo_qr, descripcion, activo) VALUES (%s, %s, FALSE)",
                         [codigo, "Nuevo lote alimento"])
             tipo = "lote_alimento"
-        elif codigo.startswith("LH-"):
+        elif codigo.startswith("LO-HU-"):
             cur.execute("INSERT INTO Lote_Huevo (codigo_qr, origen, activo) VALUES (%s, %s, FALSE)",
                         [codigo, "Origen desconocido"])
             tipo = "lote_huevo"
         else:
-            raise HTTPException(400, "Prefijos válidos: CAM-, PAL-, LA-, LH-")
+            raise HTTPException(400, "Prefijos válidos: CAMARA-, PALLET-, LO-AL-, LO-HU-")
 
         conn.commit()
         return {"message": "QR registrado", "tipo": tipo}

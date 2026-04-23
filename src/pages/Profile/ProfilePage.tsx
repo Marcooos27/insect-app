@@ -21,7 +21,6 @@ import { useContext } from "react";
 import { OperarioContext } from "../../context/OperarioContext";
 import { useHistory } from "react-router";
 import React, { useState } from 'react';
-
 import "./ProfilePage.css";
 
 const Profile: React.FC = () => {
@@ -29,6 +28,7 @@ const Profile: React.FC = () => {
   const { operarios } = useContext(OperarioContext);
   const history = useHistory();
   const [showPopover, setShowPopover] = useState(false);
+  const [popoverEvent, setPopoverEvent] = useState<MouseEvent | undefined>(undefined);
 
   const nombreOperario =
     operarios.find(op => op.id_operario === user?.id_operario)?.nombre ?? "—";
@@ -47,7 +47,10 @@ const Profile: React.FC = () => {
             <IonButton
               fill="clear"
               className="profile-menu-btn"
-              onClick={() => setShowPopover(true)}
+              onClick={(e) => {
+                setPopoverEvent(e.nativeEvent); // 🔥 clave
+                setShowPopover(true);
+              }}
             >
               <IonIcon icon={ellipsisVerticalOutline} />
             </IonButton>
@@ -68,6 +71,8 @@ const Profile: React.FC = () => {
         {/* POPUP MENU */}
         <IonPopover
           isOpen={showPopover}
+          event={popoverEvent}          // 🔥 esto lo posiciona
+          reference="event"             // 🔥 obligatorio
           onDidDismiss={() => setShowPopover(false)}
           side="bottom"
           alignment="end"
@@ -77,7 +82,7 @@ const Profile: React.FC = () => {
             <div
               className="profile-popover-item"
               onClick={() => {
-                setShowPopover(false);
+                setShowPopover(false); // cerrar
                 history.push("/registrar-qr");
               }}
             >

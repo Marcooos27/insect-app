@@ -7,7 +7,7 @@
 }
 
 .registerqr-content {
-  --background: linear-gradient(160deg, var(--color-darkest) 0%, var(--color-dark) 100%);
+  --background: linear-gradient(160deg, var(--color-dark) 0%, var(--color-mid) 100%);
 }
 
 .registerqr-container {
@@ -21,7 +21,7 @@
 }
 
 .registerqr-toolbar {
-  --background: var(--color-mid);
+  --background: var(--color-darkest);
   --color: var(--text-white);
 }
 

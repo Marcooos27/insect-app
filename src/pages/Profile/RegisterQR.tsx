@@ -84,6 +84,8 @@ const RegisterQRPage: React.FC = () => {
 
       setQrValue(value);
 
+      console.log("QR Leido:", value);
+
       // ─────────────────────────────────────────
       // VALIDAR SI YA EXISTE
       // ─────────────────────────────────────────
@@ -106,6 +108,8 @@ const RegisterQRPage: React.FC = () => {
       else if (value.startsWith("LO-AL-")) tipo = "Lote de Alimento";
       else if (value.startsWith("LO-HU-")) tipo = "Lote de Huevo";
 
+      console.log("Tipo QR:", tipo);
+
       setTipoDetectado(tipo);
       setShowConfirm(true);
 
@@ -124,6 +128,8 @@ const RegisterQRPage: React.FC = () => {
     try {
       setLoading(true);
 
+      console.log("POST URL:", `${API_URL}trazabilidad/registrar_qr_auto`);
+
       await apiFetch("/trazabilidad/registrar_qr_auto", {
         method: "POST",
         body: JSON.stringify({
@@ -140,6 +146,7 @@ const RegisterQRPage: React.FC = () => {
 
     } catch (err: any) {
       setLoading(false);
+      console.log("Error:", err);
       showToast(err.message, "danger");
     }
   };
