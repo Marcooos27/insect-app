@@ -580,8 +580,8 @@ def registrar_qr_auto(data: RegistrarQRIn):
         if tipo == "camara":
             nombre = f"Cámara {numero}" if numero else "Cámara"
             cur.execute(
-                "INSERT INTO Camara (codigo_qr, nombre, capacidad_max) VALUES (%s, %s, %s)",
-                [codigo, nombre, 40]
+                "INSERT INTO Camara (porcentaje_uso, codigo_qr, nombre, capacidad_max) VALUES (%s, %s, %s, %s)",
+                [0, codigo, nombre, 40]
             )
 
         elif tipo == "pallet":
