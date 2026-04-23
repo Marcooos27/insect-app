@@ -66,13 +66,9 @@ class IncidenciaIn(BaseModel):
     titulo: str
     descripcion: str
 
-class CancelarSesionIn(BaseModel):
+class CancelarSesionRequest(BaseModel):
     id_sesion: int
-    motivo: Literal[
-        "manual",
-        "error_escaneo",
-        "mantenimiento"
-    ] = "manual"
+
 
 
 # ============================================================
@@ -901,12 +897,12 @@ def terminar_sesion_procesado(data: TerminarSesionIn):
 
 
 @router.post("/procesado/cancelar")
-def cancelar_sesion_procesado(data: CancelarSesionIn, request: Request):
+def cancelar_sesion_procesado(data: CancelarSesionRequest, user = Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
     try:
         # 👇 Ajusta esto a tu sistema de auth
-        id_operario = request.state.user["id"]  # o como lo tengas
+        id_operario = user["id_operario"]  # o como lo tengas
 
         cur.execute("""
             UPDATE procesado_sesion
@@ -926,7 +922,6 @@ def cancelar_sesion_procesado(data: CancelarSesionIn, request: Request):
         return {
             "message": "Sesión cancelada correctamente",
             "id_sesion": data.id_sesion,
-            "motivo": observaciones,
             "cancelado_por": id_operario
         }
     finally:
