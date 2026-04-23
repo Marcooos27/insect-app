@@ -133,6 +133,9 @@ const TraceabilityTab: React.FC = () => {
       .then(res => {
         if (res.sesion_activa) {
           setSesionActiva(res.sesion_activa);
+          setFlow("cribado_escaneando");
+        } else {
+          setFlow("idle");
         }
       })
       .catch(() => {});
