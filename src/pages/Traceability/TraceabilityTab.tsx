@@ -107,7 +107,7 @@ const TraceabilityTab: React.FC = () => {
   const [sesionActiva, setSesionActiva] = useState<SesionActiva | null>(null);
   const [palletCribandoActual, setPalletCribandoActual] = useState<any>(null);
   const [bigBagResult, setBigBagResult] = useState<any>(null);
-  const [cancelAlertOpen, setCancelAlertOpen] = useState(false);
+  
 
   // Alertas de confirmación
   const [alertConfig, setAlertConfig] = useState<{
@@ -360,18 +360,43 @@ const TraceabilityTab: React.FC = () => {
         }),
       });
 
-      setCancelAlertOpen(false);
-      setSesionActiva(null);
-      resetFlow();
+      setLoading(false);
       showToast("Sesión cancelada", "warning");
 
+      setSesionActiva(null);
+      resetFlow();
     } catch (err: any) {
+      setLoading(false);
       showToast(err.message, "danger");
     }
   };
 
-
-
+  
+/*
+  const handleCancelarSesion = () => {
+    setAlertConfig({
+      isOpen: true,
+      header: "Cancelar sesión",
+      message: "Selecciona el motivo",
+      onConfirm: () => {},
+      buttons: [
+        {
+          text: "Manual",
+          handler: () => cancelarSesion("manual")
+        },
+        {
+          text: "Error escaneo",
+          handler: () => cancelarSesion("error_escaneo")
+        },
+        {
+          text: "Mantenimiento",
+          handler: () => cancelarSesion("mantenimiento")
+        },
+        { text: "Cancelar", role: "cancel" }
+      ]
+    });
+  };
+*/
 
   const handleScanPalletCribado = async () => {
     if (!sesionActiva) return;
@@ -826,7 +851,7 @@ const TraceabilityTab: React.FC = () => {
       <button className="traz-cancel-btn" onClick={resetFlow}>
         <IonIcon icon={arrowBackOutline} />Volver al inicio
       </button>
-
+{/*
       <IonButton
         expand="block"
         color="danger"
@@ -836,7 +861,7 @@ const TraceabilityTab: React.FC = () => {
         style={{ marginTop: 8 }}
       >
         Cancelar sesión
-      </IonButton>
+      </IonButton>*/}
     </div>
   );
 
@@ -982,34 +1007,6 @@ const TraceabilityTab: React.FC = () => {
             }
           ]}
           onDidDismiss={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
-        />
-
-
-        {/* Alert de cancelacion de sesion de cribado */}
-        <IonAlert
-          isOpen={cancelAlertOpen}
-          header="Cancelar sesión de cribado"
-          message="Selecciona el motivo de cancelación"
-          buttons={[
-            {
-              text: "Operario (error humano)",
-              handler: async () => {
-                await cancelarSesion("operario");
-              }
-            },
-            {
-              text: "Mantenimiento",
-              handler: async () => {
-                await cancelarSesion("mantenimiento");
-              }
-            },
-            {
-              text: "Cancelar",
-              role: "cancel",
-              handler: () => setCancelAlertOpen(false)
-            }
-          ]}
-          onDidDismiss={() => setCancelAlertOpen(false)}
         />
 
         <IonToast
