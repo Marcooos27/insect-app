@@ -7,6 +7,12 @@ from email.mime.text import MIMEText
 from backend.Incidencias.config import settings  # tu archivo de configuración
 from backend.auth.auth import get_current_user  # tu función de autenticación actual
 
+# importado para poder hacer printeos y depurar
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 router = APIRouter()
 
 class IncidenciaRequest(BaseModel):
@@ -63,10 +69,11 @@ async def crear_incidencia(
     body: IncidenciaRequest,
     current_user=Depends(get_current_user)  # extrae el usuario del token JWT
 ):
+    logger.info(f"current_user contiene: {current_user}")  # <-- esto
     try:
         enviar_email_incidencia(
-            nombre_usuario=current_user.username,  # ajusta según tu modelo de usuario
-            email_usuario=current_user.email,
+            nombre_usuario=current_user["username"],  # ajusta según tu modelo de usuario
+            email_usuario=current_user["email"]
             titulo=body.titulo,
             descripcion=body.descripcion
         )
