@@ -32,6 +32,9 @@ const IncidenciasPage: React.FC = () => {
 
   const [toast, setToast] = useState("");
   const [color, setColor] = useState<"success" | "danger">("success");
+  // Al inicio del componente, lees el usuario del contexto o localStorage
+  const usuario = JSON.parse(localStorage.getItem("user") || "{}");
+
 
   const enviarIncidencia = async () => {
     if (!titulo || !descripcion) {
@@ -52,7 +55,7 @@ const IncidenciasPage: React.FC = () => {
       setTitulo("");
       setDescripcion("");
 
-      setToast("Incidencia enviada correctamente");
+      setToast(`Incidencia enviada por ${usuario.nombre}`);
       setColor("success");
 
     } catch (err: any) {

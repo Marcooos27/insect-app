@@ -11,6 +11,7 @@ from backend.database import get_connection  # Importamos la funci√≥n de conexi√
 from backend.auth.auth import require_admin
 
 from backend.trazabilidad_backend import router as traz_router
+from backend.Incidencias import router as incidencias_router
 
 app = FastAPI(title="INSECT SOFTWARE")
 
@@ -32,6 +33,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(traz_router, prefix="/trazabilidad")
+app.include_router(incidencias_router)
 
 
 
