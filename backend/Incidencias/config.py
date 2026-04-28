@@ -1,11 +1,11 @@
-from pydantic_settings import BaseSettings
+import os
+from dotenv import load_dotenv
 
-class Settings(BaseSettings):
-    EMAIL_FROM: str
-    EMAIL_PASSWORD: str
-    EMAIL_RESPONSABLE: str
+load_dotenv()
 
-    class Config:
-        env_file = ".env"
+class Settings:
+    EMAIL_FROM = os.getenv("EMAIL_FROM")
+    EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+    EMAIL_RESPONSABLE = os.getenv("EMAIL_RESPONSABLE")
 
 settings = Settings()
