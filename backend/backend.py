@@ -11,7 +11,7 @@ from backend.database import get_connection  # Importamos la funci√≥n de conexi√
 from backend.auth.auth import require_admin
 
 from backend.trazabilidad_backend import router as traz_router
-from backend.Incidencias import router as incidencias_router
+from backend.Incidencias.incidencias import router as incidencias_router
 
 app = FastAPI(title="INSECT SOFTWARE")
 
