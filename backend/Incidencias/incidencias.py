@@ -4,8 +4,8 @@ from datetime import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from .config import settings  # tu archivo de configuración
-from auth import get_current_user  # tu función de autenticación actual
+from backend.Incidencias.config import settings  # tu archivo de configuración
+from backend.auth.auth import get_current_user  # tu función de autenticación actual
 
 router = APIRouter()
 
