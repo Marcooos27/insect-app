@@ -65,7 +65,7 @@ async def crear_incidencia(
 ):
     try:
         enviar_email_incidencia(
-            nombre_usuario=current_user.nombre,  # ajusta según tu modelo de usuario
+            nombre_usuario=current_user.username,  # ajusta según tu modelo de usuario
             email_usuario=current_user.email,
             titulo=body.titulo,
             descripcion=body.descripcion
