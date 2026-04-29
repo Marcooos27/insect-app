@@ -29,6 +29,7 @@ type FlowState =
   | "pallet_info"
   | "pallet_montando"
   | "lote_activado"
+  | "lotes_gestion"       // ← NUEVO
   | "cribado_escaneando"
   | "cribado_en_proceso"
   | "cribado_big_bag_creado";
@@ -82,6 +83,9 @@ const apiFetch = async (path: string, options: RequestInit = {}) => {
   return data;
 };
 
+
+
+
 // ─────────────────────────────────────────────
 // COMPONENTE PRINCIPAL
 // ─────────────────────────────────────────────
@@ -108,6 +112,10 @@ const TraceabilityTab: React.FC = () => {
   const [palletCribandoActual, setPalletCribandoActual] = useState<any>(null);
   const [bigBagResult, setBigBagResult] = useState<any>(null);
   const [cancelAlertOpen, setCancelAlertOpen] = useState(false);
+  const [lotesData, setLotesData] = useState<{
+    alimentos: any[];
+    huevos: any[];
+  }>({ alimentos: [], huevos: [] });
   
 
   // Alertas de confirmación
@@ -140,6 +148,34 @@ const TraceabilityTab: React.FC = () => {
       })
       .catch(() => {});
   }, []);
+
+
+
+  const cargarLotes = async () => {
+    try {
+      setLoading(true);
+      const res = await apiFetch("/trazabilidad/lotes/estado");
+      setLotesData(res);
+    } catch (err: any) {
+      showToast(err.message, "danger");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleLote = async (id: number, tipo: "alimento" | "huevo") => {
+    try {
+      await apiFetch("/trazabilidad/lotes/toggle", {
+        method: "POST",
+        body: JSON.stringify({ id_lote: id, tipo }),
+      });
+      await cargarLotes(); // refresca
+    } catch (err: any) {
+      showToast(err.message, "danger");
+    }
+  };
+
+
 
   // ─────────────────────────────────────────────
   // ESCÁNER QR
@@ -744,9 +780,30 @@ const TraceabilityTab: React.FC = () => {
         </div>
         <div className="traz-pallet-actions">
           {estado === "vacio" && (
-            <IonButton expand="block" className="traz-action-primary" onClick={handleMontarPallet} disabled={loading}>
-              <IonIcon icon={constructOutline} slot="start" />Montar pallet
-            </IonButton>
+            <>
+              <IonButton
+                expand="block"
+                fill="outline"
+                color="medium"
+                onClick={async () => {
+                  await cargarLotes();
+                  setFlow("lotes_gestion");
+                }}
+                style={{ marginBottom: 8 }}
+              >
+                <IonIcon icon={leafOutline} slot="start" />
+                Ver / cambiar lotes activos
+              </IonButton>
+              <IonButton
+                expand="block"
+                className="traz-action-primary"
+                onClick={handleMontarPallet}
+                disabled={loading}
+              >
+                <IonIcon icon={constructOutline} slot="start" />
+                Montar pallet
+              </IonButton>
+            </>
           )}
           {(estado === "preparado" || estado === "en_camara" || estado === "fuera_camara") && (
             <div className="traz-info-only">
@@ -765,6 +822,124 @@ const TraceabilityTab: React.FC = () => {
       </div>
     );
   };
+
+
+
+  const renderLotesGestion = () => (
+    <div className="traz-card">
+      <div className="traz-card-header">
+        <IonIcon icon={leafOutline} className="traz-card-icon" />
+        <div>
+          <h3 className="traz-card-title">Lotes activos</h3>
+          <p className="traz-card-sub">Pulsa para activar o desactivar</p>
+        </div>
+      </div>
+
+      {/* ALIMENTOS */}
+      <div style={{ marginTop: 16 }}>
+        <p style={{ fontWeight: 700, fontSize: 13, color: "var(--color-mid)", marginBottom: 8 }}>
+          ALIMENTO (máx. 2 activos)
+        </p>
+        {lotesData.alimentos.length === 0 && (
+          <p style={{ fontSize: 13, color: "#888" }}>No hay lotes de alimento registrados</p>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {lotesData.alimentos.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => handleToggleLote(l.id, "alimento")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                borderRadius: 10,
+                border: `2px solid ${l.activo ? "#2ecc71" : "#444"}`,
+                background: l.activo ? "rgba(46,204,113,0.12)" : "rgba(255,255,255,0.05)",
+                color: "var(--text-primary)",
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>
+                  {l.tipo_alimento}
+                </div>
+                <div style={{ fontSize: 12, color: "#888" }}>
+                  {l.codigo_qr} · {l.fecha_llegada || "Sin fecha"}
+                </div>
+              </div>
+              <span style={{
+                fontSize: 12, fontWeight: 700,
+                color: l.activo ? "#2ecc71" : "#888",
+                background: l.activo ? "rgba(46,204,113,0.2)" : "rgba(255,255,255,0.08)",
+                padding: "4px 10px", borderRadius: 20
+              }}>
+                {l.activo ? "ACTIVO" : "INACTIVO"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* HUEVOS */}
+      <div style={{ marginTop: 20 }}>
+        <p style={{ fontWeight: 700, fontSize: 13, color: "var(--color-mid)", marginBottom: 8 }}>
+          HUEVOS (máx. 7 activos)
+        </p>
+        {lotesData.huevos.length === 0 && (
+          <p style={{ fontSize: 13, color: "#888" }}>No hay lotes de huevo registrados</p>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {lotesData.huevos.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => handleToggleLote(l.id, "huevo")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                borderRadius: 10,
+                border: `2px solid ${l.activo ? "#3498db" : "#444"}`,
+                background: l.activo ? "rgba(52,152,219,0.12)" : "rgba(255,255,255,0.05)",
+                color: "var(--text-primary)",
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>
+                  {l.origen || l.codigo_qr}
+                </div>
+                <div style={{ fontSize: 12, color: "#888" }}>
+                  {l.codigo_qr} · {l.fecha_registro || "Sin fecha"}
+                </div>
+              </div>
+              <span style={{
+                fontSize: 12, fontWeight: 700,
+                color: l.activo ? "#3498db" : "#888",
+                background: l.activo ? "rgba(52,152,219,0.2)" : "rgba(255,255,255,0.08)",
+                padding: "4px 10px", borderRadius: 20
+              }}>
+                {l.activo ? "ACTIVO" : "INACTIVO"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <IonButton
+        expand="block"
+        className="traz-done-btn"
+        style={{ marginTop: 20 }}
+        onClick={() => setFlow("pallet_info")}
+      >
+        <IonIcon icon={arrowBackOutline} slot="start" />
+        Volver al pallet
+      </IonButton>
+    </div>
+  );
+
+
 
   const renderPalletMontando = () => (
     <div className="traz-result traz-result--success">
@@ -975,6 +1150,7 @@ const TraceabilityTab: React.FC = () => {
           {flow === "cribado_escaneando" && renderCribadoEscaneando()}
           {flow === "cribado_en_proceso" && renderCribadoEnProceso()}
           {flow === "cribado_big_bag_creado" && renderCribadoBigBagCreado()}
+          {flow === "lotes_gestion" && renderLotesGestion()}
         </div>
 
         {/* Modal fecha salida */}

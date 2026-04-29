@@ -390,25 +390,67 @@ def montar_pallet(data: PalletMontadoIn):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT id_pallet, estado FROM Pallet WHERE codigo_qr = %s", [data.codigo_qr_pallet])
+        cur.execute(
+            "SELECT id_pallet, estado FROM Pallet WHERE codigo_qr = %s",
+            [data.codigo_qr_pallet]
+        )
         row = cur.fetchone()
         if not row:
             raise HTTPException(404, "Pallet no encontrado")
         if row[1] != "vacio":
             raise HTTPException(400, "El pallet no está vacío")
 
-        lote_alimento = _get_lote_alimento_activo(cur)
-        lote_huevo = _get_lote_huevo_activo(cur)
+        id_pallet = row[0]
 
-        log_engorde_event(
-            cur, row[0], "MONTADO",
-            estado_anterior="vacio", estado_nuevo="preparado",
-            id_lote_alimento=lote_alimento["id_lote_alimento"] if lote_alimento else None,
-            id_lote_huevo=lote_huevo["id_lote_huevo"] if lote_huevo else None
+        # Obtener TODOS los lotes activos ahora mismo
+        cur.execute(
+            "SELECT id_lote_alimento FROM Lote_Alimento WHERE activo = TRUE"
         )
-        cur.execute("UPDATE Pallet SET estado = 'preparado' WHERE id_pallet = %s", [row[0]])
+        lotes_alimento = [r[0] for r in cur.fetchall()]
+
+        cur.execute(
+            "SELECT id_lote_huevo FROM Lote_Huevo WHERE activo = TRUE"
+        )
+        lotes_huevo = [r[0] for r in cur.fetchall()]
+
+        if not lotes_alimento and not lotes_huevo:
+            raise HTTPException(
+                400,
+                "No hay lotes activos. Activa al menos un lote antes de montar."
+            )
+
+        # Registrar en pallet_lotes
+        for id_la in lotes_alimento:
+            cur.execute("""
+                INSERT INTO pallet_lotes (id_pallet, tipo, id_lote_alimento)
+                VALUES (%s, 'alimento', %s)
+            """, [id_pallet, id_la])
+
+        for id_lh in lotes_huevo:
+            cur.execute("""
+                INSERT INTO pallet_lotes (id_pallet, tipo, id_lote_huevo)
+                VALUES (%s, 'huevo', %s)
+            """, [id_pallet, id_lh])
+
+        # Log engorde (guardamos el primero como referencia rápida)
+        log_engorde_event(
+            cur, id_pallet, "MONTADO",
+            estado_anterior="vacio", estado_nuevo="preparado",
+            id_lote_alimento=lotes_alimento[0] if lotes_alimento else None,
+            id_lote_huevo=lotes_huevo[0] if lotes_huevo else None
+        )
+
+        cur.execute(
+            "UPDATE Pallet SET estado = 'preparado' WHERE id_pallet = %s",
+            [id_pallet]
+        )
         conn.commit()
-        return {"message": "Pallet montado"}
+
+        return {
+            "message": "Pallet montado",
+            "lotes_alimento_asignados": len(lotes_alimento),
+            "lotes_huevo_asignados": len(lotes_huevo)
+        }
     finally:
         cur.close()
         conn.close()
@@ -1023,6 +1065,179 @@ def get_lote_final(codigo_lote: str):
                 "destino": row[5] or "—",
                 "registro_silum": "ES24/XXXX/XXX",
             }
+        }
+    finally:
+        cur.close()
+        conn.close()
+
+
+
+
+
+
+
+# ============================================================
+# GESTIÓN DE LOTES — PANEL ENCARGADO
+# ============================================================
+
+class ToggleLoteIn(BaseModel):
+    id_lote: int
+    tipo: str  # 'alimento' | 'huevo'
+
+class NuevoLoteAlimentoIn(BaseModel):
+    codigo_qr: str
+    tipo_alimento: str  # ej: "Salvado de trigo"
+    descripcion: Optional[str] = None
+
+
+@router.get("/lotes/estado")
+def get_estado_lotes():
+    """
+    Devuelve todos los lotes de alimento y huevo con su estado activo/inactivo.
+    Usado por la pantalla de gestión de lotes antes de montar un pallet.
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT id_lote_alimento, codigo_qr, tipo_alimento, descripcion,
+                   fecha_llegada, activo
+            FROM Lote_Alimento
+            ORDER BY activo DESC, id_lote_alimento DESC
+        """)
+        alimentos = [
+            {
+                "id": r[0], "codigo_qr": r[1],
+                "tipo_alimento": r[2] or "Sin clasificar",
+                "descripcion": r[3],
+                "fecha_llegada": r[4].strftime("%d/%m/%Y") if r[4] else None,
+                "activo": r[5]
+            }
+            for r in cur.fetchall()
+        ]
+
+        cur.execute("""
+            SELECT id_lote_huevo, codigo_qr, origen, fecha_registro, activo
+            FROM Lote_Huevo
+            ORDER BY activo DESC, id_lote_huevo DESC
+        """)
+        huevos = [
+            {
+                "id": r[0], "codigo_qr": r[1],
+                "origen": r[2],
+                "fecha_registro": r[3].strftime("%d/%m/%Y") if r[3] else None,
+                "activo": r[4]
+            }
+            for r in cur.fetchall()
+        ]
+
+        return {"alimentos": alimentos, "huevos": huevos}
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.post("/lotes/toggle")
+def toggle_lote(data: ToggleLoteIn):
+    """
+    Activa o desactiva un lote individual (toggle).
+    Para alimentos: máximo 2 activos simultáneos.
+    Para huevos: máximo 7 activos simultáneos.
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        if data.tipo == "alimento":
+            cur.execute(
+                "SELECT activo FROM Lote_Alimento WHERE id_lote_alimento = %s",
+                [data.id_lote]
+            )
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(404, "Lote no encontrado")
+
+            nuevo_estado = not row[0]
+
+            if nuevo_estado:  # activando — verificar límite
+                cur.execute(
+                    "SELECT COUNT(*) FROM Lote_Alimento WHERE activo = TRUE"
+                )
+                if cur.fetchone()[0] >= 2:
+                    raise HTTPException(
+                        400,
+                        "Máximo 2 lotes de alimento activos. Desactiva uno primero."
+                    )
+
+            cur.execute(
+                "UPDATE Lote_Alimento SET activo = %s WHERE id_lote_alimento = %s",
+                [nuevo_estado, data.id_lote]
+            )
+
+        elif data.tipo == "huevo":
+            cur.execute(
+                "SELECT activo FROM Lote_Huevo WHERE id_lote_huevo = %s",
+                [data.id_lote]
+            )
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(404, "Lote no encontrado")
+
+            nuevo_estado = not row[0]
+
+            if nuevo_estado:  # activando — verificar límite
+                cur.execute(
+                    "SELECT COUNT(*) FROM Lote_Huevo WHERE activo = TRUE"
+                )
+                if cur.fetchone()[0] >= 7:
+                    raise HTTPException(
+                        400,
+                        "Máximo 7 lotes de huevo activos. Desactiva alguno primero."
+                    )
+
+            cur.execute(
+                "UPDATE Lote_Huevo SET activo = %s WHERE id_lote_huevo = %s",
+                [nuevo_estado, data.id_lote]
+            )
+        else:
+            raise HTTPException(400, "Tipo inválido. Usa 'alimento' o 'huevo'")
+
+        conn.commit()
+        return {"message": "Lote actualizado", "nuevo_estado": nuevo_estado}
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.post("/lotes/registrar_alimento")
+def registrar_lote_alimento(data: NuevoLoteAlimentoIn):
+    """
+    Registra un nuevo lote de alimento al escanear su QR.
+    Guarda también el tipo (ej: 'Salvado de trigo').
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "SELECT id_lote_alimento FROM Lote_Alimento WHERE codigo_qr = %s",
+            [data.codigo_qr]
+        )
+        if cur.fetchone():
+            raise HTTPException(400, "Este QR ya está registrado")
+
+        cur.execute("""
+            INSERT INTO Lote_Alimento (codigo_qr, tipo_alimento, descripcion, activo)
+            VALUES (%s, %s, %s, FALSE)
+            RETURNING id_lote_alimento
+        """, [data.codigo_qr, data.tipo_alimento, data.descripcion])
+
+        nuevo_id = cur.fetchone()[0]
+        conn.commit()
+
+        return {
+            "message": "Lote de alimento registrado",
+            "id_lote_alimento": nuevo_id,
+            "tipo_alimento": data.tipo_alimento
         }
     finally:
         cur.close()
