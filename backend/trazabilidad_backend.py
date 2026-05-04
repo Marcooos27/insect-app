@@ -81,29 +81,36 @@ PREFIJOS_HUEVO = {"BFS", "TEN"}
 
 def parse_qr(codigo: str):
     codigo = codigo.strip().upper()
+    print(f"[parse_qr] INPUT: '{codigo}'")
+    print(f"[parse_qr] REPR: {repr(codigo)}")  # muestra caracteres ocultos
 
-    # Orden importante: huevo antes que alimento
-    # porque BFS-00001 encajaría en ambos patrones
-    
-    # Cámara: CAMARA-01
-    if re.match(r"^CAMARA-(\d+)$", codigo):
-        return "camara", int(re.match(r"^CAMARA-(\d+)$", codigo).group(1))
+    # Cámara
+    m = re.match(r"^CAMARA-(\d+)$", codigo)
+    print(f"[parse_qr] camara match: {m}")
+    if m:
+        return "camara", int(m.group(1))
 
-    # Pallet: PALLET-01
-    if re.match(r"^PALLET-(\d+)$", codigo):
-        return "pallet", int(re.match(r"^PALLET-(\d+)$", codigo).group(1))
+    # Pallet
+    m = re.match(r"^PALLET-(\d+)$", codigo)
+    print(f"[parse_qr] pallet match: {m}")
+    if m:
+        return "pallet", int(m.group(1))
 
-    # Lote huevo — prefijo conocido + número: BFS-00001, TEN-00001
+    # Lote huevo
     m = re.match(r"^([A-Z]+)-(\d+)$", codigo)
+    print(f"[parse_qr] huevo candidato match: {m}")
+    if m:
+        print(f"[parse_qr] huevo prefijo extraído: '{m.group(1)}', en PREFIJOS: {m.group(1) in PREFIJOS_HUEVO}")
     if m and m.group(1) in PREFIJOS_HUEVO:
         return "lote_huevo", int(m.group(2))
 
-    # Lote alimento — formato libre Texto-Texto-...-Número: Salvado-Trigo-0001
-    # Al menos dos segmentos de texto antes del número final
+    # Lote alimento
     m = re.match(r"^([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)+)-(\d+)$", codigo)
+    print(f"[parse_qr] alimento match: {m}")
     if m:
         return "lote_alimento", int(m.group(2))
 
+    print(f"[parse_qr] NINGÚN PATRÓN COINCIDIÓ")
     return None, None
 
 
