@@ -859,7 +859,7 @@ const TraceabilityTab: React.FC = () => {
 
       {/* ALIMENTOS */}
       <div style={{ marginTop: 16 }}>
-        <p style={{ fontWeight: 700, fontSize: 13, color: "var(--color-mid)", marginBottom: 8 }}>
+        <p style={{ fontWeight: 700, fontSize: 16, color: "var(--color-mid)", marginBottom: 8 }}>
           ALIMENTO (máx. 2 activos)
         </p>
         {lotesData.alimentos.length === 0 && (
@@ -883,7 +883,7 @@ const TraceabilityTab: React.FC = () => {
               }}
             >
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                <div style={{ fontWeight: 700, color: "#e9ffdb", fontSize: 15 }}>
                   {l.codigo_qr}
                 </div>
                 <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
@@ -905,7 +905,7 @@ const TraceabilityTab: React.FC = () => {
 
       {/* HUEVOS */}
       <div style={{ marginTop: 20 }}>
-        <p style={{ fontWeight: 700, fontSize: 13, color: "var(--color-mid)", marginBottom: 8 }}>
+        <p style={{ fontWeight: 700, fontSize: 16, color: "var(--color-mid)", marginBottom: 8 }}>
           HUEVOS (máx. 7 activos)
         </p>
         {lotesData.huevos.length === 0 && (
@@ -929,7 +929,7 @@ const TraceabilityTab: React.FC = () => {
               }}
             >
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                <div style={{ fontWeight: 700, color: "#e9ffdb", fontSize: 15 }}>
                   {l.codigo_qr}
                 </div>
                 <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
