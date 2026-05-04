@@ -957,6 +957,16 @@ const TraceabilityTab: React.FC = () => {
       <IonIcon icon={leafOutline} className="traz-result-icon success" />
       <h3 className="traz-result-title">{loteActivado?.tipo} activado</h3>
       <p className="traz-result-sub">El nuevo lote queda activo y será asignado a los próximos pallets.</p>
+      {loteActivado?.fecha_llegada && (
+        <p className="traz-result-sub">
+          Fecha de llegada registrada: <strong>{loteActivado.fecha_llegada}</strong>
+        </p>
+      )}
+      {loteActivado?.fecha_registro && (
+        <p className="traz-result-sub">
+          Fecha de extracción registrada: <strong>{loteActivado.fecha_registro}</strong>
+        </p>
+      )}
       <IonButton expand="block" className="traz-done-btn" onClick={resetFlow}>
         <IonIcon icon={checkmarkDoneOutline} slot="start" />Listo
       </IonButton>

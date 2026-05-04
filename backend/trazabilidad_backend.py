@@ -650,15 +650,15 @@ def registrar_qr_auto(data: RegistrarQRIn):
         elif tipo == "lote_alimento":
             descripcion = f"Lote alimento {numero}" if numero else "Nuevo lote alimento"
             cur.execute(
-                "INSERT INTO Lote_Alimento (codigo_qr, descripcion, activo) VALUES (%s, %s, FALSE)",
-                [codigo, descripcion]
+                "INSERT INTO Lote_Alimento (codigo_qr, descripcion, fecha_llegada, activo) VALUES (%s, %s, %s, FALSE)",
+                [codigo, descripcion, date.today()]
             )
 
         elif tipo == "lote_huevo":
             origen = f"Lote huevo {numero}" if numero else "Origen desconocido"
             cur.execute(
-                "INSERT INTO Lote_Huevo (codigo_qr, origen, activo) VALUES (%s, %s, FALSE)",
-                [codigo, origen]
+                "INSERT INTO Lote_Huevo (codigo_qr, origen, fecha_registro, activo) VALUES (%s, %s, %s, FALSE)",
+                [codigo, origen, date.today()]
             )
 
         else:

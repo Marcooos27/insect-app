@@ -18,6 +18,20 @@ def generar_qr(texto, nombre_archivo):
     img = qr.make_image(fill_color="black", back_color="white")
     img.save(f"qrs/{nombre_archivo}.png")
 
+
+
+# Generar Lotes de Alimento (ejemplo del 1 al 10)
+for i in range(1, 2):
+    # Texto interno del QR: LO-AL-001
+    codigo = f"LO-AL-{i:03d}"
+    # Nombre del archivo: lote_alimento_001.png
+    archivo = f"lote_alimento_{i:03d}"
+    generar_qr(codigo, archivo)
+    print(f"Generado: {archivo}")
+
+
+
+
 # Ejemplos
 generar_qr("CAMARA-01", "camara_01")
 
