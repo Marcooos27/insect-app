@@ -354,11 +354,18 @@ def activar_lote_alimento(codigo_qr: str):
     conn = get_connection()
     cur = conn.cursor()
     try:
+        codigo_qr = codigo_qr.strip().upper()  # ← añadir esto
         cur.execute("SELECT id_lote_alimento FROM Lote_Alimento WHERE codigo_qr = %s", [codigo_qr])
         row = cur.fetchone()
         if not row:
             raise HTTPException(404, "Lote de alimento no encontrado")
         nuevo_id = row[0]
+
+        # Verificar límite de 2 activos
+        cur.execute("SELECT COUNT(*) FROM Lote_Alimento WHERE activo = TRUE AND id_lote_alimento != %s", [nuevo_id])
+        if cur.fetchone()[0] >= 2:
+            raise HTTPException(400, "Máximo 2 lotes de alimento activos. Desactiva uno primero.")
+
         cur.execute("UPDATE Lote_Alimento SET activo = FALSE WHERE activo = TRUE AND id_lote_alimento != %s", [nuevo_id])
         cur.execute("UPDATE Lote_Alimento SET activo = TRUE WHERE id_lote_alimento = %s", [nuevo_id])
         conn.commit()
@@ -377,18 +384,23 @@ def activar_lote_huevo(data: LoteHuevoIn):
     conn = get_connection()
     cur = conn.cursor()
     try:
+        data.codigo_qr = data.codigo_qr.strip().upper()  # ← añadir esto
+
         cur.execute("UPDATE Lote_Huevo SET activo = FALSE WHERE activo = TRUE")
         cur.execute("SELECT id_lote_huevo FROM Lote_Huevo WHERE codigo_qr = %s", [data.codigo_qr])
         existing = cur.fetchone()
+
         if existing:
+            # Verificar límite de 7 activos
+            cur.execute("SELECT COUNT(*) FROM Lote_Huevo WHERE activo = TRUE")
+            if cur.fetchone()[0] >= 7:
+                raise HTTPException(400, "Máximo 7 lotes de huevo activos. Desactiva alguno primero.")
+
             cur.execute("UPDATE Lote_Huevo SET activo = TRUE WHERE id_lote_huevo = %s", [existing[0]])
             nuevo_id = existing[0]
         else:
-            cur.execute("""
-                INSERT INTO Lote_Huevo (codigo_qr, origen, fecha_registro, activo)
-                VALUES (%s, %s, %s, TRUE) RETURNING id_lote_huevo
-            """, [data.codigo_qr, data.origen, data.fecha_registro or date.today()])
-            nuevo_id = cur.fetchone()[0]
+            raise HTTPException(404, "Lote de huevo no encontrado")
+
         conn.commit()
         return {"message": "Lote de huevo activado", "id_lote_huevo": nuevo_id}
     finally:
