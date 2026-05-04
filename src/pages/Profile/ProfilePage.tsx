@@ -43,7 +43,6 @@ const Profile: React.FC = () => {
           <h2 className="profile-username">{nombreOperario}</h2>
 
           {/* BOTÓN MENU ARRIBA DERECHA */}
-          {user?.rol === "admin" && (
             <IonButton
               fill="clear"
               className="profile-menu-btn"
@@ -54,7 +53,6 @@ const Profile: React.FC = () => {
             >
               <IonIcon icon={ellipsisVerticalOutline} />
             </IonButton>
-          )}
         </div>
 
         {/* BOTÓN INCIDENCIA (FLOATING) */}
