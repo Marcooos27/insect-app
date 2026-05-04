@@ -77,24 +77,32 @@ class CancelarSesionRequest(BaseModel):
 
 import re
 
+PREFIJOS_HUEVO = {"BFS", "TEN"}
+
 def parse_qr(codigo: str):
-    """
-    Devuelve (tipo, numero) a partir del QR.
-    Ej: CAMARA-01 → ("camara", 1)
-    """
     codigo = codigo.strip().upper()
 
-    patrones = {
-        "camara": r"^CAMARA-(\d+)$",
-        "pallet": r"^PALLET-(\d+)$",
-        "lote_alimento": r"^LO-AL-(\d+)$",
-        "lote_huevo": r"^LO-HU-(\d+)$",
-    }
+    # Orden importante: huevo antes que alimento
+    # porque BFS-00001 encajaría en ambos patrones
+    
+    # Cámara: CAMARA-01
+    if re.match(r"^CAMARA-(\d+)$", codigo):
+        return "camara", int(re.match(r"^CAMARA-(\d+)$", codigo).group(1))
 
-    for tipo, pattern in patrones.items():
-        match = re.match(pattern, codigo)
-        if match:
-            return tipo, int(match.group(1))
+    # Pallet: PALLET-01
+    if re.match(r"^PALLET-(\d+)$", codigo):
+        return "pallet", int(re.match(r"^PALLET-(\d+)$", codigo).group(1))
+
+    # Lote huevo — prefijo conocido + número: BFS-00001, TEN-00001
+    m = re.match(r"^([A-Z]+)-(\d+)$", codigo)
+    if m and m.group(1) in PREFIJOS_HUEVO:
+        return "lote_huevo", int(m.group(2))
+
+    # Lote alimento — formato libre Texto-Texto-...-Número: Salvado-Trigo-0001
+    # Al menos dos segmentos de texto antes del número final
+    m = re.match(r"^([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)+)-(\d+)$", codigo)
+    if m:
+        return "lote_alimento", int(m.group(2))
 
     return None, None
 
@@ -648,16 +656,21 @@ def registrar_qr_auto(data: RegistrarQRIn):
             )
 
         elif tipo == "lote_alimento":
-            descripcion = f"Lote alimento {numero}" if numero else "Nuevo lote alimento"
+            # Salvado-Trigo-0001 → descripción "Salvado Trigo"
+            partes = codigo.rsplit("-", 1)[0]  # quita el número final
+            descripcion = partes.replace("-", " ").title()
             cur.execute(
-                "INSERT INTO Lote_Alimento (codigo_qr, descripcion, fecha_llegada, activo) VALUES (%s, %s, %s, FALSE)",
+                "INSERT INTO Lote_Alimento (codigo_qr, descripcion, fecha_llegada, activo) "
+                "VALUES (%s, %s, %s, FALSE)",
                 [codigo, descripcion, date.today()]
             )
 
         elif tipo == "lote_huevo":
-            origen = f"Lote huevo {numero}" if numero else "Origen desconocido"
+            # BFS-00001 → origen "BFS"
+            origen = codigo.split("-")[0]
             cur.execute(
-                "INSERT INTO Lote_Huevo (codigo_qr, origen, fecha_registro, activo) VALUES (%s, %s, %s, FALSE)",
+                "INSERT INTO Lote_Huevo (codigo_qr, origen, fecha_registro, activo) "
+                "VALUES (%s, %s, %s, FALSE)",
                 [codigo, origen, date.today()]
             )
 
