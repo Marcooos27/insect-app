@@ -883,11 +883,11 @@ const TraceabilityTab: React.FC = () => {
               }}
             >
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>
-                  {l.tipo_alimento}
+                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                  {l.codigo_qr}
                 </div>
-                <div style={{ fontSize: 12, color: "#888" }}>
-                  {l.codigo_qr} · {l.fecha_llegada || "Sin fecha"}
+                <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
+                  {l.fecha_llegada || "Sin fecha"}
                 </div>
               </div>
               <span style={{
@@ -929,11 +929,11 @@ const TraceabilityTab: React.FC = () => {
               }}
             >
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>
-                  {l.origen || l.codigo_qr}
+                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                  {l.codigo_qr}
                 </div>
-                <div style={{ fontSize: 12, color: "#888" }}>
-                  {l.codigo_qr} · {l.fecha_registro || "Sin fecha"}
+                <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
+                  {l.fecha_registro || "Sin fecha"}
                 </div>
               </div>
               <span style={{
