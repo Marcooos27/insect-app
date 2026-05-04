@@ -1,19 +1,44 @@
 import React, { useState } from "react";
 import {
   IonPage, IonContent, IonHeader, IonToolbar, IonTitle,
-  IonButton, IonIcon, IonToast, IonSpinner, IonModal
+  IonButton, IonIcon, IonToast, IonSpinner
 } from "@ionic/react";
-import { scanOutline, qrCodeOutline, checkmarkCircleOutline, closeOutline } from "ionicons/icons";
+import { scanOutline, qrCodeOutline, checkmarkCircleOutline, closeOutline, warningOutline } from "ionicons/icons";
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { API_URL } from "../../services/api";
 import "./RegisterQR.css";
+
+// ─────────────────────────────────────────────
+// Prefijos de lote huevo conocidos — sincronizar con backend
+// ─────────────────────────────────────────────
+const PREFIJOS_HUEVO = ["BFS", "TEN"];
+
+const detectarTipo = (valor: string): { tipo: string; conocido: boolean } => {
+  const v = valor.trim().toUpperCase();
+
+  if (/^CAMARA-\d+$/.test(v))
+    return { tipo: "Cámara", conocido: true };
+
+  if (/^PALLET-\d+$/.test(v))
+    return { tipo: "Pallet", conocido: true };
+
+  // Lote huevo: prefijo conocido + número (BFS-00001, TEN-00001)
+  const matchHuevo = v.match(/^([A-Z]+)-(\d+)$/);
+  if (matchHuevo && PREFIJOS_HUEVO.includes(matchHuevo[1]))
+    return { tipo: "Lote de Huevo", conocido: true };
+
+  // Lote alimento: Texto-Texto-...-Número (Salvado-Trigo-0001)
+  if (/^[A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)+\-\d+$/.test(v))
+    return { tipo: "Lote de Alimento", conocido: true };
+
+  return { tipo: "Desconocido", conocido: false };
+};
 
 // ─────────────────────────────────────────────
 // API helper
 // ─────────────────────────────────────────────
 const apiFetch = async (path: string, options: RequestInit = {}) => {
   const token = localStorage.getItem("token");
-
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
@@ -22,20 +47,10 @@ const apiFetch = async (path: string, options: RequestInit = {}) => {
       ...(options.headers || {}),
     },
   });
-
   const text = await res.text();
-
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error("Respuesta inválida del servidor");
-  }
-
-  if (!res.ok) {
-    throw new Error(data.detail || "Error en la petición");
-  }
-
+  let data: any;
+  try { data = JSON.parse(text); } catch { throw new Error("Respuesta inválida del servidor"); }
+  if (!res.ok) throw new Error(data.detail || "Error en la petición");
   return data;
 };
 
@@ -45,9 +60,8 @@ const apiFetch = async (path: string, options: RequestInit = {}) => {
 const RegisterQRPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [qrValue, setQrValue] = useState<string | null>(null);
-  const [tipoDetectado, setTipoDetectado] = useState<string | null>(null);
+  const [tipoDetectado, setTipoDetectado] = useState<{ tipo: string; conocido: boolean } | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-
   const [toastMsg, setToastMsg] = useState("");
   const [toastColor, setToastColor] = useState<"success" | "danger" | "warning">("success");
 
@@ -56,61 +70,47 @@ const RegisterQRPage: React.FC = () => {
     setToastColor(color);
   };
 
+  const resetState = () => {
+    setQrValue(null);
+    setTipoDetectado(null);
+    setShowConfirm(false);
+  };
+
   // ─────────────────────────────────────────────
-  // ESCANEAR QR
+  // ESCANEAR
   // ─────────────────────────────────────────────
   const scanQR = async () => {
     try {
       const { camera } = await BarcodeScanner.requestPermissions();
-
       if (camera !== "granted" && camera !== "limited") {
         showToast("Permiso de cámara denegado", "danger");
         return;
       }
 
       const { barcodes } = await BarcodeScanner.scan();
-
       if (!barcodes || barcodes.length === 0) {
         showToast("No se detectó ningún QR", "warning");
         return;
       }
 
       const value = barcodes[0].rawValue?.trim();
-
       if (!value) {
         showToast("QR vacío", "warning");
         return;
       }
 
-      setQrValue(value);
-
-      console.log("QR Leido:", value);
-
-      // ─────────────────────────────────────────
-      // VALIDAR SI YA EXISTE
-      // ─────────────────────────────────────────
+      // Verificar si ya existe en BD
       try {
         await apiFetch(`/trazabilidad/scan/${encodeURIComponent(value)}`);
-        showToast("Este QR ya está registrado", "danger");
-        setQrValue(null);
+        showToast("Este QR ya está registrado en el sistema", "warning");
         return;
-      } catch (err: any) {
-        // Si es 404 → OK, no existe
+      } catch {
+        // 404 → no existe → podemos registrar
       }
 
-      // ─────────────────────────────────────────
-      // DETECTAR TIPO AUTOMÁTICAMENTE
-      // ─────────────────────────────────────────
-      let tipo = null;
-
-      if (value.startsWith("CAMARA-")) tipo = "Cámara";
-      else if (value.startsWith("PALLET-")) tipo = "Pallet";
-      else if (value.startsWith("LO-AL-")) tipo = "Lote de Alimento";
-      else if (value.startsWith("LO-HU-")) tipo = "Lote de Huevo";
-
-      console.log("Tipo QR:", tipo);
-
-      setTipoDetectado(tipo);
+      const deteccion = detectarTipo(value);
+      setQrValue(value);
+      setTipoDetectado(deteccion);
       setShowConfirm(true);
 
     } catch (err) {
@@ -123,30 +123,18 @@ const RegisterQRPage: React.FC = () => {
   // CONFIRMAR REGISTRO
   // ─────────────────────────────────────────────
   const confirmarRegistro = async () => {
-    if (!qrValue) return;
-
+    if (!qrValue || !tipoDetectado?.conocido) return;
     try {
       setLoading(true);
-
-      console.log("POST URL:", `${API_URL}trazabilidad/registrar_qr_auto`);
-
       await apiFetch("/trazabilidad/registrar_qr_auto", {
         method: "POST",
-        body: JSON.stringify({
-          codigo_qr: qrValue
-        }),
+        body: JSON.stringify({ codigo_qr: qrValue }),
       });
-
       setLoading(false);
-      setShowConfirm(false);
-      showToast("QR registrado correctamente", "success");
-
-      setQrValue(null);
-      setTipoDetectado(null);
-
+      showToast(`${tipoDetectado.tipo} registrado correctamente`, "success");
+      resetState();
     } catch (err: any) {
       setLoading(false);
-      console.log("Error:", err);
       showToast(err.message, "danger");
     }
   };
@@ -166,15 +154,14 @@ const RegisterQRPage: React.FC = () => {
       </IonHeader>
 
       <IonContent className="registerqr-content">
-
         <div className="registerqr-container">
 
-          {qrValue && (
-            <div className="registerqr-result">
-              <p><strong>QR leído:</strong></p>
-              <p className="qr-text">{qrValue}</p>
-            </div>
-          )}
+          <div className="registerqr-idle-icon-wrap">
+            <IonIcon icon={qrCodeOutline} className="registerqr-idle-icon" />
+          </div>
+          <p className="registerqr-idle-sub">
+            Escanea el QR de un pallet, cámara o lote para registrarlo en el sistema
+          </p>
 
           <IonButton
             expand="block"
@@ -182,52 +169,68 @@ const RegisterQRPage: React.FC = () => {
             onClick={scanQR}
             disabled={loading}
           >
-            {loading ? <IonSpinner /> : (
-              <>
-                <IonIcon icon={scanOutline} slot="start" />
-                Registrar QR
-              </>
+            {loading ? <IonSpinner name="crescent" /> : (
+              <><IonIcon icon={scanOutline} slot="start" />Escanear y registrar</>
             )}
           </IonButton>
 
         </div>
 
-        {/* ───────────── MODAL CONFIRMACIÓN ───────────── */}
-        {showConfirm && (
+        {/* ── MODAL CONFIRMACIÓN ── */}
+        {showConfirm && tipoDetectado && (
           <div className="registerqr-modal-backdrop">
             <div className="registerqr-modal">
 
-              <h3 className="registerqr-modal-title">
-                Confirmar registro
-              </h3>
+              <div className="registerqr-modal-icon-wrap">
+                <IonIcon
+                  icon={tipoDetectado.conocido ? checkmarkCircleOutline : warningOutline}
+                  className={`registerqr-modal-icon ${tipoDetectado.conocido ? "icon-ok" : "icon-warn"}`}
+                />
+              </div>
 
-              <p className="registerqr-modal-text">
-                <strong>QR:</strong><br /> {qrValue}
-              </p>
+              <h3 className="registerqr-modal-title">Confirmar registro</h3>
 
-              <p className="registerqr-modal-text">
-                <strong>Tipo:</strong> {tipoDetectado || "Desconocido"}
-              </p>
+              <div className="registerqr-modal-info">
+                <div className="registerqr-modal-row">
+                  <span className="registerqr-modal-label">QR</span>
+                  <span className="registerqr-modal-value">{qrValue}</span>
+                </div>
+                <div className="registerqr-modal-row">
+                  <span className="registerqr-modal-label">Tipo</span>
+                  <span className={`registerqr-modal-value ${tipoDetectado.conocido ? "" : "value-warn"}`}>
+                    {tipoDetectado.tipo}
+                  </span>
+                </div>
+              </div>
 
-              {!tipoDetectado && (
-                <p className="warning-text">
-                  ⚠️ No se pudo detectar el tipo automáticamente
+              {!tipoDetectado.conocido && (
+                <p className="registerqr-modal-warning">
+                  El formato de este QR no es reconocido. No se puede registrar.
                 </p>
               )}
 
               <div className="registerqr-modal-actions">
+                {tipoDetectado.conocido && (
+                  <IonButton
+                    expand="block"
+                    className="registerqr-confirm-btn"
+                    onClick={confirmarRegistro}
+                    disabled={loading}
+                  >
+                    {loading ? <IonSpinner name="crescent" /> : (
+                      <><IonIcon icon={checkmarkCircleOutline} slot="start" />Confirmar</>
+                    )}
+                  </IonButton>
+                )}
                 <IonButton
-                  className="registerqr-confirm-btn"
-                  onClick={confirmarRegistro}
-                >
-                  Confirmar
-                </IonButton>
-
-                <IonButton
+                  expand="block"
+                  fill="outline"
                   className="registerqr-cancel-btn"
-                  onClick={() => setShowConfirm(false)}
+                  onClick={resetState}
+                  disabled={loading}
                 >
-                  Cancelar
+                  <IonIcon icon={closeOutline} slot="start" />
+                  {tipoDetectado.conocido ? "Cancelar" : "Cerrar"}
                 </IonButton>
               </div>
 
@@ -235,7 +238,6 @@ const RegisterQRPage: React.FC = () => {
           </div>
         )}
 
-        {/* ───────────── TOAST ───────────── */}
         <IonToast
           isOpen={!!toastMsg}
           message={toastMsg}
@@ -243,7 +245,6 @@ const RegisterQRPage: React.FC = () => {
           color={toastColor}
           onDidDismiss={() => setToastMsg("")}
         />
-
       </IonContent>
     </IonPage>
   );

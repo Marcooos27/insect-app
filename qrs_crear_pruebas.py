@@ -5,35 +5,50 @@ import os
 os.makedirs("qrs", exist_ok=True)
 
 
-def generar_qr(texto, nombre_archivo):
+# Crear estructura de carpetas principal y subcarpetas
+os.makedirs("qrs/lote_alimento", exist_ok=True)
+os.makedirs("qrs/lote_huevo", exist_ok=True)
+os.makedirs("qrs/camara", exist_ok=True)
+
+def generar_qr(texto, nombre_archivo, subcarpeta):
     qr = qrcode.QRCode(
-        version=2,  # tamaño del QR (1-40). 2 ya es más grande
-        error_correction=ERROR_CORRECT_H,  # tolera errores y permite mejor escaneo
-        box_size=10,  # tamaño de cada "cuadro" del QR
-        border=4      # borde mínimo recomendado
+        version=2,
+        error_correction=ERROR_CORRECT_H,
+        box_size=10,
+        border=4
     )
     qr.add_data(texto)
     qr.make(fit=True)
     
     img = qr.make_image(fill_color="black", back_color="white")
-    img.save(f"qrs/{nombre_archivo}.png")
+    # Guardar en la subcarpeta específica
+    img.save(f"qrs/{subcarpeta}/{nombre_archivo}.png")
 
 
 
-# Generar Lotes de Alimento (ejemplo del 1 al 10)
+'''
+# 1. Generar Lotes de Huevos
 for i in range(1, 2):
-    # Texto interno del QR: LO-AL-001
-    codigo = f"LO-AL-{i:03d}"
-    # Nombre del archivo: lote_alimento_001.png
-    archivo = f"lote_alimento_{i:03d}"
-    generar_qr(codigo, archivo)
-    print(f"Generado: {archivo}")
+    codigo = f"BFS-{i:05d}"
+    archivo = f"lote_huevos_{i:05d}"
+    generar_qr(codigo, archivo, "lote_huevo")
+    print(f"Generado en lote_huevo: {archivo}")
+'''
+
+
+# 2. Generar Lotes de Salvado de Trigo
+for i in range(1, 2):
+    codigo = f"Salvado-trigo-{i:04d}"
+    archivo = f"salvado_trigo_{i:04d}"
+    generar_qr(codigo, archivo, "lote_alimento")
+    print(f"Generado en lote_alimento: {archivo}")
 
 
 
 
 # Ejemplos
 generar_qr("CAMARA-01", "camara_01")
+generar_qr("CAMARA-02", "camara_02")
 
 
 
