@@ -219,21 +219,31 @@ const TraceabilityTab: React.FC = () => {
 
     try {
       setLoading(true);
-      let resultApi: ScanResult;
+      const token = localStorage.getItem("token");
 
-      try {
-        resultApi = await apiFetch(`/trazabilidad/scan/${encodeURIComponent(codigo)}`);
-      } catch (scanErr: any) {
-        // QR no existe en BD → intentar registrarlo automáticamente
-        setLoading(false);
+      // Usamos fetch directo para controlar el 404 manualmente
+      const scanRes = await fetch(
+        `${API_URL}/trazabilidad/scan/${encodeURIComponent(codigo)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (scanRes.status === 404) {
+        // QR no existe → registrar automáticamente
         const registrado = await apiFetch("/trazabilidad/registrar_qr_auto", {
           method: "POST",
           body: JSON.stringify({ codigo_qr: codigo }),
         });
+        setLoading(false);
         showToast(`Registrado como ${registrado.tipo}: ${codigo}`, "success");
         return;
       }
 
+      if (!scanRes.ok) {
+        const err = await scanRes.json();
+        throw new Error(err.detail || "Error al escanear");
+      }
+
+      const resultApi: ScanResult = await scanRes.json();
       setLoading(false);
 
       if (resultApi.tipo === "camara") {
