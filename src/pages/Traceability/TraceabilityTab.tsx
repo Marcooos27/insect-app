@@ -219,9 +219,21 @@ const TraceabilityTab: React.FC = () => {
 
     try {
       setLoading(true);
-      const resultApi: ScanResult = await apiFetch(
-        `/trazabilidad/scan/${encodeURIComponent(codigo)}`
-      );
+      let resultApi: ScanResult;
+
+      try {
+        resultApi = await apiFetch(`/trazabilidad/scan/${encodeURIComponent(codigo)}`);
+      } catch (scanErr: any) {
+        // QR no existe en BD → intentar registrarlo automáticamente
+        setLoading(false);
+        const registrado = await apiFetch("/trazabilidad/registrar_qr_auto", {
+          method: "POST",
+          body: JSON.stringify({ codigo_qr: codigo }),
+        });
+        showToast(`Registrado como ${registrado.tipo}: ${codigo}`, "success");
+        return;
+      }
+
       setLoading(false);
 
       if (resultApi.tipo === "camara") {
