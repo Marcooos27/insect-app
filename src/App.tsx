@@ -21,7 +21,9 @@ import {
 } from 'ionicons/icons';
 
 import ProtectedRoute from "./components/ProtectedRoute";
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';  // ya tienes useState, solo añade useEffect
+import LimpiezaCheck from './pages/limpieza/LimpiezaCheck';
+import api from './services/api';
 
 
 /* Importamos las páginas principales */
@@ -74,9 +76,55 @@ const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState('home'); 
 
+  // ← AÑADE ESTO:
+  const [mostrarLimpieza, setMostrarLimpieza] = useState(false);
+  const [limpiezaComprobada, setLimpiezaComprobada] = useState(false);
+
+  useEffect(() => {
+    // Mientras AuthContext sigue cargando, no hacemos nada
+    if (loading) return;
+
+    // Si no hay usuario (no logueado), reseteamos y salimos
+    if (!user) {
+      setMostrarLimpieza(false);
+      setLimpiezaComprobada(false); // ← reset para que vuelva a comprobar en el próximo login
+      return;
+    }
+
+    // Hay usuario logueado → consultamos el estado de limpieza
+    setLimpiezaComprobada(false); // reset antes de consultar
+    api.get("/limpieza/estado_hoy")
+      .then((res) => {
+        setMostrarLimpieza(!res.data.realizado);
+        setLimpiezaComprobada(true);
+      })
+      .catch((err) => {
+        console.error("Error comprobando limpieza:", err);
+        setLimpiezaComprobada(true); // si falla, dejamos pasar
+      });
+  }, [user, loading]); // ← depende de AMBOS
+
+  // 1. AuthContext cargando
   if (loading) {
-    return <div>Cargando...</div>;
+    return <div style={{ color: 'white', padding: '2rem' }}>Cargando...</div>;
   }
+
+  // 2. Usuario logueado pero aún no hemos consultado limpieza
+  if (user && !limpiezaComprobada) {
+    return <div style={{ color: 'white', padding: '2rem' }}>Cargando...</div>;
+  }
+
+  // 3. Usuario logueado + limpieza no realizada hoy → mostrar pantalla
+  if (user && limpiezaComprobada && mostrarLimpieza) {
+    return (
+      <LimpiezaCheck
+        onConfirmado={() => setMostrarLimpieza(false)}
+      />
+    );
+  }
+  // ← FIN DEL BLOQUE
+
+
   return (
     <IonApp>
       <ManagementProvider>

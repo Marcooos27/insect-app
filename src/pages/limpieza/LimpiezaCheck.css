@@ -1,0 +1,71 @@
+.limpieza-content {
+  --background: var(--color-darkest, #0f1923);
+}
+
+.limpieza-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.limpieza-icon {
+  font-size: 5rem;
+  color: var(--color-accent, #4fc3f7);
+  margin-bottom: 1.5rem;
+}
+
+.limpieza-icon ion-icon {
+  font-size: 5rem;
+}
+
+.limpieza-titulo {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.limpieza-texto {
+  color: #aaa;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.limpieza-checklist {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 2.5rem;
+}
+
+.limpieza-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--color-dark, #1a2636);
+  border-radius: 10px;
+  padding: 0.9rem 1.2rem;
+  margin-bottom: 0.8rem;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.limpieza-item ion-icon {
+  color: #4caf50;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.limpieza-boton {
+  --background: var(--color-accent, #4fc3f7);
+  --color: #0f1923;
+  --border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  width: 100%;
+  max-width: 320px;
+  height: 52px;
+}
