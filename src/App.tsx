@@ -81,6 +81,7 @@ const App: React.FC = () => {
   const [limpiezaComprobada, setLimpiezaComprobada] = useState(false);
 
   useEffect(() => {
+    console.log("DEBUG useEffect:", { loading, user: user?.email, limpiezaComprobada, mostrarLimpieza });
     // Mientras AuthContext sigue cargando, no hacemos nada
     if (loading) return;
 
