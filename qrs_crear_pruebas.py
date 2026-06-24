@@ -28,7 +28,7 @@ def generar_qr(texto, nombre_archivo, subcarpeta):
 
 '''
 # 1. Generar Lotes de Huevos
-for i in range(1, 2):
+for i in range(1, 50):
     codigo = f"BFS-{i:05d}"
     archivo = f"lote_huevos_{i:05d}"
     generar_qr(codigo, archivo, "lote_huevo")
@@ -37,7 +37,7 @@ for i in range(1, 2):
 
 
 # 2. Generar Lotes de Salvado de Trigo
-for i in range(1, 2):
+for i in range(1, 10):
     codigo = f"Salvado-trigo-{i:04d}"
     archivo = f"salvado_trigo_{i:04d}"
     generar_qr(codigo, archivo, "lote_alimento")
