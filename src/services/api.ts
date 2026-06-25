@@ -3,7 +3,7 @@ import axios from "axios";
 console.log("ENV:", import.meta.env);
 console.log("API URL:", import.meta.env.VITE_API_URL);
 
-export const API_URL = import.meta.env.VITE_API_URL /*|| "http://13.63.160.85/api"*/;
+export const API_URL = import.meta.env.VITE_API_URL || "http://51.21.135.61/api";
 
 console.log("API URL:", API_URL);
 
