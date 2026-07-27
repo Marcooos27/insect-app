@@ -1,8 +1,8 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from auth.auth import get_current_user
-from database import get_connection
+from backend.auth.auth import get_current_user
+from backend.database import get_connection
 from datetime import date, timedelta
 import calendar
 import io

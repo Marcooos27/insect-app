@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from auth.auth import get_current_user
-from database import get_connection
+from backend.auth.auth import get_current_user
+from backend.database import get_connection
 from datetime import date
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
