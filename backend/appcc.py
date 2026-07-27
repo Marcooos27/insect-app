@@ -132,7 +132,7 @@ def get_datos_appcc(year: int, month: int, user=Depends(get_current_user)):
             FROM engorde e
             JOIN pallet p ON p.id_pallet = e.id_pallet
             JOIN lote_alimento la ON la.id_lote_alimento = e.id_lote_alimento
-            WHERE DATE_TRUNC('month', e.fecha_entrada_camara) = %s
+            WHERE DATE_TRUNC('month', p.fecha_entrada_camara) = %s
             ORDER BY p.fecha_entrada_camara
         """, (date(year, month, 1),))
         cols = [d[0] for d in cur.description]
