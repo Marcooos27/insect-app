@@ -13,6 +13,8 @@ from backend.auth.auth import require_admin
 from backend.trazabilidad_backend import router as traz_router
 from backend.Incidencias.incidencias import router as incidencias_router
 from backend.limpieza.limpieza import router as limpieza_router
+from backend.dashboard.dashboard import router as dashboard_router
+from backend.appcc.appcc import router as appcc_router
 
 app = FastAPI(title="INSECT SOFTWARE")
 
@@ -37,6 +39,8 @@ app.include_router(traz_router, prefix="/trazabilidad")
 app.include_router(incidencias_router)
 
 app.include_router(limpieza_router)
+app.include_router(dashboard_router)
+app.include_router(appcc_router)
 
 
 

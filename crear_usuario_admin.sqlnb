@@ -266,3 +266,287 @@ cells:
 
       );"
     languageId: oracle-sql
+  - kind: 2
+    value: "CREATE TABLE sensor (\r
+
+      \    id_sensor SERIAL PRIMARY KEY,\r
+
+      \    id_camara BIGINT NOT NULL REFERENCES camara(id_camara),\r
+
+      \    tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('temperatura',
+      'humedad')),\r
+
+      \    codigo_dispositivo VARCHAR(100) UNIQUE, -- identificador único del
+      hardware (MAC, serial, etc.)\r
+
+      \    activo BOOLEAN DEFAULT true,\r
+
+      \    fecha_instalacion TIMESTAMP DEFAULT NOW()\r
+
+      );\r
+
+      \r
+
+      \r
+
+      CREATE TABLE sensor_lectura (\r
+
+      \    id_lectura BIGSERIAL PRIMARY KEY,\r
+
+      \    id_sensor INTEGER NOT NULL REFERENCES sensor(id_sensor),\r
+
+      \    valor NUMERIC(6,2) NOT NULL,\r
+
+      \    fecha_lectura TIMESTAMP DEFAULT NOW()\r
+
+      );\r
+
+      CREATE INDEX idx_lectura_sensor_fecha ON sensor_lectura(id_sensor,
+      fecha_lectura DESC);"
+    languageId: oracle-sql
+  - kind: 2
+    value: "CREATE TABLE appcc_zona_limpieza (\r
+
+      \    id SERIAL PRIMARY KEY,\r
+
+      \    nombre VARCHAR(100) NOT NULL,\r
+
+      \    detergente VARCHAR(200),\r
+
+      \    dosis VARCHAR(100),\r
+
+      \    forma_aplicacion TEXT,\r
+
+      \    tiempo_exposicion VARCHAR(50),\r
+
+      \    id_responsable BIGINT REFERENCES operario(id_operario),\r
+
+      \    orden INTEGER\r
+
+      );\r
+
+      \r
+
+      CREATE TABLE appcc_limpieza_observacion (\r
+
+      \    id SERIAL PRIMARY KEY,\r
+
+      \    id_zona INTEGER REFERENCES appcc_zona_limpieza(id),\r
+
+      \    fecha DATE NOT NULL,\r
+
+      \    observacion TEXT,\r
+
+      \    UNIQUE(id_zona, fecha)\r
+
+      );\r
+
+      \r
+
+      CREATE TABLE appcc_aspecto_practica (\r
+
+      \    id SERIAL PRIMARY KEY,\r
+
+      \    numero INTEGER,\r
+
+      \    descripcion TEXT NOT NULL\r
+
+      );\r
+
+      \r
+
+      CREATE TABLE appcc_practica_resultado (\r
+
+      \    id SERIAL PRIMARY KEY,\r
+
+      \    semana_inicio DATE NOT NULL,\r
+
+      \    id_aspecto INTEGER REFERENCES appcc_aspecto_practica(id),\r
+
+      \    correcto BOOLEAN DEFAULT true,\r
+
+      \    observacion TEXT\r
+
+      );\r
+
+      \r
+
+      CREATE TABLE appcc_zona_plaga (\r
+
+      \    id SERIAL PRIMARY KEY,\r
+
+      \    nombre VARCHAR(100) NOT NULL,\r
+
+      \    orden INTEGER\r
+
+      );\r
+
+      \r
+
+      CREATE TABLE appcc_plaga_registro (\r
+
+      \    id SERIAL PRIMARY KEY,\r
+
+      \    id_zona INTEGER REFERENCES appcc_zona_plaga(id),\r
+
+      \    mes DATE NOT NULL,\r
+
+      \    interaccion_trampas BOOLEAN DEFAULT false,\r
+
+      \    reposicion_producto BOOLEAN DEFAULT false,\r
+
+      \    observaciones TEXT,\r
+
+      \    UNIQUE(id_zona, mes)\r
+
+      );"
+    languageId: oracle-sql
+  - kind: 2
+    value: "INSERT INTO appcc_zona_limpieza \r
+
+      \    (nombre, detergente, dosis, forma_aplicacion, tiempo_exposicion,
+      id_responsable, orden)\r
+
+      VALUES\r
+
+      \    ('Sala climatizada 1',\r
+
+      \     'Desinfectante multiusos bosque verde, Mercadona',\r
+
+      \     '12 ml/5 litros de agua',\r
+
+      \     'Aspirar. Rociar con desengrasante y esperar unos minutos. Retirar
+      suciedad con fregona. Aclarar con abundante agua. Aplicar desinfectante
+      diluido en agua (según etiqueta) con fregona. Aclarar y dejar secar.',\r
+
+      \     '20 MINUTOS', 11, 1),\r
+
+      \    ('Sala climatizada 2',\r
+
+      \     'Desinfectante multiusos bosque verde, Mercadona',\r
+
+      \     '12 ml/5 litros de agua',\r
+
+      \     'Igual que en sala 1.',\r
+
+      \     '20 MINUTOS', 11, 2),\r
+
+      \    ('Almacén 1',\r
+
+      \     'Friegasuelos, bosque verde',\r
+
+      \     '10 ml/5 litros de agua',\r
+
+      \     'Suelo: barrer, aplicar friegasuelos en agua (según etiqueta) con
+      fregona, aclarar.',\r
+
+      \     '10 MINUTOS', 11, 3),\r
+
+      \    ('Almacén 2',\r
+
+      \     'Friegasuelos, bosque verde',\r
+
+      \     '10 ml/5 litros de agua',\r
+
+      \     'Igual que almacén 1.',\r
+
+      \     '10 MINUTOS', 11, 4),\r
+
+      \    ('Almacén 3',\r
+
+      \     'Friegasuelos, bosque verde',\r
+
+      \     '10 ml/5 litros de agua',\r
+
+      \     'Igual que almacén 1.',\r
+
+      \     '10 MINUTOS', 11, 5),\r
+
+      \    ('Sala de limpieza y procesado',\r
+
+      \     'Desinfectante multiusos bosque verde, Mercadona',\r
+
+      \     '12 ml/5 litros de agua',\r
+
+      \     'Igual que sala climatizada 1.',\r
+
+      \     '10 MINUTOS', 11, 6),\r
+
+      \    ('Vestuario 1',\r
+
+      \     'Friegasuelos, bosque verde',\r
+
+      \     '10 ml/5 litros de agua',\r
+
+      \     'Barrer, friegasuelos en agua (según etiqueta) con fregona,
+      aclarar.',\r
+
+      \     '20 MINUTOS', 11, 7),\r
+
+      \    ('Vestuario 2',\r
+
+      \     'Friegasuelos, bosque verde',\r
+
+      \     '10 ml/5 litros de agua',\r
+
+      \     'Igual que vestuario 1.',\r
+
+      \     '20 MINUTOS', 11, 8),\r
+
+      \    ('Muelle de carga',\r
+
+      \     'Friegasuelos, bosque verde',\r
+
+      \     '10 ml/5 litros de agua',\r
+
+      \     'Igual que almacén 1.',\r
+
+      \     '20 MINUTOS', 11, 9);\r
+
+      \r
+
+      INSERT INTO appcc_aspecto_practica (numero, descripcion) VALUES\r
+
+      \    (1, 'Las larvas están vivas y con suficiente alimento.'),\r
+
+      \    (2, 'Los manipuladores se visten con ropa limpia y exclusiva antes de
+      empezar el trabajo, y se cambian durante el trabajo en caso
+      necesario.'),\r
+
+      \    (3, 'Los manipuladores no están trabajando con enfermedad manifiesta
+      y si lo hacen respetan las medidas de higiene.'),\r
+
+      \    (4, 'El cribado se realiza únicamente en la zona habilitada para tal
+      fin.'),\r
+
+      \    (5, 'En la zona de procesado sólo entra producto limpio.'),\r
+
+      \    (6, 'Los guanos son sacados al almacén tras su cribado.'),\r
+
+      \    (7, 'La limpieza y desinfección de verduras u otras materias primas
+      se realiza conforme a la instrucción de trabajo.');\r
+
+      \r
+
+      INSERT INTO appcc_zona_plaga (nombre, orden) VALUES\r
+
+      \    ('Zona de cría', 1),\r
+
+      \    ('Zona de engorde', 2),\r
+
+      \    ('Sala de procesado', 3),\r
+
+      \    ('Zona de frass', 4),\r
+
+      \    ('Almacén de harina y aceite', 5),\r
+
+      \    ('Almacén de frass (edificio independiente)', 6),\r
+
+      \    ('Sala de envasado', 7),\r
+
+      \    ('Pasillos interiores', 8),\r
+
+      \    ('Zona exterior de perímetro', 9),\r
+
+      \    ('Oficinas / zonas comunes', 10);"
+    languageId: oracle-sql
