@@ -126,7 +126,7 @@ def get_datos_appcc(year: int, month: int, user=Depends(get_current_user)):
         cur.execute("""
             SELECT
                 la.codigo_qr as lote,
-                e.fecha_entrada_camara as fecha,
+                p.fecha_entrada_camara as fecha,
                 p.codigo_qr as pallet,
                 la.descripcion as sustrato
             FROM engorde e
