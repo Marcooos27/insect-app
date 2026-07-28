@@ -285,7 +285,7 @@ def generar_docx(datos: dict) -> bytes:
 
     semanas = datos["semanas"]
     higiene = datos["higiene_personal"]
-    dias_semana = ["L", "M", "M", "J", "V"]
+    dias_semana = ["L", "M", "X", "J", "V"]
 
     for sem_inicio_str, sem_fin_str in semanas:
         sem_inicio = date.fromisoformat(sem_inicio_str)
@@ -296,53 +296,69 @@ def generar_docx(datos: dict) -> bytes:
             f"Semana: {sem_inicio.day}-{sem_fin.day} de {mes_nombre.lower()}"
         ).italic = True
 
-        # Construir los días reales de esta semana
-        dias_reales = []
+        # Construir días reales de esta semana (solo laborables del mes)
+        dias_semana = []
         d = sem_inicio
         while d <= sem_fin:
             if d.weekday() < 5:
-                dias_reales.append(d)
+                dias_semana.append(d)
             d += timedelta(days=1)
 
-        tabla = doc.add_table(rows=1, cols=1 + 4 * 5)
+        num_dias = len(dias_semana)
+
+        # Tabla: 1 col nombre + 1 col por día real
+        tabla = doc.add_table(rows=1, cols=1 + num_dias)
         tabla.style = 'Table Grid'
+
+        # Anchos: nombre ancho, días estrechos
+        col_nombre_w = Cm(4)
+        col_dia_w = Cm(1.2)
 
         # Cabecera
         hdr = tabla.rows[0]
-        hdr.cells[0].text = "NOMBRE Y APELLIDOS"
-        hdr.cells[0].paragraphs[0].runs[0].font.size = Pt(7)
+        # Celda nombre
+        hdr.cells[0].width = col_nombre_w
+        set_cell_bg(hdr.cells[0], "D9D9D9")
+        run = hdr.cells[0].paragraphs[0].add_run("Operario")
+        run.bold = True
+        run.font.size = Pt(8)
 
-        categorias = ["UÑAS Y MANOS", "ACCESORIOS", "ROPA", "CALZADO"]
-        for ci, cat in enumerate(categorias):
-            col_start = 1 + ci * 5
-            hdr.cells[col_start].text = cat
-            hdr.cells[col_start].paragraphs[0].runs[0].font.size = Pt(7)
-            for di, dl in enumerate(dias_semana):
-                idx = col_start + di
-                if idx < len(hdr.cells):
-                    hdr.cells[idx].text = dl
-                    hdr.cells[idx].paragraphs[0].runs[0].font.size = Pt(7)
+        # Celdas de días
+        for i, dia in enumerate(dias_semana):
+            cell = hdr.cells[1 + i]
+            cell.width = col_dia_w
+            set_cell_bg(cell, "D9D9D9")
+            # L, M, X, J, V según weekday()
+            letras = ["L", "M", "X", "J", "V"]
+            letra = letras[dia.weekday()]
+            run = cell.paragraphs[0].add_run(letra)
+            run.bold = True
+            run.font.size = Pt(8)
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        # Operarios
+        # Filas de operarios
         operarios_higiene = sorted(higiene.keys())
         if not operarios_higiene:
             row = tabla.add_row()
             row.cells[0].text = "(Sin registros este mes)"
         else:
             for op_nombre in operarios_higiene:
-                fechas_ok = higiene[op_nombre]
+                fechas_ok = set(higiene[op_nombre])
                 row = tabla.add_row()
-                row.cells[0].text = op_nombre
-                row.cells[0].paragraphs[0].runs[0].font.size = Pt(7)
 
-                for ci in range(4):
-                    col_start = 1 + ci * 5
-                    for di, dia_real in enumerate(dias_reales):
-                        idx = col_start + di
-                        if idx < len(row.cells):
-                            if str(dia_real) in fechas_ok:
-                                row.cells[idx].text = "X"
-                                row.cells[idx].paragraphs[0].runs[0].font.size = Pt(7)
+                # Nombre
+                row.cells[0].width = col_nombre_w
+                run = row.cells[0].paragraphs[0].add_run(op_nombre)
+                run.font.size = Pt(8)
+
+                # X si ese día registró limpieza
+                for i, dia in enumerate(dias_semana):
+                    cell = row.cells[1 + i]
+                    cell.width = col_dia_w
+                    if str(dia) in fechas_ok:
+                        run = cell.paragraphs[0].add_run("X")
+                        run.font.size = Pt(8)
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         doc.add_paragraph("Firma Responsable: _________________________")
         doc.add_paragraph("")
