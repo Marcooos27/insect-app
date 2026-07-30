@@ -325,12 +325,12 @@ def generar_docx(datos: dict) -> bytes:
         tabla.style = 'Table Grid'
 
         # Forzar layout fijo para respetar anchos
-        '''
+        
         tbl = tabla._tbl
         tblPr = tbl.tblPr
         tblLayout = OxmlElement('w:tblLayout')
         tblLayout.set(qn('w:type'), 'fixed')
-        tblPr.append(tblLayout)'''
+        tblPr.append(tblLayout)
 
         # Ancho total disponible en A4 portrait con márgenes 2cm = ~17cm
         # Sala: 2.5cm, resto distribuido entre 31 días
