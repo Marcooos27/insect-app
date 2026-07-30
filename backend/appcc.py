@@ -321,105 +321,146 @@ def generar_docx(datos: dict) -> bytes:
         run.font.size = Pt(10)
 
         num_cols = 1 + num_dias_mes
+
         tabla = doc.add_table(rows=2 + len(salas), cols=num_cols)
-        tabla.style = 'Table Grid'
+        tabla.style = "Table Grid"
+        tabla.autofit = False
 
-        # --- SOLUCIÓN DEFINITIVA PARA RESTAURAR EL MARGEN DERECHO ---
-        tbl = tabla._tbl
-        tblPr = tbl.tblPr
+        # =====================================================
+        # ANCHO DE LA TABLA
+        # =====================================================
 
-        # A. Forzar Layout Fijo
-        tblLayout = OxmlElement('w:tblLayout')
-        tblLayout.set(qn('w:type'), 'fixed')
-        tblPr.append(tblLayout)
+        # Calcula el ancho útil de la página (horizontal)
+        section = doc.sections[-1]
 
-        # B. Forzar alineación a la izquierda (evita que Word estire la tabla al infinito)
-        jc = OxmlElement('w:jc')
-        jc.set(qn('w:val'), 'left')
-        tblPr.append(jc)
+        ancho_total = (
+            section.page_width
+            - section.left_margin
+            - section.right_margin
+        )
 
-        # C. Definir matemáticamente el ancho total de la estructura
-        # Si tu sección tiene márgenes de 2cm, el espacio real de impresión son 17cm.
-        # Definimos que la tabla mida exactamente 17cm de ancho total en el contenedor raíz.
-        ancho_total_tabla = Cm(17.0)
-        tblW = OxmlElement('w:tblW')
-        tblW.set(qn('w:w'), str(int(ancho_total_tabla.twips))) # Transforma los Cm a la unidad nativa de Word
-        tblW.set(qn('w:type'), 'dxa')
-        tblPr.append(tblW)
-        
-        # D. Repartir el espacio exacto entre las celdas
-        col_sala_w = Cm(3.0)  # Espacio para los nombres de las salas
-        espacio_dias = ancho_total_tabla - col_sala_w  # Quedan exactamente 14.0 cm libres para repartir
-        col_dia_w = espacio_dias / num_dias_mes  # Medida exacta por día
-        # ------------------------------------------------------------
+        col_sala_w = Cm(3)
 
-        ##row.height = Cm(0.8) # Fuerza a que la fila mida 0.8 centímetros de alto
+        col_dia_w = (ancho_total - col_sala_w) / num_dias_mes
 
-        # Fila 0: MES/AÑO
+        # Asignar ancho a las columnas
+        tabla.columns[0].width = col_sala_w
+
+        for i in range(1, num_cols):
+            tabla.columns[i].width = col_dia_w
+
+        # =====================================================
+        # FILA 0 : MES / AÑO
+        # =====================================================
+
         fila0 = tabla.rows[0]
-        c0 = fila0.cells[0]
-        c0.width = col_sala_w
-        set_cell_bg(c0, "D9D9D9")
-        r = c0.paragraphs[0].add_run("MES/AÑO")
+
+        set_cell_bg(fila0.cells[0], "D9D9D9")
+
+        p = fila0.cells[0].paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        r = p.add_run("MES\n/AÑ\nO")
         r.bold = True
         r.font.size = Pt(7)
 
-        fila0.cells[1].merge(fila0.cells[num_dias_mes])
-        r2 = fila0.cells[1].paragraphs[0].add_run(f"{mes_nombre} DE {year}")
-        r2.bold = True
-        r2.font.size = Pt(7)
-        fila0.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        celda = fila0.cells[1].merge(fila0.cells[num_dias_mes])
 
-        # Fila 1: DÍA + números 1..31
+        set_cell_bg(celda, "D9D9D9")
+
+        p = celda.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        r = p.add_run(f"{mes_nombre} DE {year}")
+        r.bold = True
+        r.font.size = Pt(8)
+
+        # =====================================================
+        # FILA 1 : DÍAS
+        # =====================================================
+
         fila1 = tabla.rows[1]
-        fila1.cells[0].width = col_sala_w
+
         set_cell_bg(fila1.cells[0], "D9D9D9")
-        r = fila1.cells[0].paragraphs[0].add_run("DÍA")
+
+        p = fila1.cells[0].paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        r = p.add_run("DÍA")
         r.bold = True
         r.font.size = Pt(7)
 
         for i, d in enumerate(todos_dias):
-            cell = fila1.cells[1 + i]
-            cell.width = col_dia_w
+            cell = fila1.cells[i + 1]
+
             set_cell_bg(cell, "D9D9D9")
-            run_d = cell.paragraphs[0].add_run(str(d))
-            run_d.bold = True
-            run_d.font.size = Pt(6)
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        # Filas de salas — valor en TODOS los días (incluyendo fines de semana)
-        for sala_idx, sala in enumerate(salas):
-            row = tabla.rows[2 + sala_idx]
-            row.cells[0].width = col_sala_w
-            set_cell_bg(row.cells[0], "F2F2F2")
+            p = cell.paragraphs[0]
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            # --- AÑADE ESTO: Quita los márgenes internos de la celda para ganar espacio
-            tcPr = row.cells[0]._tc.get_or_add_tcPr()
-            tcMar = OxmlElement('w:tcMar')
-            for m in ['top', 'bottom', 'left', 'right']:
-                node = OxmlElement(f'w:{m}')
-                node.set(qn('w:w'), '40') # Reduce el margen interno a casi cero
-                node.set(qn('w:type'), 'dxa')
-                tcMar.append(node)
-            tcPr.append(tcMar)
-            # -------------------------------------------------------------
-            r = row.cells[0].paragraphs[0].add_run(sala)
+            r = p.add_run(str(d))
+            r.bold = True
             r.font.size = Pt(6)
 
-            # Generar un valor por cada día del mes (todos, no solo laborables)
-            vals = generadores_por_sala[sala_idx](num_dias_mes)
-            for i, d in enumerate(todos_dias):
-                cell = row.cells[1 + i]
-                cell.width = col_dia_w
-                cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-                run_v = cell.paragraphs[0].add_run(f"{vals[i]}{unidad}")
-                run_v.font.size = Pt(6)
+        # =====================================================
+        # FILAS DE DATOS
+        # =====================================================
+
+        for sala_idx, sala in enumerate(salas):
+
+            row = tabla.rows[2 + sala_idx]
+
+            set_cell_bg(row.cells[0], "F2F2F2")
+
+            # Reducir márgenes internos de la primera columna
+            tcPr = row.cells[0]._tc.get_or_add_tcPr()
+
+            tcMar = OxmlElement("w:tcMar")
+
+            for lado in ("top", "bottom", "left", "right"):
+                node = OxmlElement(f"w:{lado}")
+                node.set(qn("w:w"), "40")
+                node.set(qn("w:type"), "dxa")
+                tcMar.append(node)
+
+            tcPr.append(tcMar)
+
+            p = row.cells[0].paragraphs[0]
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+            r = p.add_run(sala)
+            r.font.size = Pt(6)
+
+            valores = generadores_por_sala[sala_idx](num_dias_mes)
+
+            for i in range(num_dias_mes):
+
+                cell = row.cells[i + 1]
+
+                p = cell.paragraphs[0]
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                r = p.add_run(f"{valores[i]}{unidad}")
+                r.font.size = Pt(6)
+
+        # =====================================================
+        # ALTURA DE FILAS (opcional)
+        # =====================================================
+
+        for row in tabla.rows:
+            row.height = Cm(0.8)
+            row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
+
+        # =====================================================
+        # PIE
+        # =====================================================
 
         doc.add_paragraph(
-            f"Lecturas realizadas por: Mª José Pérez Peñarrubia. "
-            f"Firma___________________________"
+            "Lecturas realizadas por: Mª José Pérez Peñarrubia. "
+            "Firma___________________________"
         )
-        doc.add_paragraph("")
+
+        doc.add_paragraph()
 
 
     doc.add_page_break()
