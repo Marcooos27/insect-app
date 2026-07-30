@@ -334,8 +334,8 @@ def generar_docx(datos: dict) -> bytes:
 
         # Ancho total disponible en A4 portrait con márgenes 2cm = ~17cm
         # Sala: 2.5cm, resto distribuido entre 31 días
-        col_sala_w = Cm(2.5)
-        espacio_dias = Cm(17) - col_sala_w
+        col_sala_w = Cm(4)
+        espacio_dias = Cm(20) - col_sala_w
         col_dia_w = int(espacio_dias / num_dias_mes)
 
         # Fila 0: MES/AÑO
