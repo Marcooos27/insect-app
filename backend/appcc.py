@@ -338,7 +338,7 @@ def generar_docx(datos: dict) -> bytes:
         espacio_dias = Cm(19.4) - col_sala_w
         col_dia_w = int(espacio_dias / num_dias_mes)
 
-        row.height = Cm(0.8) # Fuerza a que la fila mida 0.8 centímetros de alto
+        ##row.height = Cm(0.8) # Fuerza a que la fila mida 0.8 centímetros de alto
 
         # Fila 0: MES/AÑO
         fila0 = tabla.rows[0]
