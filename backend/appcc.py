@@ -395,7 +395,6 @@ def generar_docx(datos: dict) -> bytes:
 
     heading(f"CONTROL DE TEMPERATURA Y HUMEDAD — {mes_nombre} {year}")
 
-    build_tabla_clima(doc, "TEMPERATURA", salas_temp, generar_temp, "ºC")
 
     # Temperatura: mismo generador para las 3 salas
     build_tabla_clima(
