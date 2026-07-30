@@ -315,10 +315,11 @@ def generar_docx(datos: dict) -> bytes:
     salas_hum_alm = ["Almacén 1"]
 
     def build_tabla_clima(doc, titulo_seccion, salas, generadores_por_sala, unidad):
+
         p = doc.add_paragraph()
-        run = p.add_run(titulo_seccion)
-        run.bold = True
-        run.font.size = Pt(10)
+        r = p.add_run(titulo_seccion)
+        r.bold = True
+        r.font.size = Pt(10)
 
         num_cols = 1 + num_dias_mes
 
@@ -326,135 +327,114 @@ def generar_docx(datos: dict) -> bytes:
         tabla.style = "Table Grid"
         tabla.autofit = False
 
-        # =====================================================
-        # ANCHO DE LA TABLA
-        # =====================================================
+        # ==================================================
+        # Cálculo de anchos
+        # ==================================================
 
-        # Calcula el ancho útil de la página (horizontal)
         section = doc.sections[-1]
 
-        ancho_total = (
+        ancho_util = (
             section.page_width
             - section.left_margin
             - section.right_margin
         )
 
-        col_sala_w = Cm(3)
+        col_sala = Cm(3)
 
-        espacio = ancho_total - col_sala_w
-        col_dia_w = int(espacio / num_dias_mes)
+        ancho_dias = ancho_util - col_sala
 
-        # Asignar ancho a las columnas
-        tabla.columns[0].width = col_sala_w
+        col_dia = int(ancho_dias / num_dias_mes)
 
-        for i in range(1, num_cols):
-            tabla.columns[i].width = col_dia_w
+        # Asignar ancho a TODAS las celdas
+        for row in tabla.rows:
+            row.cells[0].width = col_sala
 
-        # =====================================================
-        # FILA 0 : MES / AÑO
-        # =====================================================
+            for i in range(1, num_cols):
+                row.cells[i].width = col_dia
 
-        fila0 = tabla.rows[0]
+        # ==================================================
+        # Cabecera
+        # ==================================================
 
-        set_cell_bg(fila0.cells[0], "D9D9D9")
+        set_cell_bg(tabla.cell(0,0),"D9D9D9")
 
-        p = fila0.cells[0].paragraphs[0]
+        p = tabla.cell(0,0).paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        r = p.add_run("MES\n/AÑ\nO")
-        r.bold = True
-        r.font.size = Pt(7)
+        rr = p.add_run("MES/AÑO")
+        rr.bold = True
+        rr.font.size = Pt(7)
 
-        celda = fila0.cells[1].merge(fila0.cells[num_dias_mes])
+        cab = tabla.cell(0,1).merge(tabla.cell(0,num_cols-1))
 
-        set_cell_bg(celda, "D9D9D9")
+        set_cell_bg(cab,"D9D9D9")
 
-        p = celda.paragraphs[0]
+        p = cab.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        r = p.add_run(f"{mes_nombre} DE {year}")
-        r.bold = True
-        r.font.size = Pt(8)
+        rr = p.add_run(f"{mes_nombre} DE {year}")
+        rr.bold = True
+        rr.font.size = Pt(8)
 
-        # =====================================================
-        # FILA 1 : DÍAS
-        # =====================================================
+        # ==================================================
+        # Días
+        # ==================================================
 
-        fila1 = tabla.rows[1]
+        set_cell_bg(tabla.cell(1,0),"D9D9D9")
 
-        set_cell_bg(fila1.cells[0], "D9D9D9")
-
-        p = fila1.cells[0].paragraphs[0]
+        p = tabla.cell(1,0).paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        r = p.add_run("DÍA")
-        r.bold = True
-        r.font.size = Pt(7)
+        rr = p.add_run("DÍA")
+        rr.bold = True
+        rr.font.size = Pt(7)
 
-        for i, d in enumerate(todos_dias):
-            cell = fila1.cells[i + 1]
+        for i,dia in enumerate(todos_dias):
 
-            set_cell_bg(cell, "D9D9D9")
+            c = tabla.cell(1,i+1)
 
-            p = cell.paragraphs[0]
+            set_cell_bg(c,"D9D9D9")
+
+            p = c.paragraphs[0]
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            r = p.add_run(str(d))
-            r.bold = True
-            r.font.size = Pt(6)
+            rr = p.add_run(str(dia))
+            rr.bold = True
+            rr.font.size = Pt(6)
 
-        # =====================================================
-        # FILAS DE DATOS
-        # =====================================================
+        # ==================================================
+        # Datos
+        # ==================================================
 
-        for sala_idx, sala in enumerate(salas):
+        for fila,sala in enumerate(salas,start=2):
 
-            row = tabla.rows[2 + sala_idx]
+            c = tabla.cell(fila,0)
 
-            set_cell_bg(row.cells[0], "F2F2F2")
+            set_cell_bg(c,"F2F2F2")
 
-            # Reducir márgenes internos de la primera columna
-            tcPr = row.cells[0]._tc.get_or_add_tcPr()
+            p = c.paragraphs[0]
 
-            tcMar = OxmlElement("w:tcMar")
+            rr = p.add_run(sala)
+            rr.font.size = Pt(6)
 
-            for lado in ("top", "bottom", "left", "right"):
-                node = OxmlElement(f"w:{lado}")
-                node.set(qn("w:w"), "40")
-                node.set(qn("w:type"), "dxa")
-                tcMar.append(node)
+            valores = generadores_por_sala[fila-2](num_dias_mes)
 
-            tcPr.append(tcMar)
+            for i,v in enumerate(valores):
 
-            p = row.cells[0].paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                celda = tabla.cell(fila,i+1)
 
-            r = p.add_run(sala)
-            r.font.size = Pt(6)
-
-            valores = generadores_por_sala[sala_idx](num_dias_mes)
-
-            for i in range(num_dias_mes):
-
-                cell = row.cells[i + 1]
-
-                p = cell.paragraphs[0]
+                p = celda.paragraphs[0]
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-                r = p.add_run(f"{valores[i]}{unidad}")
-                r.font.size = Pt(6)
+                rr = p.add_run(f"{v}{unidad}")
+                rr.font.size = Pt(6)
 
-        # =====================================================
-        # ALTURA DE FILAS (opcional)
-        # =====================================================
+        # ==================================================
+        # Altura de filas
+        # ==================================================
 
         for row in tabla.rows:
-            row.height = Cm(0.8)
-            row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
-
-        # =====================================================
-        # PIE
-        # =====================================================
+            row.height = Cm(0.75)
 
         doc.add_paragraph(
             "Lecturas realizadas por: Mª José Pérez Peñarrubia. "
