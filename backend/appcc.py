@@ -299,6 +299,10 @@ def generar_docx(datos: dict) -> bytes:
         pool = [12] * 5 + [13] * 3 + [14] * 2
         return [random.choice(pool) for _ in range(n)]
 
+
+    year = datos["year"]
+    month = datos["month"]
+
     _, num_dias_mes = calendar.monthrange(year, month)
     todos_dias = list(range(1, num_dias_mes + 1))
 
@@ -376,7 +380,7 @@ def generar_docx(datos: dict) -> bytes:
 
 
     doc.add_page_break()
-    
+
     heading(f"CONTROL DE TEMPERATURA Y HUMEDAD — {mes_nombre} {year}")
 
     build_tabla_clima(doc, "TEMPERATURA", salas_temp, generar_temp, "ºC")
