@@ -324,9 +324,16 @@ def generar_docx(datos: dict) -> bytes:
         tabla = doc.add_table(rows=2 + len(salas), cols=num_cols)
         tabla.style = 'Table Grid'
 
+        tabla.autofit = False
+        tbl = tabla._tbl
+        tblPr = tbl.tblPr
+        tblLayout = OxmlElement('w:tblLayout')
+        tblLayout.set(qn('w:type'), 'fixed')
+        tblPr.append(tblLayout)
+
         # Anchos: sala=3cm, días=0.55cm cada uno
-        col_sala_w = Cm(3)
-        col_dia_w = Cm(0.55)
+        col_sala_w = Cm(2.5)
+        col_dia_w = Cm(0.45)
 
         # Fila 0: MES/AÑO
         fila0 = tabla.rows[0]
@@ -393,10 +400,18 @@ def generar_docx(datos: dict) -> bytes:
 
     doc.add_page_break()
 
+    # Cambiar a landscape para las tablas de clima
+    new_section = doc.add_section()
+    new_section.orientation = 1
+    new_section.page_width = Cm(29.7)
+    new_section.page_height = Cm(21)
+    new_section.left_margin = Cm(1.5)
+    new_section.right_margin = Cm(1.5)
+    new_section.top_margin = Cm(1.5)
+    new_section.bottom_margin = Cm(1.5)
+
     heading(f"CONTROL DE TEMPERATURA Y HUMEDAD — {mes_nombre} {year}")
 
-
-    # Temperatura: mismo generador para las 3 salas
     build_tabla_clima(
         doc, "TEMPERATURA",
         ["Sala climatizada 1", "Sala climatizada 2", "Almacén 1"],
@@ -404,13 +419,22 @@ def generar_docx(datos: dict) -> bytes:
         "ºC"
     )
 
-    # Humedad: generador distinto por sala
     build_tabla_clima(
         doc, "HUMEDAD",
         ["Sala climatizada 1", "Sala climatizada 2", "Almacén 1"],
         [generar_hum_sala, generar_hum_sala, generar_hum_almacen],
         "%"
     )
+
+    # Volver a portrait
+    back_section = doc.add_section()
+    back_section.orientation = 0
+    back_section.page_width = Cm(21)
+    back_section.page_height = Cm(29.7)
+    back_section.left_margin = Cm(2)
+    back_section.right_margin = Cm(2)
+    back_section.top_margin = Cm(1.5)
+    back_section.bottom_margin = Cm(1.5)
     
 
     # =========================================================
