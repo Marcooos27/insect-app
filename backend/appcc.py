@@ -341,7 +341,8 @@ def generar_docx(datos: dict) -> bytes:
 
         col_sala_w = Cm(3)
 
-        col_dia_w = (ancho_total - col_sala_w) / num_dias_mes
+        espacio = ancho_total - col_sala_w
+        col_dia_w = int(espacio / num_dias_mes)
 
         # Asignar ancho a las columnas
         tabla.columns[0].width = col_sala_w
