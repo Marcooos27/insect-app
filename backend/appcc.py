@@ -324,22 +324,25 @@ def generar_docx(datos: dict) -> bytes:
         tabla = doc.add_table(rows=2 + len(salas), cols=num_cols)
         tabla.style = 'Table Grid'
 
-        tabla.autofit = False
+        # Forzar layout fijo para respetar anchos
         tbl = tabla._tbl
         tblPr = tbl.tblPr
         tblLayout = OxmlElement('w:tblLayout')
         tblLayout.set(qn('w:type'), 'fixed')
         tblPr.append(tblLayout)
 
-        # Anchos: sala=3cm, días=0.55cm cada uno
+        # Ancho total disponible en A4 portrait con márgenes 2cm = ~17cm
+        # Sala: 2.5cm, resto distribuido entre 31 días
         col_sala_w = Cm(2.5)
-        col_dia_w = Cm(0.45)
+        espacio_dias = Cm(17) - col_sala_w
+        col_dia_w = int(espacio_dias / num_dias_mes)
 
         # Fila 0: MES/AÑO
         fila0 = tabla.rows[0]
-        fila0.cells[0].width = col_sala_w
-        set_cell_bg(fila0.cells[0], "D9D9D9")
-        r = fila0.cells[0].paragraphs[0].add_run("MES/AÑO")
+        c0 = fila0.cells[0]
+        c0.width = col_sala_w
+        set_cell_bg(c0, "D9D9D9")
+        r = c0.paragraphs[0].add_run("MES/AÑO")
         r.bold = True
         r.font.size = Pt(7)
         fila0.cells[1].merge(fila0.cells[num_dias_mes])
@@ -348,7 +351,7 @@ def generar_docx(datos: dict) -> bytes:
         r2.font.size = Pt(7)
         fila0.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        # Fila 1: DÍA + números
+        # Fila 1: DÍA + números 1..31
         fila1 = tabla.rows[1]
         fila1.cells[0].width = col_sala_w
         set_cell_bg(fila1.cells[0], "D9D9D9")
@@ -364,7 +367,7 @@ def generar_docx(datos: dict) -> bytes:
             run_d.font.size = Pt(6)
             cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        # Filas de salas
+        # Filas de salas — valor en TODOS los días (incluyendo fines de semana)
         for sala_idx, sala in enumerate(salas):
             row = tabla.rows[2 + sala_idx]
             row.cells[0].width = col_sala_w
@@ -372,24 +375,14 @@ def generar_docx(datos: dict) -> bytes:
             r = row.cells[0].paragraphs[0].add_run(sala)
             r.font.size = Pt(7)
 
-            vals = iter(generadores_por_sala[sala_idx](len(dias_lab_set)))
+            # Generar un valor por cada día del mes (todos, no solo laborables)
+            vals = generadores_por_sala[sala_idx](num_dias_mes)
             for i, d in enumerate(todos_dias):
                 cell = row.cells[1 + i]
                 cell.width = col_dia_w
                 cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-                if d in dias_lab_set:
-                    run_v = cell.paragraphs[0].add_run(f"{next(vals)}{unidad}")
-                    run_v.font.size = Pt(6)
-
-        # Ajustar altura de filas para que sean compactas
-        
-        for row in tabla.rows:
-            tr = row._tr
-            trPr = tr.get_or_add_trPr()
-            trHeight = OxmlElement('w:trHeight')
-            trHeight.set(qn('w:val'), '300')  # altura fija ~0.5cm
-            trHeight.set(qn('w:hRule'), 'exact')
-            trPr.append(trHeight)
+                run_v = cell.paragraphs[0].add_run(f"{vals[i]}{unidad}")
+                run_v.font.size = Pt(6)
 
         doc.add_paragraph(
             f"Lecturas realizadas por: Mª José Pérez Peñarrubia. "
@@ -399,17 +392,6 @@ def generar_docx(datos: dict) -> bytes:
 
 
     doc.add_page_break()
-
-    # Cambiar a landscape para las tablas de clima
-    new_section = doc.add_section()
-    new_section.orientation = 1
-    new_section.page_width = Cm(29.7)
-    new_section.page_height = Cm(21)
-    new_section.left_margin = Cm(1.5)
-    new_section.right_margin = Cm(1.5)
-    new_section.top_margin = Cm(1.5)
-    new_section.bottom_margin = Cm(1.5)
-
     heading(f"CONTROL DE TEMPERATURA Y HUMEDAD — {mes_nombre} {year}")
 
     build_tabla_clima(
@@ -425,16 +407,6 @@ def generar_docx(datos: dict) -> bytes:
         [generar_hum_sala, generar_hum_sala, generar_hum_almacen],
         "%"
     )
-
-    # Volver a portrait
-    back_section = doc.add_section()
-    back_section.orientation = 0
-    back_section.page_width = Cm(21)
-    back_section.page_height = Cm(29.7)
-    back_section.left_margin = Cm(2)
-    back_section.right_margin = Cm(2)
-    back_section.top_margin = Cm(1.5)
-    back_section.bottom_margin = Cm(1.5)
     
 
     # =========================================================
