@@ -277,6 +277,173 @@ def generar_docx(datos: dict) -> bytes:
         doc.add_paragraph(f"Firma responsable: _________________________")
         doc.add_paragraph("")
 
+
+
+    # =========================================================
+    # SECCIÓN: CONTROL DE TEMPERATURA Y HUMEDAD
+    # =========================================================
+    import random
+
+    def generar_temp(n):
+        """Más 26 que 25, más 25 que 27"""
+        pool = [26] * 5 + [25] * 3 + [27] * 2
+        return [random.choice(pool) for _ in range(n)]
+
+    def generar_hum_sala(n):
+        """Salas climatizadas: más 66 que 65, más 65 que 67"""
+        pool = [66] * 5 + [65] * 3 + [67] * 2
+        return [random.choice(pool) for _ in range(n)]
+
+    def generar_hum_almacen(n):
+        """Almacenes: más 12 que 13, más 13 que 14"""
+        pool = [12] * 5 + [13] * 3 + [14] * 2
+        return [random.choice(pool) for _ in range(n)]
+
+    _, num_dias_mes = calendar.monthrange(year, month)
+    todos_dias = list(range(1, num_dias_mes + 1))
+
+    # Días laborables como set para saber cuáles rellenar
+    dias_lab_set = {date.fromisoformat(d).day for d in datos["dias_laborables"]}
+
+    # Salas y sus generadores
+    salas_temp = ["Sala climatizada 1", "Sala climatizada 2", "Almacén 1"]
+    salas_hum_sala = ["Sala climatizada 1", "Sala climatizada 2"]
+    salas_hum_alm = ["Almacén 1"]
+
+    def build_tabla_clima(doc, titulo_seccion, salas, generador_fn, unidad):
+        p = doc.add_paragraph()
+        run = p.add_run(titulo_seccion)
+        run.bold = True
+        run.font.size = Pt(10)
+
+        # Cabecera: MES/AÑO
+        num_cols = 1 + num_dias_mes
+        tabla = doc.add_table(rows=3, cols=num_cols)
+        tabla.style = 'Table Grid'
+
+        # Fila 0: MES/AÑO + mes completo
+        fila0 = tabla.rows[0]
+        set_cell_bg(fila0.cells[0], "D9D9D9")
+        r = fila0.cells[0].paragraphs[0].add_run("MES/AÑO")
+        r.bold = True
+        r.font.size = Pt(7)
+        # Merge celdas de mes
+        fila0.cells[1].merge(fila0.cells[num_dias_mes])
+        r2 = fila0.cells[1].paragraphs[0].add_run(f"{mes_nombre} DE {year}")
+        r2.bold = True
+        r2.font.size = Pt(7)
+        fila0.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Fila 1: DÍA + números 1..31
+        fila1 = tabla.rows[1]
+        set_cell_bg(fila1.cells[0], "D9D9D9")
+        r = fila1.cells[0].paragraphs[0].add_run("DÍA")
+        r.bold = True
+        r.font.size = Pt(7)
+        for i, d in enumerate(todos_dias):
+            cell = fila1.cells[1 + i]
+            set_cell_bg(cell, "D9D9D9")
+            run_d = cell.paragraphs[0].add_run(str(d))
+            run_d.bold = True
+            run_d.font.size = Pt(6)
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Filas de salas
+        for sala_idx, sala in enumerate(salas):
+            row = tabla.add_row()
+            set_cell_bg(row.cells[0], "F2F2F2")
+            r = row.cells[0].paragraphs[0].add_run(sala)
+            r.font.size = Pt(7)
+
+            # Generar valores solo para días laborables
+            valores_lab = generador_fn(len(dias_lab_set))
+            iter_vals = iter(valores_lab)
+
+            for i, d in enumerate(todos_dias):
+                cell = row.cells[1 + i]
+                cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                if d in dias_lab_set:
+                    val = next(iter_vals)
+                    run_v = cell.paragraphs[0].add_run(f"{val}{unidad}")
+                    run_v.font.size = Pt(6)
+                # Si es fin de semana, celda vacía
+
+        doc.add_paragraph(
+            f"Lecturas realizadas por: {datos['nombre_admin']}. "
+            f"Firma___________________________"
+        ).runs[0].font.size = Pt(8)
+        doc.add_paragraph("")
+
+
+    doc.add_page_break()
+    
+    heading(f"CONTROL DE TEMPERATURA Y HUMEDAD — {mes_nombre} {year}")
+
+    build_tabla_clima(doc, "TEMPERATURA", salas_temp, generar_temp, "ºC")
+
+    # Humedad — tabla separada con generadores distintos por sala
+    p = doc.add_paragraph()
+    run = p.add_run("HUMEDAD")
+    run.bold = True
+    run.font.size = Pt(10)
+
+    num_cols = 1 + num_dias_mes
+    tabla_hum = doc.add_table(rows=3, cols=num_cols)
+    tabla_hum.style = 'Table Grid'
+
+    # Fila 0
+    fila0 = tabla_hum.rows[0]
+    set_cell_bg(fila0.cells[0], "D9D9D9")
+    fila0.cells[0].paragraphs[0].add_run("MES/AÑO").bold = True
+    fila0.cells[1].merge(fila0.cells[num_dias_mes])
+    r2 = fila0.cells[1].paragraphs[0].add_run(f"{mes_nombre} DE {year}")
+    r2.bold = True
+    r2.font.size = Pt(7)
+    fila0.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Fila 1: días
+    fila1 = tabla_hum.rows[1]
+    set_cell_bg(fila1.cells[0], "D9D9D9")
+    fila1.cells[0].paragraphs[0].add_run("DÍA").bold = True
+    for i, d in enumerate(todos_dias):
+        cell = fila1.cells[1 + i]
+        set_cell_bg(cell, "D9D9D9")
+        run_d = cell.paragraphs[0].add_run(str(d))
+        run_d.font.size = Pt(6)
+        cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Salas climatizadas con su generador
+    for sala in ["Sala climatizada 1", "Sala climatizada 2"]:
+        row = tabla_hum.add_row()
+        set_cell_bg(row.cells[0], "F2F2F2")
+        row.cells[0].paragraphs[0].add_run(sala).font.size = Pt(7)
+        vals = iter(generar_hum_sala(len(dias_lab_set)))
+        for i, d in enumerate(todos_dias):
+            cell = row.cells[1 + i]
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            if d in dias_lab_set:
+                run_v = cell.paragraphs[0].add_run(f"{next(vals)}%")
+                run_v.font.size = Pt(6)
+
+    # Almacén con su generador
+    row = tabla_hum.add_row()
+    set_cell_bg(row.cells[0], "F2F2F2")
+    row.cells[0].paragraphs[0].add_run("Almacén 1").font.size = Pt(7)
+    vals = iter(generar_hum_almacen(len(dias_lab_set)))
+    for i, d in enumerate(todos_dias):
+        cell = row.cells[1 + i]
+        cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        if d in dias_lab_set:
+            run_v = cell.paragraphs[0].add_run(f"{next(vals)}%")
+            run_v.font.size = Pt(6)
+
+    doc.add_paragraph(
+        f"Lecturas realizadas por: {datos['nombre_admin']}. "
+        f"Firma___________________________"
+    )
+    doc.add_paragraph("")
+    
+
     # =========================================================
     # SECCIÓN 2: HIGIENE PERSONAL
     # =========================================================
