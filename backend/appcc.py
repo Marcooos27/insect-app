@@ -334,9 +334,11 @@ def generar_docx(datos: dict) -> bytes:
 
         # Ancho total disponible en A4 portrait con márgenes 2cm = ~17cm
         # Sala: 2.5cm, resto distribuido entre 31 días
-        col_sala_w = Cm(4)
-        espacio_dias = Cm(20) - col_sala_w
+        col_sala_w = Cm(3.2)
+        espacio_dias = Cm(19.4) - col_sala_w
         col_dia_w = int(espacio_dias / num_dias_mes)
+
+        row.height = Cm(0.8) # Fuerza a que la fila mida 0.8 centímetros de alto
 
         # Fila 0: MES/AÑO
         fila0 = tabla.rows[0]
@@ -373,8 +375,19 @@ def generar_docx(datos: dict) -> bytes:
             row = tabla.rows[2 + sala_idx]
             row.cells[0].width = col_sala_w
             set_cell_bg(row.cells[0], "F2F2F2")
+
+            # --- AÑADE ESTO: Quita los márgenes internos de la celda para ganar espacio
+            tcPr = row.cells[0]._tc.get_or_add_tcPr()
+            tcMar = OxmlElement('w:tcMar')
+            for m in ['top', 'bottom', 'left', 'right']:
+                node = OxmlElement(f'w:{m}')
+                node.set(qn('w:w'), '40') # Reduce el margen interno a casi cero
+                node.set(qn('w:type'), 'dxa')
+                tcMar.append(node)
+            tcPr.append(tcMar)
+            # -------------------------------------------------------------
             r = row.cells[0].paragraphs[0].add_run(sala)
-            r.font.size = Pt(7)
+            r.font.size = Pt(6.5)
 
             # Generar un valor por cada día del mes (todos, no solo laborables)
             vals = generadores_por_sala[sala_idx](num_dias_mes)
@@ -429,7 +442,7 @@ def generar_docx(datos: dict) -> bytes:
     back_section.top_margin = Cm(1.5)
     back_section.bottom_margin = Cm(1.5)
 
-    
+
     # =========================================================
     # SECCIÓN 2: HIGIENE PERSONAL
     # =========================================================
