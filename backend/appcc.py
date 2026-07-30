@@ -387,7 +387,7 @@ def generar_docx(datos: dict) -> bytes:
             tcPr.append(tcMar)
             # -------------------------------------------------------------
             r = row.cells[0].paragraphs[0].add_run(sala)
-            r.font.size = Pt(6.5)
+            r.font.size = Pt(6)
 
             # Generar un valor por cada día del mes (todos, no solo laborables)
             vals = generadores_por_sala[sala_idx](num_dias_mes)
