@@ -336,7 +336,7 @@ def generar_docx(datos: dict) -> bytes:
         # Sala: 2.5cm, resto distribuido entre 31 días
         col_sala_w = Cm(5)
         espacio_dias = Cm(17.4) - col_sala_w
-        col_dia_w = int(espacio_dias / num_dias_mes)
+        col_dia_w = espacio_dias / num_dias_mes
 
         ##row.height = Cm(0.8) # Fuerza a que la fila mida 0.8 centímetros de alto
 
@@ -348,6 +348,7 @@ def generar_docx(datos: dict) -> bytes:
         r = c0.paragraphs[0].add_run("MES/AÑO")
         r.bold = True
         r.font.size = Pt(7)
+
         fila0.cells[1].merge(fila0.cells[num_dias_mes])
         r2 = fila0.cells[1].paragraphs[0].add_run(f"{mes_nombre} DE {year}")
         r2.bold = True
@@ -361,6 +362,7 @@ def generar_docx(datos: dict) -> bytes:
         r = fila1.cells[0].paragraphs[0].add_run("DÍA")
         r.bold = True
         r.font.size = Pt(7)
+        
         for i, d in enumerate(todos_dias):
             cell = fila1.cells[1 + i]
             cell.width = col_dia_w
