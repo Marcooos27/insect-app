@@ -393,6 +393,16 @@ def generar_docx(datos: dict) -> bytes:
 
 
     doc.add_page_break()
+
+    new_section = doc.add_section()
+    new_section.orientation = 1  # landscape
+    new_section.page_width = Cm(29.7)
+    new_section.page_height = Cm(21)
+    new_section.left_margin = Cm(1.5)
+    new_section.right_margin = Cm(1.5)
+    new_section.top_margin = Cm(1.5)
+    new_section.bottom_margin = Cm(1.5)
+
     heading(f"CONTROL DE TEMPERATURA Y HUMEDAD — {mes_nombre} {year}")
 
     build_tabla_clima(
@@ -409,7 +419,17 @@ def generar_docx(datos: dict) -> bytes:
         "%"
     )
     
+    # Volver a orientación vertical
+    back_section = doc.add_section()
+    back_section.orientation = 0  # portrait
+    back_section.page_width = Cm(21)
+    back_section.page_height = Cm(29.7)
+    back_section.left_margin = Cm(2)
+    back_section.right_margin = Cm(2)
+    back_section.top_margin = Cm(1.5)
+    back_section.bottom_margin = Cm(1.5)
 
+    
     # =========================================================
     # SECCIÓN 2: HIGIENE PERSONAL
     # =========================================================
