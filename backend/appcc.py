@@ -324,19 +324,34 @@ def generar_docx(datos: dict) -> bytes:
         tabla = doc.add_table(rows=2 + len(salas), cols=num_cols)
         tabla.style = 'Table Grid'
 
-        # Forzar layout fijo para respetar anchos
-        
+        # --- SOLUCIÓN DEFINITIVA PARA RESTAURAR EL MARGEN DERECHO ---
         tbl = tabla._tbl
         tblPr = tbl.tblPr
+
+        # A. Forzar Layout Fijo
         tblLayout = OxmlElement('w:tblLayout')
         tblLayout.set(qn('w:type'), 'fixed')
         tblPr.append(tblLayout)
 
-        # Ancho total disponible en A4 portrait con márgenes 2cm = ~17cm
-        # Sala: 2.5cm, resto distribuido entre 31 días
-        col_sala_w = Cm(5)
-        espacio_dias = Cm(17.4) - col_sala_w
-        col_dia_w = espacio_dias / num_dias_mes
+        # B. Forzar alineación a la izquierda (evita que Word estire la tabla al infinito)
+        jc = OxmlElement('w:jc')
+        jc.set(qn('w:val'), 'left')
+        tblPr.append(jc)
+
+        # C. Definir matemáticamente el ancho total de la estructura
+        # Si tu sección tiene márgenes de 2cm, el espacio real de impresión son 17cm.
+        # Definimos que la tabla mida exactamente 17cm de ancho total en el contenedor raíz.
+        ancho_total_tabla = Cm(17.0)
+        tblW = OxmlElement('w:tblW')
+        tblW.set(qn('w:w'), str(int(ancho_total_tabla.twips))) # Transforma los Cm a la unidad nativa de Word
+        tblW.set(qn('w:type'), 'dxa')
+        tblPr.append(tblW)
+        
+        # D. Repartir el espacio exacto entre las celdas
+        col_sala_w = Cm(3.0)  # Espacio para los nombres de las salas
+        espacio_dias = ancho_total_tabla - col_sala_w  # Quedan exactamente 14.0 cm libres para repartir
+        col_dia_w = espacio_dias / num_dias_mes  # Medida exacta por día
+        # ------------------------------------------------------------
 
         ##row.height = Cm(0.8) # Fuerza a que la fila mida 0.8 centímetros de alto
 
@@ -362,7 +377,7 @@ def generar_docx(datos: dict) -> bytes:
         r = fila1.cells[0].paragraphs[0].add_run("DÍA")
         r.bold = True
         r.font.size = Pt(7)
-        
+
         for i, d in enumerate(todos_dias):
             cell = fila1.cells[1 + i]
             cell.width = col_dia_w
