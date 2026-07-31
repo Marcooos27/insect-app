@@ -350,7 +350,7 @@ def generar_docx(datos: dict) -> bytes:
         tblW.set(qn('w:w'), '0')
         tblW.set(qn('w:type'), 'auto')
         tblPr.append(tblW)
-        
+
 
         # ==================================================
         # Cálculo de anchos
@@ -364,7 +364,7 @@ def generar_docx(datos: dict) -> bytes:
             - section.right_margin
         )
 
-        col_sala = Cm(3)
+        col_sala = Cm(4.5)
 
         ancho_dias = ancho_util - col_sala
 
