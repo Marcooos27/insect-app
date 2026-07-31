@@ -364,7 +364,7 @@ def generar_docx(datos: dict) -> bytes:
             - section.right_margin
         )
 
-        col_sala = Cm(4.5)
+        col_sala = Cm(7)
 
         ancho_dias = ancho_util - col_sala
 
@@ -463,7 +463,12 @@ def generar_docx(datos: dict) -> bytes:
 
         doc.add_paragraph(
             "Lecturas realizadas por: Mª José Pérez Peñarrubia. "
-            "Firma___________________________"
+        )
+
+        doc.add_paragraph()
+
+        doc.add_paragraph(
+                    "Firma___________________________"
         )
 
         doc.add_paragraph()
