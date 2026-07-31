@@ -327,6 +327,31 @@ def generar_docx(datos: dict) -> bytes:
         tabla.style = "Table Grid"
         tabla.autofit = False
 
+        # Alineación de tabla: "entre líneas" (inline) y centrada
+        tbl = tabla._tbl
+        tblPr = tbl.tblPr
+
+        # Estilo: entre líneas (inline, no flotante)
+        tblStyle = OxmlElement('w:tblStyle')
+        tblStyle.set(qn('w:val'), 'TableGrid')
+
+        # Alineación centrada
+        jc = OxmlElement('w:jc')
+        jc.set(qn('w:val'), 'center')
+        tblPr.append(jc)
+
+        # Layout fijo
+        tblLayout = OxmlElement('w:tblLayout')
+        tblLayout.set(qn('w:type'), 'fixed')
+        tblPr.append(tblLayout)
+
+        # Ancho total de la tabla explícito
+        tblW = OxmlElement('w:tblW')
+        tblW.set(qn('w:w'), '0')
+        tblW.set(qn('w:type'), 'auto')
+        tblPr.append(tblW)
+        
+
         # ==================================================
         # Cálculo de anchos
         # ==================================================
