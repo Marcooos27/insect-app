@@ -880,7 +880,7 @@ def generar_docx(datos: dict) -> bytes:
     doc.add_page_break()
     heading(f"CONTROL DE PROVEEDORES — {mes_nombre} {year}")
 
-    tabla = doc.add_table(rows=1, cols=7)
+    tabla = doc.add_table(rows=1, cols=9)
     tabla.style = 'Table Grid'
     prov_hdrs = ["Proveedor", "Producto suministrado", "Documentación en regla (Sí/No)",
                  "Conformidad del producto (Sí/No)", "Incidencias detectadas",
