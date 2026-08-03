@@ -280,6 +280,146 @@ def generar_docx(datos: dict) -> bytes:
 
 
     # =========================================================
+    # SECCIÓN 2: PARTES DE ALMACENAMIENTO / MATERIAS PRIMAS
+    # =========================================================
+    doc.add_page_break()
+    heading(f"PARTES DE ALMACENAMIENTO {mes_nombre}")
+
+    materias_primas = [
+        {
+            "articulo": "Salvado de Trigo",
+            "tipo": "Materia prima",
+            "codigo": "MP-01",
+            "unidades": "Saco 25 kg",
+            "metodo": "PMP",
+            "periodo": f"01/{month:02d}/{year} - {ult}/{month:02d}/{year}",
+            "operario": "Sergio Granados",
+            "almacen": "Almacén 3",
+            "stock_min": "",
+            "stock_seg": "",
+            "stock_max": "",
+        },
+        {
+            "articulo": "Bagazo de Cerveza",
+            "tipo": "Materia prima",
+            "codigo": "MP-02",
+            "unidades": "Big-Bag 500 kg",
+            "metodo": "PMP",
+            "periodo": f"01/{month:02d}/{year} - {ult}/{month:02d}/{year}",
+            "operario": "Sergio Granados",
+            "almacen": "Almacén 3",
+            "stock_min": "",
+            "stock_seg": "",
+            "stock_max": "",
+        },
+    ]
+
+    for mp in materias_primas:
+
+        # --- Ficha de cabecera ---
+        ficha = doc.add_table(rows=4, cols=8)
+        ficha.style = 'Table Grid'
+
+        def ficha_celda(r, c, label, valor="", gris=False):
+            cell = ficha.cell(r, c)
+            if gris:
+                set_cell_bg(cell, "D9D9D9")
+            p = cell.paragraphs[0]
+            run_label = p.add_run(label)
+            run_label.bold = True
+            run_label.font.size = Pt(7)
+            if valor:
+                p.add_run(f"\n{valor}").font.size = Pt(8)
+
+        # Fila 0
+        ficha_celda(0, 0, "FICHA DE ALMACENAMIENTO", gris=True)
+        ficha.cell(0, 0).merge(ficha.cell(0, 1))
+        ficha_celda(0, 2, "ARTÍCULO", mp["articulo"])
+        ficha.cell(0, 2).merge(ficha.cell(0, 3))
+        ficha_celda(0, 4, "MÉTODO VALORACIÓN", mp["metodo"], gris=True)
+        ficha_celda(0, 5, "", "", gris=True)
+        ficha_celda(0, 6, "ALMACÉN", mp["almacen"], gris=True)
+        ficha_celda(0, 7, "UBICACIÓN", "", gris=True)
+
+        # Fila 1
+        ficha_celda(1, 0, "ESTABLECIMIENTO",
+                    "InsectEAT Bio-refinería Cañaveras")
+        ficha.cell(1, 0).merge(ficha.cell(1, 1))
+        ficha_celda(1, 2, "TIPO", mp["tipo"])
+        ficha.cell(1, 2).merge(ficha.cell(1, 3))
+        ficha_celda(1, 4, "PERIODO", mp["periodo"], gris=True)
+        ficha.cell(1, 4).merge(ficha.cell(1, 5))
+        ficha_celda(1, 6, "", "", gris=True)
+        ficha_celda(1, 7, "STOCK MÍNIMO", mp["stock_min"])
+
+        # Fila 2
+        ficha.cell(2, 0).merge(ficha.cell(2, 1))
+        ficha_celda(2, 2, "CÓDIGO", mp["codigo"])
+        ficha.cell(2, 2).merge(ficha.cell(2, 3))
+        ficha_celda(2, 4, "OPERARIO", mp["operario"], gris=True)
+        ficha.cell(2, 4).merge(ficha.cell(2, 5))
+        ficha_celda(2, 6, "", "", gris=True)
+        ficha_celda(2, 7, "STOCK DE SEGURIDAD", mp["stock_seg"])
+
+        # Fila 3
+        ficha.cell(3, 0).merge(ficha.cell(3, 1))
+        ficha_celda(3, 2, "UNIDADES", mp["unidades"])
+        ficha.cell(3, 2).merge(ficha.cell(3, 3))
+        ficha.cell(3, 4).merge(ficha.cell(3, 5))
+        ficha.cell(3, 6).merge(ficha.cell(3, 7))
+        ficha_celda(3, 7, "STOCK MÁXIMO", mp["stock_max"])
+
+        doc.add_paragraph("")
+
+        # --- Tabla de movimientos (vacía para rellenar a mano) ---
+        mov = doc.add_table(rows=10, cols=11)
+        mov.style = 'Table Grid'
+
+        # Cabecera fila 0: grupos
+        cab0 = mov.rows[0]
+        grupos = [
+            (0, 1, "Nº ORDEN"),
+            (1, 1, "FECHA"),
+            (2, 1, "PROCEDENCIA / DESTINO"),
+            (3, 3, "COMPRAS / ENTRADA"),
+            (6, 3, "VENTAS / SALIDA"),
+            (9, 2, "EXISTENCIAS"),
+        ]
+        col_actual = 0
+        for col_i, span, texto in grupos:
+            cell = cab0.cells[col_actual]
+            if span > 1:
+                cell.merge(cab0.cells[col_actual + span - 1])
+            set_cell_bg(cell, "D9D9D9")
+            r = cell.paragraphs[0].add_run(texto)
+            r.bold = True
+            r.font.size = Pt(7)
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            col_actual += span
+
+        # Cabecera fila 1: subcolumnas
+        cab1 = mov.rows[1]
+        subcols = ["", "", "",
+                   "CANTIDAD", "PRECIO", "VALOR",
+                   "CANTIDAD", "PRECIO", "VALOR",
+                   "CANTIDAD", "VALOR"]
+        for i, txt in enumerate(subcols):
+            set_cell_bg(cab1.cells[i], "D9D9D9")
+            r = cab1.cells[i].paragraphs[0].add_run(txt)
+            r.bold = True
+            r.font.size = Pt(6)
+            cab1.cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # 8 filas vacías para rellenar a mano
+        # (ya están creadas al hacer rows=10)
+
+        doc.add_paragraph("Firma responsable: _________________________")
+        doc.add_paragraph("")
+
+
+
+
+    # =========================================================
     # SECCIÓN: CONTROL DE TEMPERATURA Y HUMEDAD
     # =========================================================
     import random
@@ -517,6 +657,68 @@ def generar_docx(datos: dict) -> bytes:
     # =========================================================
     doc.add_page_break()
     heading(f"CONTROL DE HIGIENE PERSONAL — {mes_nombre} {year}")
+
+
+    # Tabla de responsables al inicio de higiene personal
+    primer_dia = f"1/{month}/{year}"
+    _, ult = calendar.monthrange(year, month)
+    ultimo_dia = f"{ult}/{month}/{year}"
+
+    responsables = [
+        {"nombre": "Mª José Pérez Peñarrubia", "cargo": "Responsable de Instalación",
+         "fecha_inicio": primer_dia, "fecha_fin": ultimo_dia},
+        {"nombre": "Javier Chavarría Sánchez", "cargo": "Responsable de Calidad",
+         "fecha_inicio": primer_dia, "fecha_fin": ultimo_dia},
+        {"nombre": "", "cargo": "", "fecha_inicio": "", "fecha_fin": ""},
+        {"nombre": "", "cargo": "", "fecha_inicio": "", "fecha_fin": ""},
+    ]
+
+    tabla_resp = doc.add_table(rows=len(responsables), cols=5)
+    tabla_resp.style = 'Table Grid'
+
+    col_ws = [Cm(2.5), Cm(2.5), Cm(2.5), Cm(2.5), Cm(7)]
+
+    for idx, resp in enumerate(responsables):
+        row = tabla_resp.rows[idx]
+
+        # Col 0: FECHA DE INICIO
+        set_cell_bg(row.cells[0], "D9D9D9")
+        row.cells[0].width = col_ws[0]
+        p0 = row.cells[0].paragraphs[0]
+        p0.add_run("FECHA DE INICIO\n").bold = True
+        p0.add_run(resp["fecha_inicio"]).font.size = Pt(8)
+        p0.runs[0].font.size = Pt(7)
+
+        # Col 1: FECHA DE FINALIZACIÓN
+        set_cell_bg(row.cells[1], "D9D9D9")
+        row.cells[1].width = col_ws[1]
+        p1 = row.cells[1].paragraphs[0]
+        p1.add_run("FECHA DE FINALIZACIÓN\n").bold = True
+        p1.add_run(resp["fecha_fin"]).font.size = Pt(8)
+        p1.runs[0].font.size = Pt(7)
+
+        # Col 2: FIRMA (vacío para firmar)
+        set_cell_bg(row.cells[2], "D9D9D9")
+        row.cells[2].width = col_ws[2]
+        r2 = row.cells[2].paragraphs[0].add_run("FIRMA")
+        r2.bold = True
+        r2.font.size = Pt(7)
+
+        # Col 3: RESPONSABLE / nombre
+        row.cells[3].width = col_ws[3]
+        p3 = row.cells[3].paragraphs[0]
+        p3.add_run("RESPONSABLE\n").bold = True
+        p3.add_run(resp["nombre"]).font.size = Pt(8)
+        p3.runs[0].font.size = Pt(7)
+
+        # Col 4: IDENTIFICACIÓN / cargo
+        row.cells[4].width = col_ws[4]
+        p4 = row.cells[4].paragraphs[0]
+        p4.add_run("IDENTIFICACIÓN\n").bold = True
+        p4.add_run(resp["cargo"]).font.size = Pt(8)
+        p4.runs[0].font.size = Pt(7)
+
+    doc.add_paragraph("")
 
     semanas = datos["semanas"]
     higiene = datos["higiene_personal"]
