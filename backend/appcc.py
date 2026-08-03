@@ -201,6 +201,8 @@ def generar_docx(datos: dict) -> bytes:
                 "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
     mes_nombre = meses_es[datos["month"]]
     year = datos["year"]
+    month = datos["month"]
+    _, ult = calendar.monthrange(year, month)
 
     def set_cell_bg(cell, hex_color):
         tc = cell._tc
