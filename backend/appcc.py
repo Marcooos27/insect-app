@@ -282,7 +282,7 @@ def generar_docx(datos: dict) -> bytes:
 
 
     # =========================================================
-    # SECCIÓN 2: PARTES DE ALMACENAMIENTO / MATERIAS PRIMAS
+    # SECCIÓN 2: PARTES DE ALMACENAMIENTO 
     # =========================================================
     doc.add_page_break()
     heading(f"PARTES DE ALMACENAMIENTO {mes_nombre}")
@@ -339,9 +339,8 @@ def generar_docx(datos: dict) -> bytes:
         ficha_celda(0, 2, "ARTÍCULO", mp["articulo"])
         ficha.cell(0, 2).merge(ficha.cell(0, 3))
         ficha_celda(0, 4, "MÉTODO VALORACIÓN", mp["metodo"], gris=True)
-        ficha_celda(0, 5, "", "", gris=True)
-        ficha_celda(0, 6, "ALMACÉN", mp["almacen"], gris=True)
-        ficha_celda(0, 7, "UBICACIÓN", "", gris=True)
+        #ficha_celda(0, 5, "", "", gris=True)
+        ficha_celda(0, 6, "UBICACIÓN", mp["almacen"], gris=True)
 
         # Fila 1
         ficha_celda(1, 0, "ESTABLECIMIENTO",
@@ -351,7 +350,7 @@ def generar_docx(datos: dict) -> bytes:
         ficha.cell(1, 2).merge(ficha.cell(1, 3))
         ficha_celda(1, 4, "PERIODO", mp["periodo"], gris=True)
         ficha.cell(1, 4).merge(ficha.cell(1, 5))
-        ficha_celda(1, 6, "", "", gris=True)
+        #ficha_celda(1, 6, "", "", gris=True)
         ficha_celda(1, 7, "STOCK MÍNIMO", mp["stock_min"])
 
         # Fila 2
@@ -360,7 +359,7 @@ def generar_docx(datos: dict) -> bytes:
         ficha.cell(2, 2).merge(ficha.cell(2, 3))
         ficha_celda(2, 4, "OPERARIO", mp["operario"], gris=True)
         ficha.cell(2, 4).merge(ficha.cell(2, 5))
-        ficha_celda(2, 6, "", "", gris=True)
+        #ficha_celda(2, 6, "", "", gris=True)
         ficha_celda(2, 7, "STOCK DE SEGURIDAD", mp["stock_seg"])
 
         # Fila 3
@@ -885,7 +884,7 @@ def generar_docx(datos: dict) -> bytes:
     tabla.style = 'Table Grid'
     prov_hdrs = ["Proveedor", "Producto suministrado", "Documentación en regla (Sí/No)",
                  "Conformidad del producto (Sí/No)", "Incidencias detectadas",
-                 "Acciones correctoras", "¿Proveedor apto? (Sí/No)"]
+                 "Acciones correctoras", "¿Proveedor apto? (Sí/No)", "Fecha", "Firma"]
     for i, h in enumerate(prov_hdrs):
         cell = tabla.rows[0].cells[i]
         set_cell_bg(cell, "D9D9D9")
