@@ -83,7 +83,7 @@ http://ionicframework.com/docs/theming/ */
 */
 
 /* PALETA 6 - verde total */
-
+/*
 :root {
   --color-darkest:  #27301b;
   --color-dark:     #41521e;
@@ -98,8 +98,24 @@ http://ionicframework.com/docs/theming/ */
   --text-white:     #e5e7d2;
   --text-accent:    #d8dda8;
 }
+*/
 
+/* PALETA 7 - mezcladito */
 
+:root {
+  --color-darkest:  #F15723;
+  --color-dark:     #FAA21C;
+  --color-mid:      #FFC80B;
+  --color-light:    #E0E31A;
+  --color-accent:   #C1D72D;
+  --color-white:    #f1f2e3;
+  --color-black:    #000000;
+
+  --text-primary:   #13160f;
+  --text-secondary: #36441b;
+  --text-white:     #e5e7d2;
+  --text-accent:    #d8dda8;
+}
 
 
 
