@@ -16,7 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 
 
 interface Props {
-  tipo: "retrasadas" | "hoy" | "proximas";
+  tipo: "pendientes" | "proximas";
 }
 
 const UserTasks: React.FC<Props> = ({ tipo }) => {
@@ -30,6 +30,16 @@ const UserTasks: React.FC<Props> = ({ tipo }) => {
   // 📅 Día actual (sin hora)
   const hoy = new Date().toISOString().split("T")[0];
 
+  // Estado de una tarea según su fecha: sirve tanto para filtrar como para
+  // colorear cada tarjeta individualmente (retrasada / hoy / próxima).
+  const estadoFecha = (fechaPrevista: string | null): "retrasada" | "hoy" | "proxima" | null => {
+    if (!fechaPrevista) return null;
+    const fecha = fechaPrevista.split("T")[0];
+    if (fecha < hoy) return "retrasada";
+    if (fecha === hoy) return "hoy";
+    return "proxima";
+  };
+
   // 🔎 tareas del operario
   const tareasUsuario = tareas.filter(
     (t) =>
@@ -37,32 +47,15 @@ const UserTasks: React.FC<Props> = ({ tipo }) => {
       t.estado !== "Completada"
   );
 
-  // 🔄 clasificación dinámica
-  let tareasFiltradas: typeof tareasUsuario = []; // asi tareasFiltradas tiene exactamente el mismo type que tareasUsusario
-
-  if (tipo === "retrasadas") {
-    tareasFiltradas = tareasUsuario.filter((t) => {
-      if (!t.fecha_prevista) return false;
-      const fecha = t.fecha_prevista.split("T")[0];
-      return fecha < hoy;
-    });
-  }
-
-  if (tipo === "hoy") {
-    tareasFiltradas = tareasUsuario.filter((t) => {
-      if (!t.fecha_prevista) return false;
-      const fecha = t.fecha_prevista.split("T")[0];
-      return fecha === hoy;
-    });
-  }
-
-  if (tipo === "proximas") {
-    tareasFiltradas = tareasUsuario.filter((t) => {
-      if (!t.fecha_prevista) return false;
-      const fecha = t.fecha_prevista.split("T")[0];
-      return fecha > hoy;
-    });
-  }
+  // "Pendientes" unifica retrasadas + hoy, para que se vean juntas y las
+  // retrasadas (con fondo rojo) destaquen sobre las que tocan hoy.
+  const tareasFiltradas = tareasUsuario
+    .filter((t) => {
+      const estado = estadoFecha(t.fecha_prevista);
+      if (tipo === "pendientes") return estado === "retrasada" || estado === "hoy";
+      return estado === "proxima";
+    })
+    .sort((a, b) => (a.fecha_prevista ?? "").localeCompare(b.fecha_prevista ?? ""));
 
   // marcar tarea como completada
   const toggleTarea = (id: number) => {
@@ -89,7 +82,11 @@ const UserTasks: React.FC<Props> = ({ tipo }) => {
       <div className="usertask-grid">
         {tareasFiltradas.length > 0 ? (
           tareasFiltradas.map((t) => (
-            <IonItem key={t.id_tarea} className={`usertask-card usertask-card--${tipo}`} lines="none">
+            <IonItem
+              key={t.id_tarea}
+              className={`usertask-card usertask-card--${estadoFecha(t.fecha_prevista) ?? "proxima"}`}
+              lines="none"
+            >
               <IonCheckbox
                 slot="start"
                 checked={false}

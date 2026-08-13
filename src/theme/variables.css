@@ -185,14 +185,8 @@ ion-tab-bar {
 /* --- ESTILOS DE LOS BOTONES --- */
 ion-tab-button {
   --color-selected: var(--color-accent);
-  --color: rgba(19, 22, 15, 0.45);
+  --color: #ffffff;
   background: transparent !important;
-}
-
-ion-tab-button.tab-selected ion-icon {
-  transform: translateY(-5px) scale(1.15);
-  transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-  color: var(--color-accent);
 }
 
 ion-tab-button.tab-selected ion-label {
@@ -207,9 +201,10 @@ ion-tab-button.tab-selected ion-label {
 
 
 
-/* Estilo base para todos los iconos */
+/* Estilo base para todos los iconos: blancos, y verdes al seleccionar */
 ion-tab-button ion-icon {
   font-size: 28px;
+  color: #ffffff;
   transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), color 0.2s ease;
   --ion-icon-stroke-width: 32px; /* Hace el delineado un poco más fino/grueso si quieres */
 }

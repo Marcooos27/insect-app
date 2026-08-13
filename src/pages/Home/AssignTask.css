@@ -1,14 +1,68 @@
 .assign-task-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: start;
+  gap: 14px 24px;
+  background: #ffffff;
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px;
   box-shadow: 0 6px 20px rgba(19,22,15,0.08);
   border: 1px solid var(--color-tint);
-  max-width: 600px;
-  margin: auto;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.assign-left-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.assign-left-fields .assign-task-item {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --min-height: 58px;
+}
+
+.assign-full-width {
+  grid-column: 1 / -1;
+}
+
+.assign-button-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+
+.assign-clear-btn {
+  border-radius: 0;
+  border: 1px solid var(--color-tint);
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+  padding: 0 18px;
+  height: 44px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.assign-clear-btn:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+@media (max-width: 700px) {
+  .assign-task-container {
+    grid-template-columns: 1fr;
+  }
+
+  .assign-button-row {
+    flex-wrap: wrap;
+  }
 }
 
 .assign-task-item {
@@ -60,7 +114,11 @@
 
 /* Botón crear tarea */
 .assign-button-task {
-  margin-top: 10px;
+  margin: 0;
+  min-width: 200px;
+  height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
   --background: var(--color-mid);
   --background-activated: var(--color-dark);
   --background-hover: var(--color-dark);
@@ -124,7 +182,7 @@
   align-items: center;
   gap: 12px;
   padding: 20px;
-  background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
+  background: #ffffff;
   border-radius: 16px;
 }
 

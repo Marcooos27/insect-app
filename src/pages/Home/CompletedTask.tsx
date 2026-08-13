@@ -7,9 +7,10 @@ import {
   IonSelectOption,
   IonDatetime,
   IonButton,
-  IonList,
-  IonToast
+  IonToast,
+  IonIcon
 } from "@ionic/react";
+import { personOutline, calendarOutline, checkmarkCircleOutline } from "ionicons/icons";
 
 import { useContext, useState } from "react";
 import { TareaContext } from "../../context/TareaContext";
@@ -107,7 +108,7 @@ const CompletedTasks: React.FC = () => {
       </div>
 
       {/* Lista de tareas completadas */}
-      <IonList className="completed-list">
+      <div className="completed-list">
         {tareasFiltradas.length > 0 ? (
           tareasFiltradas.map(t => {
             const puntualidad = getEstadoPuntualidad(t.fecha_prevista, t.fecha_completada);
@@ -115,6 +116,7 @@ const CompletedTasks: React.FC = () => {
               <IonItem
                 key={t.id_tarea}
                 className={`completed-task-item puntualidad-${puntualidad}`}
+                lines="none"
               >
                 <IonLabel className="completed-task-label">
 
@@ -130,21 +132,16 @@ const CompletedTasks: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="completed-task-row">
-                    <span className="completed-task-key">Operario:</span>
-                    <span className="completed-task-value">
-                      {operarios.find(op => op.id_operario === t.id_operario)?.nombre ?? t.id_operario}
-                    </span>
+                  <div className="completed-task-operario">
+                    <IonIcon icon={personOutline} />
+                    {operarios.find(op => op.id_operario === t.id_operario)?.nombre ?? t.id_operario}
                   </div>
 
-                  <div className="completed-task-row">
-                    <span className="completed-task-key">Descripción:</span>
-                    <span className="completed-task-value">{t.descripcion}</span>
-                  </div>
+                  <div className="completed-task-descripcion">{t.descripcion}</div>
 
-                  <div className="completed-task-row">
-                    <span className="completed-task-key">Entrega:</span>
-                    <span className="completed-task-value">
+                  <div className="completed-task-fechas">
+                    <span className="completed-task-fecha" title="Fecha de entrega">
+                      <IonIcon icon={calendarOutline} />
                       {t.fecha_prevista
                         ? (() => {
                             const [y, m, d] = t.fecha_prevista.split("T")[0].split("-");
@@ -152,11 +149,8 @@ const CompletedTasks: React.FC = () => {
                           })()
                         : "Sin fecha"}
                     </span>
-                  </div>
-
-                  <div className="completed-task-row">
-                    <span className="completed-task-key">Completada:</span>
-                    <span className="completed-task-value">
+                    <span className="completed-task-fecha" title="Fecha completada">
+                      <IonIcon icon={checkmarkCircleOutline} />
                       {t.fecha_completada
                         ? (() => {
                             const [y, m, d] = t.fecha_completada.split("T")[0].split("-");
@@ -175,7 +169,7 @@ const CompletedTasks: React.FC = () => {
             <IonLabel className="completed-no-tasks-text">No hay tareas completadas</IonLabel>
           </IonItem>
         )}
-      </IonList>
+      </div>
 
       <IonToast
         isOpen={showToast}

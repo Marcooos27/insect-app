@@ -48,6 +48,7 @@ interface TareaContextType {
   addTarea: (tarea: TareaCreate) => Promise<void>;
   completarTarea: (id_tarea: number) => Promise<void>;
   editarTarea: (id_tarea: number, tarea: TareaEdit) => Promise<void>;
+  cancelarTarea: (id_tarea: number) => Promise<void>;
 }
 
 export const TareaContext = createContext<TareaContextType>({
@@ -56,6 +57,7 @@ export const TareaContext = createContext<TareaContextType>({
   addTarea: async () => {},
   completarTarea: async () => {},
   editarTarea: async () => {},
+  cancelarTarea: async () => {},
 });
 
 /* =====================
@@ -123,8 +125,19 @@ export const TareaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  // Cancela (elimina) una tarea que ya no se va a realizar, para que no quede
+  // registrada como retrasada ni asignada al operario.
+  const cancelarTarea = async (id_tarea: number) => {
+    try {
+      await api.delete(`/tarea/${id_tarea}`);
+      await fetchTareas();
+    } catch (err) {
+      console.error("Error cancelarTarea:", err);
+    }
+  };
+
   return (
-    <TareaContext.Provider value={{ tareas, loading, addTarea, completarTarea, editarTarea }}>
+    <TareaContext.Provider value={{ tareas, loading, addTarea, completarTarea, editarTarea, cancelarTarea }}>
       {children}
     </TareaContext.Provider>
   );

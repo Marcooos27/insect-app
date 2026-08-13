@@ -15,25 +15,30 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
+  background: #ffffff;
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 6px 20px rgba(19,22,15,0.08);
-  border: 1px solid var(--color-tint);
+  border: 2px solid var(--color-tint);
 }
 
-/* Columna derecha: resultados */
+/* Columna derecha: resultados, en rejilla de 2 columnas más compacta */
 .completed-list {
   flex: 1;
-  background: transparent !important;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  align-content: start;
 }
 
-.completed-list ion-list {
-  background: transparent !important;
-  border-radius: 12px;
+@media (max-width: 560px) {
+  .completed-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.completed-no-tasks-item {
+  grid-column: 1 / -1;
 }
 
 /* Items de filtro */
@@ -100,13 +105,14 @@
    CARDS DE TAREAS COMPLETADAS
 ================================ */
 .completed-task-item {
-  --background: var(--color-accent);
-  --color: var(--text-white);
+  --background: #ffffff;
+  --color: var(--text-primary);
   --border-color: transparent;
   --inner-border-width: 0;
   border-radius: 10px;
   margin-bottom: 10px;
-  border: 1px solid var(--color-mid);
+  border: 2px solid var(--color-tint);
+  box-shadow: 0 4px 10px rgba(19, 22, 15, 0.06);
 }
 
 .completed-task-item::part(native) {
@@ -143,15 +149,15 @@
 
 
 .badge-ok {
-  background-color: rgba(46, 204, 113, 0.4);
-  color: #ffffff;
-  border: 1px solid #2ecc71;
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #1e8449;
+  border: 1px solid rgba(46, 204, 113, 0.5);
 }
 
 .badge-tarde {
-  background-color: rgba(231, 76, 60, 0.4);
-  color: #ffffff;
-  border: 1px solid #e74c3c;
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #c0392b;
+  border: 1px solid rgba(231, 76, 60, 0.5);
 }
 
 .badge-sin-datos {
@@ -161,52 +167,75 @@
 }
 
 
-/* Filas dentro de cada tarea */
+/* Contenido de cada tarea, compacto y con iconos en vez de etiquetas */
 .completed-task-label {
   padding: 4px 0;
 }
 
-.completed-task-row {
-  display: grid;
-  grid-template-columns: 100px 1fr;
+.completed-task-operario {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: var(--color-accent);
-  border: 2px solid var(--color-light);
-  padding: 4px 8px;
-  border-radius: 8px;
-  margin: 2px 0;
-}
-
-.completed-task-key {
-  text-align: right;
+  gap: 6px;
   font-weight: 700;
-  color: var(--text-white);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
 }
 
-.completed-task-value {
-  color: var(--text-white);
-  text-align: left;
+.completed-task-operario ion-icon {
+  font-size: 0.95rem;
+  color: var(--color-accent);
+}
+
+.completed-task-descripcion {
+  background-color: rgba(153,219,181,0.15);
+  border: 1px solid var(--color-tint);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.completed-task-fechas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.completed-task-fecha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.completed-task-fecha ion-icon {
+  font-size: 0.85rem;
+  color: var(--color-accent);
 }
 
 /* Sin tareas */
 .completed-no-tasks-item {
-  --background: var(--color-dark);
+  --background: transparent;
   --inner-border-width: 0;
-  --border-color: var(--color-accent);
+  --border-color: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
   color: var(--text-primary);
-  border-radius: 12px;
-  overflow: hidden;
+  padding: 0;
+  margin: 0;
 }
 
 .completed-no-tasks-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  text-align: center;
   border-radius: 10px;
   padding: 16px;
   background-color: rgba(153,219,181,0.15);
   border: 1px dashed var(--color-tint);
+  color: var(--color-accent);
   font-weight: 600;
   font-size: 0.85rem;
   width: 100%;

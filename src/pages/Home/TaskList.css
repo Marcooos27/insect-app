@@ -2,27 +2,27 @@
    TASK CARD (tarjeta por operario)
 ================================ */
 .task-card {
-  background: linear-gradient(160deg, rgba(153,219,181,0.6), rgba(153,219,181,0.3));
+  background: #eef1ea;
   border-radius: 16px;
   margin-bottom: 20px;
   box-shadow: 0 6px 20px rgba(19,22,15,0.1);
-  border: 1px solid var(--color-tint);
+  border: 2px solid var(--color-tint);
   overflow: hidden;
 }
 
 .operator-header {
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--color-tint);
+  border-bottom: 2px solid var(--color-tint);
 }
 
 .operator-name {
   text-transform: uppercase;
   text-align: center;
   font-size: 1.4rem;
-  font-weight: 1100;
+  font-weight: 900;
   color: var(--text-primary);
-  letter-spacing: 10px;
+  letter-spacing: 3px;
 }
 
 /* Lista interna */
@@ -58,6 +58,30 @@
   --background: rgba(153,219,181,0.3);
 }
 
+/* Color según el estado de la fecha, igual que en la vista de usuario:
+   fondo pastel bien visible, no solo un borde sutil. */
+.task-item--retrasada {
+  --background: rgba(231,76,60,0.15);
+  border-left: 3px solid #e74c3c;
+}
+
+.task-item--retrasada:hover {
+  --background: rgba(231,76,60,0.22);
+}
+
+.task-item--hoy {
+  --background: rgba(0,128,55,0.12);
+  border-left: 3px solid var(--color-accent);
+}
+
+.task-item--hoy:hover {
+  --background: rgba(0,128,55,0.18);
+}
+
+.task-item--proxima {
+  border-left: 3px solid #5dade2;
+}
+
 /* Sin tareas */
 .no-tasks-item {
   --background: transparent;
@@ -71,9 +95,8 @@
 }
 
 .no-tasks-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  text-align: center;
   border-radius: 10px;
   padding: 14px;
   background-color: rgba(153,219,181,0.15);

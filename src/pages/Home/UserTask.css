@@ -50,14 +50,18 @@
   font-size: 0.95rem;
   font-weight: 600;
   padding: 4px 0;
+  text-align: center;
 }
 
 .task-fecha {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  margin-top: 10px;
   color: var(--text-secondary);
   font-size: 0.78rem;
+  text-align: center;
 }
 
 .task-fecha ion-icon {
@@ -74,7 +78,7 @@
   border-radius: 16px 16px 0 0;
 }
 
-.usertask-card--retrasadas::before {
+.usertask-card--retrasada::before {
   background: linear-gradient(90deg, #e74c3c, #c0392b);
 }
 
@@ -82,19 +86,21 @@
   background: linear-gradient(90deg, var(--color-accent), var(--color-mid));
 }
 
-.usertask-card--proximas::before {
+.usertask-card--proxima::before {
   background: linear-gradient(90deg, #5dade2, #2e86c1);
 }
 
-/* Borde sutil lateral */
-.usertask-card--retrasadas {
+/* Fondo pastel bien visible según el estado, no solo un borde sutil */
+.usertask-card--retrasada {
+  --background: rgba(231,76,60,0.15);
   border-left: 3px solid #e74c3c;
 }
 
 .usertask-card--hoy {
+  --background: rgba(0,128,55,0.12);
   border-left: 3px solid var(--color-accent);
 }
 
-.usertask-card--proximas {
+.usertask-card--proxima {
   border-left: 3px solid #5dade2;
 }

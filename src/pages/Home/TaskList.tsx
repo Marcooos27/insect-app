@@ -14,7 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const TaskList: React.FC = () => {
   const { operarios } = useContext(OperarioContext);
-  const { tareas, completarTarea, editarTarea  } = useContext(TareaContext);
+  const { tareas, completarTarea, editarTarea, cancelarTarea } = useContext(TareaContext);
   // Filtramos operarios según el usuario y que tengan tareas visibles
   const { user } = useAuth();
 
@@ -32,6 +32,7 @@ const TaskList: React.FC = () => {
   const [editFecha, setEditFecha] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const [cancelarTareaAlertOpen, setCancelarTareaAlertOpen] = useState(false);
 
 
   // Cuando el usuario pulsa el checkbox
@@ -70,11 +71,32 @@ const TaskList: React.FC = () => {
     setShowToast(true);
   };
 
+  // Cancela la tarea (la elimina) cuando ya no se va a realizar, para que no
+  // quede asignada al operario ni se marque como retrasada.
+  const confirmarCancelarTarea = async () => {
+    if (!tareaEditando) return;
+    await cancelarTarea(tareaEditando.id_tarea);
+    setCancelarTareaAlertOpen(false);
+    setModalEditOpen(false);
+    setToastMsg("Tarea cancelada");
+    setShowToast(true);
+  };
+
 
 
     // Filtramos las tareas visibles para cada operario
   const tareasVisibles = (opId: number) =>
     tareas.filter(t => t.id_operario === opId && t.estado !== 'Completada');
+
+  // Estado de la tarea según su fecha prevista, para colorear igual que en la vista de usuario
+  const hoy = new Date().toISOString().split('T')[0];
+  const estadoFecha = (fechaPrevista: string | null): 'retrasada' | 'hoy' | 'proxima' | '' => {
+    if (!fechaPrevista) return '';
+    const fecha = fechaPrevista.split('T')[0];
+    if (fecha < hoy) return 'retrasada';
+    if (fecha === hoy) return 'hoy';
+    return 'proxima';
+  };
 
 
   const operariosAMostrar = operarios.filter(op => {
@@ -129,7 +151,10 @@ const TaskList: React.FC = () => {
                   <IonList className="task-list">
                     {tareas.length > 0 ? (
                       tareas.map(t => (
-                        <IonItem key={t.id_tarea} className="task-item">
+                        <IonItem
+                          key={t.id_tarea}
+                          className={`task-item ${estadoFecha(t.fecha_prevista) ? `task-item--${estadoFecha(t.fecha_prevista)}` : ''}`}
+                        >
                           {/* COLUMNA IZQUIERDA */}
                           <div className="task-actions">
                             <IonCheckbox
@@ -265,14 +290,42 @@ const TaskList: React.FC = () => {
               expand="full"
               fill="outline"
               onClick={() => setModalEditOpen(false)}
-              style={{ flex: 1, '--color': 'var(--color-darkest)', '--border-color': 'var(--color-darkest)' } as React.CSSProperties}
+              style={{ flex: 1, '--color': 'var(--text-secondary)', '--border-color': 'var(--color-tint)' } as React.CSSProperties}
             >
               Cancelar
             </IonButton>
           </div>
 
+          <IonButton
+            expand="full"
+            fill="outline"
+            color="danger"
+            onClick={() => setCancelarTareaAlertOpen(true)}
+            style={{ marginTop: '10px', padding: '0 4px' }}
+          >
+            Eliminar tarea
+          </IonButton>
+
         </IonContent>
       </IonModal>
+
+      <IonAlert
+        isOpen={cancelarTareaAlertOpen}
+        header="¿Cancelar esta tarea?"
+        message="Se eliminará y dejará de estar asignada al operario. Esta acción no se puede deshacer."
+        buttons={[
+          {
+            text: 'No',
+            role: 'cancel',
+            handler: () => setCancelarTareaAlertOpen(false),
+          },
+          {
+            text: 'Sí, cancelar tarea',
+            role: 'destructive',
+            handler: confirmarCancelarTarea,
+          },
+        ]}
+      />
 
       <IonToast
         isOpen={showToast}

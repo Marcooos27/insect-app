@@ -142,6 +142,17 @@ const AssignTask: React.FC = () => {
     setFrecuencia('sin-frecuencia');
   };
 
+  // Borra todos los campos del formulario, por si el usuario se equivoca y
+  // quiere empezar de cero sin tener que ir campo a campo.
+  const limpiarFormulario = () => {
+    setIdOperario(null);
+    setTipoTarea('');
+    setDescripcion('');
+    setFechaPrevista('');
+    setFechaInicio('');
+    setFrecuencia('');
+  };
+
   const getResumenConfirmacion = () => {
     if (!fechaInicio || !fechaPrevista) return '';
     const fechas = generarFechas();
@@ -152,86 +163,77 @@ const AssignTask: React.FC = () => {
   return (
     <div className="assign-task-container">
 
-        {/* Selección de operario */}
-        <IonItem className="assign-task-item">
-          <IonLabel position="stacked">Operario</IonLabel>
-          <IonSelect
-            value={idOperario}
-            placeholder="Selecciona operario"
-            onIonChange={e => setIdOperario(e.detail.value)}
-          >
-            {operarios.map(op => (
-              <IonSelectOption key={op.id_operario} value={op.id_operario}>
-                {op.nombre}
-              </IonSelectOption>
-            ))}
-          </IonSelect>
-        </IonItem>
+        {/* Columna izquierda: operario, tipo de tarea y frecuencia agrupados
+            para que juntos ocupen aprox. lo mismo que el calendario de al lado */}
+        <div className="assign-left-fields">
 
-        {/* Tipo de tarea */}
-        <IonItem className="assign-task-item">
-          <IonLabel position="stacked">Tipo de Tarea</IonLabel>
-          <IonSelect
-            value={tipoTarea}
-            placeholder="Selecciona tipo de tarea"
-            onIonChange={e => setTipoTarea(e.detail.value!)}
-          >
-            <IonSelectOption value="Almacen">Almacén</IonSelectOption>
-            <IonSelectOption value="Engorde">Engorde</IonSelectOption>
-            <IonSelectOption value="Procesado">Procesado</IonSelectOption>
-            <IonSelectOption value="Incubacion">Incubación</IonSelectOption>
-            <IonSelectOption value="Reproduccion">Reproducción</IonSelectOption>
-            <IonSelectOption value="Limpieza">Limpieza</IonSelectOption>
-            <IonSelectOption value="Tarea Especial">Tarea Especial</IonSelectOption>
-          </IonSelect>
-        </IonItem>
-
-        {/* Breve descripción */}
-        <IonItem className="assign-task-item">
-          <IonLabel position="stacked">Breve Descripción</IonLabel>
-          <IonTextarea
-            value={descripcion}
-            placeholder="Descripción de la tarea"
-            rows={2}
-            onIonChange={e => setDescripcion(e.detail.value!)}
-          />
-        </IonItem>
-
-
-        {/* Frecuencia */}
-        <IonItem className="assign-task-item">
-          <IonLabel position="stacked">Frecuencia</IonLabel>
-          <IonSelect
-            value={frecuencia}
-            placeholder="Selecciona frecuencia"
-            onIonChange={e => handleFrecuenciaChange(e.detail.value)}
-          >
-            <IonSelectOption value="sin-frecuencia">Sin frecuencia</IonSelectOption>
-            <IonSelectOption value="diaria">Diaria</IonSelectOption>
-            <IonSelectOption value="semanal">Semanal</IonSelectOption>
-          </IonSelect>
-        </IonItem>
-
-        {/* Fecha inicio seleccionada (solo si hay frecuencia) */}
-        {frecuencia !== 'sin-frecuencia' && fechaInicio && (
-          <div className="assign-fecha-info">
-            <span className="assign-fecha-label">Inicio: </span>
-            <span className="assign-fecha-value">
-              {(() => {
-                const [y, m, d] = fechaInicio.split("T")[0].split("-");
-                return `${d}-${m}-${y}`;
-              })()}
-            </span>
-            <IonButton
-              fill="clear"
-              size="small"
-              className="assign-fecha-edit-btn"
-              onClick={() => setShowModalInicio(true)}
+          <IonItem className="assign-task-item">
+            <IonLabel position="stacked">Operario</IonLabel>
+            <IonSelect
+              value={idOperario}
+              placeholder="Selecciona operario"
+              onIonChange={e => setIdOperario(e.detail.value)}
             >
-              Cambiar
-            </IonButton>
-          </div>
-        )}
+              {operarios.map(op => (
+                <IonSelectOption key={op.id_operario} value={op.id_operario}>
+                  {op.nombre}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
+
+          <IonItem className="assign-task-item">
+            <IonLabel position="stacked">Tipo de Tarea</IonLabel>
+            <IonSelect
+              value={tipoTarea}
+              placeholder="Selecciona tipo de tarea"
+              onIonChange={e => setTipoTarea(e.detail.value!)}
+            >
+              <IonSelectOption value="Almacen">Almacén</IonSelectOption>
+              <IonSelectOption value="Engorde">Engorde</IonSelectOption>
+              <IonSelectOption value="Procesado">Procesado</IonSelectOption>
+              <IonSelectOption value="Incubacion">Incubación</IonSelectOption>
+              <IonSelectOption value="Reproduccion">Reproducción</IonSelectOption>
+              <IonSelectOption value="Limpieza">Limpieza</IonSelectOption>
+              <IonSelectOption value="Tarea Especial">Tarea Especial</IonSelectOption>
+            </IonSelect>
+          </IonItem>
+
+          <IonItem className="assign-task-item">
+            <IonLabel position="stacked">Frecuencia</IonLabel>
+            <IonSelect
+              value={frecuencia}
+              placeholder="Selecciona frecuencia"
+              onIonChange={e => handleFrecuenciaChange(e.detail.value)}
+            >
+              <IonSelectOption value="sin-frecuencia">Sin frecuencia</IonSelectOption>
+              <IonSelectOption value="diaria">Diaria</IonSelectOption>
+              <IonSelectOption value="semanal">Semanal</IonSelectOption>
+            </IonSelect>
+          </IonItem>
+
+          {/* Fecha inicio seleccionada (solo si hay frecuencia) */}
+          {frecuencia !== 'sin-frecuencia' && fechaInicio && (
+            <div className="assign-fecha-info">
+              <span className="assign-fecha-label">Inicio: </span>
+              <span className="assign-fecha-value">
+                {(() => {
+                  const [y, m, d] = fechaInicio.split("T")[0].split("-");
+                  return `${d}-${m}-${y}`;
+                })()}
+              </span>
+              <IonButton
+                fill="clear"
+                size="small"
+                className="assign-fecha-edit-btn"
+                onClick={() => setShowModalInicio(true)}
+              >
+                Cambiar
+              </IonButton>
+            </div>
+          )}
+
+        </div>
 
         {/* Fecha de fin (siempre visible) */}
         <IonItem className="assign-task-item">
@@ -251,11 +253,25 @@ const AssignTask: React.FC = () => {
           />
         </IonItem>
 
-        {/* Botón crear */}
-        <div className="animated-border-btn">
-          <IonButton expand="full" className="assign-button-task" onClick={handleSubmit}>
+        {/* Breve descripción */}
+        <IonItem className="assign-task-item assign-full-width">
+          <IonLabel position="stacked">Breve Descripción</IonLabel>
+          <IonTextarea
+            value={descripcion}
+            placeholder="Descripción de la tarea"
+            rows={2}
+            onIonChange={e => setDescripcion(e.detail.value!)}
+          />
+        </IonItem>
+
+        {/* Botones crear / borrar */}
+        <div className="assign-full-width assign-button-row">
+          <IonButton className="assign-button-task" onClick={handleSubmit}>
             Crear Tarea
           </IonButton>
+          <button type="button" className="assign-clear-btn" onClick={limpiarFormulario}>
+            Borrar datos
+          </button>
         </div>
 
         {/* Modal calendario fecha inicio */}

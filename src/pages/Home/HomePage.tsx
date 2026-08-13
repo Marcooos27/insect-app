@@ -19,7 +19,7 @@ import { useAuth } from "../../context/AuthContext";
 
 type AdminSegments = "list" | "assign" | "completed"
 
-type UserSegments = "retrasadas" | "hoy" | "proximas"
+type UserSegments = "pendientes" | "proximas"
 
 type SegmentType = AdminSegments | UserSegments
 
@@ -28,7 +28,7 @@ const HomePage: React.FC = () => {
   const { user } = useAuth();
 
   const [selectedSegment, setSelectedSegment] =
-    useState<SegmentType>(user?.rol === "admin" ? "list" : "hoy");
+    useState<SegmentType>(user?.rol === "admin" ? "list" : "pendientes");
 
   return (
     <IonPage className="homepage">
@@ -55,11 +55,8 @@ const HomePage: React.FC = () => {
             </>
           ) : (
             <>
-              <IonSegmentButton className="homepage-seg-btn" value="retrasadas">
-                <IonLabel>Tareas Retrasadas</IonLabel>
-              </IonSegmentButton>
-              <IonSegmentButton className="homepage-seg-btn" value="hoy">
-                <IonLabel>Tareas de Hoy</IonLabel>
+              <IonSegmentButton className="homepage-seg-btn" value="pendientes">
+                <IonLabel>Tareas Pendientes</IonLabel>
               </IonSegmentButton>
               <IonSegmentButton className="homepage-seg-btn" value="proximas">
                 <IonLabel>Tareas Próximas</IonLabel>
@@ -79,7 +76,7 @@ const HomePage: React.FC = () => {
             </>
           ) : (
             <>
-              <UserTask tipo={selectedSegment as "retrasadas" | "hoy" | "proximas"} />
+              <UserTask tipo={selectedSegment as "pendientes" | "proximas"} />
             </>
           )}
 
