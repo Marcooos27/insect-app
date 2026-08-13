@@ -581,7 +581,14 @@ class OperarioOut(OperarioIn):
 def get_operarios():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM Operario")
+    cur.execute("""
+        SELECT o.*,
+            EXISTS (
+                SELECT 1 FROM usuarios u
+                WHERE u.id_operario = o.id_operario AND u.rol = 'admin'
+            ) AS es_admin
+        FROM Operario o
+    """)
     cols = [d[0].lower() for d in cur.description]
     data = [dict(zip(cols, row)) for row in cur.fetchall()]
     cur.close()

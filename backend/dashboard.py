@@ -100,7 +100,7 @@ def get_pallets_camara(id_camara: int, user=Depends(get_current_user)):
                     ELSE 'en_ciclo'
                 END AS estado_ciclo
             FROM pallet p
-            WHERE p.id_camara = :id AND p.estado = 'en_camara'
+            WHERE p.id_camara = %(id)s AND p.estado = 'en_camara'
             ORDER BY p.fecha_entrada_camara
         """, {"id": id_camara})
         cols = [d[0] for d in cur.description]
@@ -121,12 +121,39 @@ def get_pallets_camara(id_camara: int, user=Depends(get_current_user)):
                  JOIN sensor_lectura sl ON sl.id_sensor = s.id_sensor
                  WHERE s.id_camara = c.id_camara AND s.activo = true
                  ORDER BY sl.fecha_lectura DESC LIMIT 1) AS ultima_lectura
-            FROM camara c WHERE id_camara = :id
+            FROM camara c WHERE id_camara = %(id)s
         """, {"id": id_camara})
         cols = [d[0] for d in cur.description]
         camara = dict(zip(cols, cur.fetchone()))
 
         return {"camara": camara, "pallets": pallets}
+    finally:
+        cur.close()
+        conn.close()
+
+
+@router.get("/camara/{id_camara}/lecturas")
+def get_lecturas_camara(id_camara: int, tipo: str, user=Depends(get_current_user)):
+    """
+    Histórico de lecturas de un sensor de la cámara (tipo: 'temperatura' o 'humedad'),
+    limitado a los últimos 90 días para no devolver un histórico sin límite.
+    """
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT sl.valor, sl.fecha_lectura
+            FROM sensor s
+            JOIN sensor_lectura sl ON sl.id_sensor = s.id_sensor
+            WHERE s.id_camara = %(id)s
+              AND s.tipo = %(tipo)s
+              AND s.activo = true
+              AND sl.fecha_lectura >= CURRENT_DATE - INTERVAL '90 days'
+            ORDER BY sl.fecha_lectura ASC
+        """, {"id": id_camara, "tipo": tipo})
+        cols = [d[0] for d in cur.description]
+        lecturas = [dict(zip(cols, row)) for row in cur.fetchall()]
+        return {"lecturas": lecturas}
     finally:
         cur.close()
         conn.close()

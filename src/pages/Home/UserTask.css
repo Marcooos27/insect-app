@@ -1,32 +1,58 @@
 /* ================================
+   GRID DE TAREAS
+================================ */
+.usertask-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  padding: 12px 16px 16px;
+}
+
+.usertask-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-secondary);
+  background: rgba(153,219,181,0.15);
+  border: 1px dashed var(--color-tint);
+  border-radius: 10px;
+  padding: 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* ================================
    USERTASK — VARIANTES POR TIPO
 ================================ */
 
 .usertask-card {
+  --background: #ffffff;
+  --border-style: none;
   position: relative;
   overflow: hidden;
-
-  /* --- ESTO ES LO QUE DEBES AÑADIR --- */
-  margin-bottom: 20px;   /* Espacio entre cada tarjeta */
-  border-radius: 12px;   /* Para que las esquinas no se vean tan rectas al separarse */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Opcional: les da profundidad al estar sueltas */
+  border: 1px solid var(--color-tint);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(19, 22, 15, 0.06);
 }
 
-/* Evita que la última tarea tenga margen extra al final */
-.usertask-card:last-child {
-  margin-bottom: 0;
+.task-descripcion {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 4px 0;
 }
 
-
-/* Lista interna  añadido para la separacion entre tareas*/
-.user-list {
-  background: transparent !important;
+.task-fecha {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-bottom: 15px;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
 }
 
+.task-fecha ion-icon {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+}
 
 /* Franja superior de color según tipo */
 .usertask-card::before {
@@ -47,15 +73,6 @@
 
 .usertask-card--proximas::before {
   background: linear-gradient(90deg, #5dade2, #2e86c1);
-}
-
-/* Acento en task-key según tipo */
-.usertask-card--retrasadas .task-key {
-  color: #e74c3c;
-}
-
-.usertask-card--proximas .task-key {
-  color: #5dade2;
 }
 
 /* Borde sutil lateral */

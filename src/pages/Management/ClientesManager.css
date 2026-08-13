@@ -10,7 +10,7 @@
 /* Toolbar */
 .clientes-page ion-toolbar {
   --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
-  --color: var(--text-white);
+  --color: var(--text-primary);
 }
 
 .clientes-page ion-title {
@@ -44,13 +44,13 @@
 
 /* Cada item */
 .clientes-page ion-item {
-  --background: rgba(255,255,255,0.07);
+  --background: rgba(255,255,255,0.6);
   --border-color: transparent;
   --inner-border-width: 0;
   --padding-start: 16px;
   --inner-padding-end: 8px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--color-tint);
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
@@ -59,7 +59,7 @@
 }
 
 .clientes-page ion-item:hover {
-  --background: rgba(255,255,255,0.12);
+  --background: rgba(153,219,181,0.3);
   transform: translateX(4px);
 }
 
@@ -67,7 +67,7 @@
 .clientes-page ion-label h2 {
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--text-white);
+  color: var(--text-primary);
   letter-spacing: 0.3px;
 }
 
@@ -85,7 +85,7 @@
 }
 
 .clientes-page ion-button[fill="clear"]:hover {
-  --color: var(--text-white);
+  --color: var(--color-accent);
 }
 
 /* Botón eliminar */

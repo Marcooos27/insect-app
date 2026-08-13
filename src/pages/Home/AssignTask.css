@@ -5,18 +5,18 @@
   background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 6px 20px rgba(19,22,15,0.08);
+  border: 1px solid var(--color-tint);
   max-width: 600px;
   margin: auto;
 }
 
 .assign-task-item {
-  --background: rgba(255,255,255,0.07);
+  --background: rgba(255,255,255,0.6);
   --border-color: transparent;
   --inner-border-width: 0;
   border-radius: 16px;
-  border: 2px solid rgba(255,255,255,0.1);
+  border: 2px solid var(--color-tint);
   margin-bottom: 4px;
 }
 
@@ -31,28 +31,30 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-bottom: 1px solid rgba(19,22,15,0.1);
   margin-bottom: 4px;
 }
 
 .assign-task-item ion-select,
 .assign-task-item ion-textarea {
-  color: var(--text-white);
+  color: var(--text-primary);
 }
 
 .assign-task-item ion-select::part(placeholder) {
-  color: rgba(255,255,255,0.35);
+  color: var(--text-secondary);
+  opacity: 0.6;
 }
 
 .assign-task-item ion-textarea::part(placeholder) {
-  color: rgba(255,255,255,0.35);
+  color: var(--text-secondary);
+  opacity: 0.6;
 }
 
 .assign-task-item.textarea-item ion-textarea::part(native) {
-  background: rgba(255,255,255,0.05);
+  background: rgba(153,219,181,0.15);
   border-radius: 8px;
   padding: 10px;
-  color: var(--text-white);
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
@@ -67,7 +69,7 @@
   --border-radius: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0, 128, 55, 0.25);
 }
 
 .assign-button-task::part(native) {
@@ -76,7 +78,7 @@
 
 .assign-button-task:hover {
   --background: var(--color-accent);
-  --color: var(--text-primary);
+  --color: var(--text-white);
 }
 
 /* Info fecha inicio */
@@ -84,8 +86,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12);
+  background-color: rgba(153,219,181,0.15);
+  border: 1px solid var(--color-tint);
   border-radius: 10px;
   padding: 8px 12px;
 }
@@ -99,7 +101,7 @@
 }
 
 .assign-fecha-value {
-  color: var(--text-white);
+  color: var(--text-primary);
   flex: 1;
   font-size: 0.9rem;
 }
@@ -127,7 +129,7 @@
 }
 
 .assign-modal-title {
-  color: var(--text-white);
+  color: var(--text-primary);
   font-weight: 700;
   text-align: center;
   font-size: 1rem;
@@ -147,8 +149,8 @@
 }
 
 .assign-modal-cancel-btn {
-  --color: rgba(255,255,255,0.6);
-  --border-color: rgba(255,255,255,0.2);
+  --color: var(--text-secondary);
+  --border-color: var(--color-tint);
   width: 100%;
 }
 

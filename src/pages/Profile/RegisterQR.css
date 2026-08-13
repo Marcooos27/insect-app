@@ -22,7 +22,7 @@
 
 .registerqr-toolbar {
   --background: var(--color-darkest);
-  --color: var(--text-white);
+  --color: var(--text-primary);
 }
 
 /* ================================
@@ -31,13 +31,12 @@
 .registerqr-result {
   width: 100%;
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #ffffff;
+  border: 1px solid var(--color-tint);
   border-radius: 18px;
   padding: 18px 16px;
   text-align: center;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 25px rgba(19, 22, 15, 0.1);
   animation: registerqr-fade 0.25s ease-in-out;
 }
 
@@ -67,7 +66,7 @@
   margin-top: 6px;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-white);
+  color: var(--text-primary);
   word-break: break-all;
   letter-spacing: 0.5px;
 }
@@ -81,7 +80,7 @@
   --color: var(--text-white);
   --border-radius: 14px;
   --ripple-color: transparent;
-  --box-shadow: 0 4px 20px rgba(144, 150, 50, 0.35);
+  --box-shadow: 0 4px 20px rgba(0, 128, 55, 0.35);
   font-weight: 800;
   letter-spacing: 0.5px;
   font-size: 1rem;
@@ -109,11 +108,11 @@
   width: 90%;
   max-width: 380px;
   background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid var(--color-tint);
   border-radius: 20px;
   padding: 22px;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 40px rgba(19,22,15,0.15);
   animation: registerqr-pop 0.2s ease-out;
 }
 
@@ -131,7 +130,7 @@
 .registerqr-modal-title {
   font-size: 1.1rem;
   font-weight: 800;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin-bottom: 10px;
   letter-spacing: 0.5px;
 }

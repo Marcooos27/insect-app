@@ -6,7 +6,7 @@
 /* Toolbar */
 .pedidos-page ion-toolbar {
   --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
-  --color: var(--text-white);
+  --color: var(--text-primary);
 }
 
 .pedidos-page ion-title {
@@ -36,12 +36,12 @@
 
 /* Cada item */
 .pedidos-page ion-item {
-  --background: rgba(255,255,255,0.07);
+  --background: rgba(255,255,255,0.6);
   --border-color: transparent;
   --inner-border-width: 0;
   --padding-start: 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--color-tint);
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
@@ -50,14 +50,14 @@
 }
 
 .pedidos-page ion-item:hover {
-  --background: rgba(255,255,255,0.12);
+  --background: rgba(153,219,181,0.3);
   transform: translateX(4px);
 }
 
 .pedidos-page ion-label h2 {
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--text-white);
+  color: var(--text-primary);
 }
 
 .pedidos-page ion-label p {

@@ -3,14 +3,13 @@ import './UserTask.css';
 import React, { useContext } from "react";
 
 import {
-  IonCard,
-  IonCardContent,
-  IonList,
   IonItem,
   IonLabel,
   IonCheckbox,
-  IonAlert
+  IonAlert,
+  IonIcon,
 } from "@ionic/react";
+import { calendarOutline } from "ionicons/icons";
 
 import { TareaContext } from "../../context/TareaContext";
 import { useAuth } from "../../context/AuthContext";
@@ -87,54 +86,33 @@ const UserTasks: React.FC<Props> = ({ tipo }) => {
 
   return (
     <>
-      <IonCard className="task-card">
-
-        <IonCardContent>
-
-          <IonList className="user-list">
-
-            {tareasFiltradas.length > 0 ? (
-              tareasFiltradas.map((t) => (
-                <IonItem key={t.id_tarea} className="task-item">
-                  <IonCheckbox
-                    slot="start"
-                    checked={false}
-                    onIonChange={() => toggleTarea(t.id_tarea)}
-                  />
-                  <IonLabel>
-                    <div className="task-row">
-                      <span className="task-key">Tipo: </span>
-                      <span className="task-value">{t.tipo_tarea}</span>
-                    </div>
-                    <div className="task-row">
-                      <span className="task-key">Descripción: </span>
-                      <span className="task-value">{t.descripcion}</span>
-                    </div>
-                    <div className="task-row">
-                      <span className="task-key">Entrega: </span>
-                      <span className="task-value">
-                        {t.fecha_prevista
-                          ? (() => {
-                              const [y, m, d] = t.fecha_prevista.split("T")[0].split("-");
-                              return `${d}-${m}-${y}`;
-                            })()
-                          : "Sin fecha"}
-                      </span>
-                    </div>
-                  </IonLabel>
-                </IonItem>
-              ))
-            ) : (
-              <IonItem className="no-tasks-item">
-                <IonLabel className="no-tasks-text">No hay tareas</IonLabel>
-              </IonItem>
-            )}
-
-          </IonList>
-
-        </IonCardContent>
-
-      </IonCard>
+      <div className="usertask-grid">
+        {tareasFiltradas.length > 0 ? (
+          tareasFiltradas.map((t) => (
+            <IonItem key={t.id_tarea} className={`usertask-card usertask-card--${tipo}`} lines="none">
+              <IonCheckbox
+                slot="start"
+                checked={false}
+                onIonChange={() => toggleTarea(t.id_tarea)}
+              />
+              <IonLabel>
+                <div className="task-descripcion">{t.descripcion}</div>
+                <div className="task-fecha">
+                  <IonIcon icon={calendarOutline} />
+                  {t.fecha_prevista
+                    ? (() => {
+                        const [y, m, d] = t.fecha_prevista.split("T")[0].split("-");
+                        return `${d}-${m}-${y}`;
+                      })()
+                    : "Sin fecha"}
+                </div>
+              </IonLabel>
+            </IonItem>
+          ))
+        ) : (
+          <div className="usertask-empty">No hay tareas</div>
+        )}
+      </div>
 
       <IonAlert
         isOpen={alertOpen}

@@ -244,8 +244,8 @@ const AssignTask: React.FC = () => {
             min={new Date().toISOString().split('T')[0]}
             onIonChange={e => setFechaPrevista(e.detail.value as string)}
             style={{
-              '--background': 'var(--color-accent)',
-              '--background-rgb': '234,239,157',
+              '--background': '#ffffff',
+              '--background-rgb': '255,255,255',
               color: 'var(--text-primary)'
             } as React.CSSProperties}
           />
@@ -275,7 +275,8 @@ const AssignTask: React.FC = () => {
               max={fechaPrevista || undefined}
               onIonChange={e => setFechaInicio(e.detail.value as string)}
               style={{
-                '--background': 'var(--color-accent)',
+                '--background': '#ffffff',
+                '--background-rgb': '255,255,255',
                 color: 'var(--text-primary)'
               } as React.CSSProperties}
             />

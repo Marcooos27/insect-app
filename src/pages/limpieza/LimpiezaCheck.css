@@ -1,5 +1,5 @@
 .limpieza-content {
-  --background: var(--color-darkest, #0f1923);
+  --background: var(--color-darkest, #ffffff);
 }
 
 .limpieza-container {
@@ -14,7 +14,7 @@
 
 .limpieza-icon {
   font-size: 5rem;
-  color: var(--color-accent, #4fc3f7);
+  color: var(--color-accent, #008037);
   margin-bottom: 1.5rem;
 }
 
@@ -23,14 +23,14 @@
 }
 
 .limpieza-titulo {
-  color: white;
+  color: var(--text-primary, #13160f);
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
 .limpieza-texto {
-  color: #aaa;
+  color: var(--text-secondary, #36441b);
   font-size: 1.1rem;
   margin-bottom: 2rem;
 }
@@ -45,11 +45,11 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  background: var(--color-dark, #1a2636);
+  background: rgba(153,219,181,0.2);
   border-radius: 10px;
   padding: 0.9rem 1.2rem;
   margin-bottom: 0.8rem;
-  color: white;
+  color: var(--text-primary, #13160f);
   font-size: 0.95rem;
 }
 
@@ -60,8 +60,8 @@
 }
 
 .limpieza-boton {
-  --background: var(--color-accent, #4fc3f7);
-  --color: #0f1923;
+  --background: var(--color-accent, #008037);
+  --color: var(--text-white, #ffffff);
   --border-radius: 12px;
   font-weight: 700;
   font-size: 1.1rem;

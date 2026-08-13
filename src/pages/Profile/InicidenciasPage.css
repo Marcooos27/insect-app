@@ -16,11 +16,10 @@
   margin: auto;
   margin-top: 30px;
 
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #ffffff;
+  border: 1px solid var(--color-tint);
   border-radius: 18px;
-  box-shadow: 0 6px 25px rgba(0,0,0,0.35);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 25px rgba(19,22,15,0.1);
 }
 
 /* ================================
@@ -29,30 +28,31 @@
 
 .incidencias-container ion-input,
 .incidencias-container ion-textarea {
-  --background: rgba(255,255,255,0.06);
+  --background: rgba(153,219,181,0.12);
   --padding-start: 12px;
   --padding-end: 12px;
   --padding-top: 10px;
   --padding-bottom: 10px;
 
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid var(--color-tint);
 
-  color: var(--text-white);
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
 /* placeholder */
 .incidencias-container ion-input::part(placeholder),
 .incidencias-container ion-textarea::part(placeholder) {
-  color: rgba(255,255,255,0.35);
+  color: var(--text-secondary);
+  opacity: 0.6;
 }
 
 /* focus / activo */
 .incidencias-container ion-input:focus-within,
 .incidencias-container ion-textarea:focus-within {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(144,150,50,0.25);
+  box-shadow: 0 0 0 2px rgba(0,128,55,0.2);
 }
 
 /* textarea más alto */
@@ -93,7 +93,7 @@
 
 .incidencias-toolbar {
   --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
-  --color: var(--text-white);
+  --color: var(--text-primary);
 }
 
 .incidencias-title {

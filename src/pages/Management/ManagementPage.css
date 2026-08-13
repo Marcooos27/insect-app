@@ -1,5 +1,5 @@
 .management-content {
-  --background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
+  --background: var(--color-darkest);
 }
 
 .management-grid {
@@ -16,21 +16,20 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: rgba(255,255,255,0.07);
+  background: #ffffff;
   border-radius: 18px;
   padding: 24px 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 6px 20px rgba(19,22,15,0.08);
+  border: 2px solid var(--color-tint);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   min-height: 140px;
-  backdrop-filter: blur(4px);
 }
 
 .management-card:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
-  background: rgba(255,255,255,0.12);
+  box-shadow: 0 12px 30px rgba(19,22,15,0.15);
+  background: rgba(153,219,181,0.15);
 }
 
 .management-card:active {
@@ -54,7 +53,7 @@
 }
 
 .management-card-titulo {
-  color: var(--text-white);
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 800;
   text-transform: uppercase;

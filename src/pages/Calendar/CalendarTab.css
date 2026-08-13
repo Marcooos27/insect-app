@@ -2,8 +2,8 @@
    TOOLBAR
 ================================ */
 .calendar-toolbar {
-  --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
-  --color: var(--text-white);
+  --background: var(--color-darkest);
+  --color: var(--text-primary);
 }
 
 .calendar-title {
@@ -14,7 +14,7 @@
 
 /* Fondo contenido */
 .calendar-content {
-  --background: var(--color-dark);
+  --background: var(--color-darkest);
 }
 
 /* Wrapper del calendario */
@@ -31,9 +31,9 @@
 }
 
 .calendar-select {
-  --color: var(--text-white);
+  --color: var(--text-primary);
   --placeholder-color: var(--color-accent);
-  color: var(--text-white);
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 0.9rem;
   max-width: 160px;
@@ -61,7 +61,7 @@
 
 .rbc-toolbar button {
   background-color: var(--color-mid);
-  color: var(--text-white);
+  color: var(--text-primary);
   border: 1px solid var(--color-dark);
   border-radius: 6px;
   padding: 6px 12px;
@@ -74,12 +74,12 @@
 
 .rbc-toolbar button:hover {
   background-color: var(--color-dark);
-  color: var(--text-white);
+  color: var(--text-primary);
 }
 
 .rbc-toolbar button.rbc-active {
   background-color: var(--color-darkest);
-  color: var(--text-white);
+  color: var(--text-primary);
   border-color: var(--color-darkest);
 }
 
@@ -88,7 +88,7 @@
 ================================ */
 .rbc-header {
   background-color: var(--color-dark);
-  color: var(--text-white) !important;
+  color: var(--text-primary) !important;
   font-weight: 700;
   padding: 8px 4px;
   border-color: var(--color-darkest) !important;
@@ -150,7 +150,7 @@
 .rbc-now .rbc-date-cell a,
 .rbc-now .rbc-date-cell span {
   background-color: var(--color-mid);
-  color: var(--text-white) !important;
+  color: var(--text-primary) !important;
   font-weight: 800;
 }
 
@@ -186,7 +186,7 @@
   background-color: var(--color-mid) !important;
   border: none !important;
   border-left: 3px solid var(--color-darkest) !important;
-  color: var(--text-white) !important;
+  color: var(--text-primary) !important;
   border-radius: 4px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -309,7 +309,7 @@
 }
 
 .btn-completadas:hover {
-  --color: var(--text-white);
+  --color: var(--text-primary);
   --background: var(--color-light);
   --background-hover: var(--color-light);
   --border-radius: 100%;
@@ -317,7 +317,7 @@
 
 /* Cuando está activo (mostrando completadas) */
 .btn-completadas--activo {
-  --color: var(--text-white);
+  --color: var(--text-primary);
   --background: var(--color-light);
   opacity: 1;
   filter: drop-shadow(0 0 4px var(--color-accent));

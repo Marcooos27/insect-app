@@ -2,7 +2,7 @@
    FONDO Y CONTENIDO
 ================================ */
 .profile-content {
-  --background: linear-gradient(160deg, var(--color-darkest) 0%, var(--color-dark) 50%, var(--color-mid) 100%);
+  --background: var(--color-darkest);
 }
 
 /* ================================
@@ -20,7 +20,7 @@
   position: absolute;
   right: 10px;
   top: 10px;
-  --color: var(--text-white);
+  --color: var(--color-accent);
 }
 
 .profile-avatar {
@@ -32,7 +32,7 @@
 .profile-username {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--text-white);
+  color: var(--text-primary);
   letter-spacing: 1px;
   margin: 0;
   text-transform: capitalize;
@@ -43,7 +43,7 @@
 /* POPOVER */
 .profile-popover {
   background: var(--color-darkest);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--color-tint);
   border-radius: 12px;
   padding: 6px;
   min-width: 180px;
@@ -54,7 +54,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  color: var(--text-white);
+  color: var(--text-primary);
   cursor: pointer;
   font-size: 0.85rem;
   border-radius: 8px;
@@ -62,7 +62,7 @@
 }
 
 .profile-popover-item:hover {
-  background: rgba(255,255,255,0.08);
+  background: rgba(153,219,181,0.2);
 }
 
 .profile-popover-item ion-icon {
@@ -106,11 +106,10 @@
 ================================ */
 .profile-card {
   margin: 0 20px;
-  background-color: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
+  background-color: rgba(255,255,255,0.85);
+  border: 1px solid var(--color-tint);
   border-radius: 16px;
   padding: 8px 0;
-  backdrop-filter: blur(8px);
 
   width: 100%;           /* Ocupa el ancho disponible... */
   max-width: 600px;      /* ...pero como máximo 600px (ajusta este número) */
@@ -122,6 +121,9 @@
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
+  margin: 10px 12px;
+  background: rgba(153,219,181,0.2);
+  border-radius: 12px;
 }
 
 .profile-row-icon {
@@ -148,13 +150,11 @@
 .profile-row-value {
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--text-white);
+  color: var(--text-primary);
 }
 
 .profile-divider {
-  height: 1px;
-  background-color: rgba(255,255,255,0.1);
-  margin: 0 20px;
+  display: none;
 }
 
 /* ================================

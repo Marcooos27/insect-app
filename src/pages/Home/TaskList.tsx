@@ -4,8 +4,9 @@ import {
   IonCard, IonCardContent, IonList, IonItem, IonLabel,
   IonCheckbox, IonAlert, IonButton, IonModal, IonHeader,
   IonToolbar, IonTitle, IonContent, IonSelect, IonSelectOption,
-  IonDatetime, IonTextarea, IonToast
+  IonDatetime, IonTextarea, IonToast, IonIcon
 } from '@ionic/react';
+import { calendarOutline } from 'ionicons/icons';
 import { OperarioContext } from '../../context/OperarioContext';
 import { TareaContext, TareaEdit } from '../../context/TareaContext';
 import { useAuth } from '../../context/AuthContext';
@@ -77,10 +78,12 @@ const TaskList: React.FC = () => {
 
 
   const operariosAMostrar = operarios.filter(op => {
+    if (op.es_admin) return false; // Nunca mostrar tarjetas de operarios vinculados a una cuenta admin
+
     const tareas = tareasVisibles(op.id_operario);
     // Solo operarios con tareas visibles
     if (user?.rol === "admin") {
-      return true; // Admin ve todos los operarios
+      return true; // Admin ve todos los operarios (no admin)
     }
     return op.id_operario === user?.id_operario && tareas.length > 0;
   });
@@ -145,24 +148,15 @@ const TaskList: React.FC = () => {
 
                           {/* CONTENIDO */}
                           <IonLabel className="task-label">
-                            <div className="task-row">
-                              <span className="task-key">Tipo : </span>
-                              <span className="task-value">{t.tipo_tarea}</span>
-                            </div>
-                            <div className="task-row">
-                              <span className="task-key">Descripción : </span>
-                              <span className="task-value">{t.descripcion}</span>
-                            </div>
-                            <div className="task-row">
-                              <span className="task-key">Entrega : </span>
-                              <span className="task-value">
-                                {t.fecha_prevista
-                                  ? (() => {
-                                      const [y, m, d] = t.fecha_prevista.split('T')[0].split('-');
-                                      return `${d}-${m}-${y}`;
-                                    })()
-                                  : 'Sin fecha'}
-                              </span>
+                            <div className="task-descripcion">{t.descripcion}</div>
+                            <div className="task-fecha">
+                              <IonIcon icon={calendarOutline} />
+                              {t.fecha_prevista
+                                ? (() => {
+                                    const [y, m, d] = t.fecha_prevista.split('T')[0].split('-');
+                                    return `${d}-${m}-${y}`;
+                                  })()
+                                : 'Sin fecha'}
                             </div>
                           </IonLabel>
                         </IonItem>
@@ -251,7 +245,8 @@ const TaskList: React.FC = () => {
               value={editFecha}
               onIonChange={e => setEditFecha(e.detail.value as string)}
               style={{
-                '--background': 'var(--color-accent)',
+                '--background': '#ffffff',
+                '--background-rgb': '255,255,255',
                 color: 'var(--text-primary)'
               } as React.CSSProperties}
             />

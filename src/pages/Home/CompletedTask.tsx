@@ -89,7 +89,8 @@ const CompletedTasks: React.FC = () => {
             value={fechaFiltro}
             onIonChange={e => setFechaFiltro(e.detail.value as string)}
             style={{
-              '--background': 'var(--color-accent)',
+              '--background': '#ffffff',
+              '--background-rgb': '255,255,255',
               color: 'var(--text-primary)'
             }}
           />

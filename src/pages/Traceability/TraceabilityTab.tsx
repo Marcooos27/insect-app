@@ -1059,20 +1059,21 @@ const TraceabilityTab: React.FC = () => {
         </>
       )}
 
-      <button className="traz-cancel-btn" onClick={resetFlow}>
-        <IonIcon icon={arrowBackOutline} />Volver al inicio
-      </button>
+      <div className="traz-cribado-actions-row">
+        <button className="traz-cancel-btn" onClick={resetFlow}>
+          <IonIcon icon={arrowBackOutline} />Volver al inicio
+        </button>
 
-      <IonButton
-        expand="block"
-        color="danger"
-        fill="outline"
-        onClick={() => setCancelAlertOpen(true)}
-        disabled={loading}
-        style={{ marginTop: 8 }}
-      >
-        Cancelar sesión
-      </IonButton>
+        <IonButton
+          color="danger"
+          fill="outline"
+          className="traz-cancel-session-btn"
+          onClick={() => setCancelAlertOpen(true)}
+          disabled={loading}
+        >
+          Cancelar sesión
+        </IonButton>
+      </div>
     </div>
   );
 
@@ -1194,7 +1195,7 @@ const TraceabilityTab: React.FC = () => {
               value={fechaSalidaTemporal || fechaSalidaEdit}
               min={new Date().toISOString().split("T")[0]}
               onIonChange={e => setFechaSalidaTemporal(e.detail.value as string)}
-              style={{ "--background": "var(--color-accent)", color: "var(--text-primary)" } as any}
+              style={{ "--background": "#ffffff", "--background-rgb": "255,255,255", color: "var(--text-primary)" } as any}
             />
             <IonButton expand="block" className="traz-modal-confirm" onClick={handleGuardarFecha} disabled={loading}>
               {loading ? <IonSpinner name="crescent" /> : "Confirmar fecha"}

@@ -1,8 +1,8 @@
 /* === ESTILOS DEL CALENDARIO === */
 
-/* Día actual con fondo azul clarito */
+/* Día actual con fondo verde clarito (marca) */
 .rbc-day-bg.rbc-today {
-  background-color: #cce6ff !important;
+  background-color: rgba(153, 219, 181, 0.35) !important;
 }
 
 /* Texto general en negro */
@@ -11,7 +11,7 @@
 .rbc-header,
 .rbc-event-content,
 .rbc-event-label {
-  color: #000 !important;
+  color: var(--text-primary, #13160f) !important;
 }
 
 /* Fondo clarito para los recuadros */
@@ -19,7 +19,7 @@
   background-color: #f7f7fa !important;
 }
 
-/* Líneas del calendario en negro */
+/* Líneas del calendario */
 .rbc-month-view,
 .rbc-time-view,
 .rbc-timeslot-group,
@@ -27,15 +27,15 @@
 .rbc-header,
 .rbc-row,
 .rbc-row-segment {
-  border-color: #000 !important;
+  border-color: rgba(19, 22, 15, 0.15) !important;
 }
 
 .rbc-day-bg,
 .rbc-header,
 .rbc-row,
 .rbc-row-segment {
-  border-bottom: 1px solid #000 !important;
-  border-right: 1px solid #000 !important;
+  border-bottom: 1px solid rgba(19, 22, 15, 0.15) !important;
+  border-right: 1px solid rgba(19, 22, 15, 0.15) !important;
 }
 
 /* === Personalización de la barra superior === */
@@ -44,7 +44,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #eef3ff;
+  background-color: rgba(153, 219, 181, 0.15);
   padding: 8px 16px;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -55,14 +55,14 @@
 .rbc-toolbar-label {
   font-weight: 600;
   font-size: 1.1rem;
-  color: #000 !important;
+  color: var(--text-primary, #13160f) !important;
 }
 
 /* Botones del calendario */
 .rbc-toolbar button {
-  background-color: #3880ff;
-  color: #000; /* Texto en negro */
-  border: 1px solid #000;
+  background-color: rgba(153, 219, 181, 0.3);
+  color: var(--text-primary, #13160f);
+  border: 1px solid var(--color-tint, #99DBB5);
   border-radius: 6px;
   padding: 6px 12px;
   margin: 0 4px;
@@ -73,14 +73,14 @@
 
 /* Hover */
 .rbc-toolbar button:hover {
-  background-color: #cce6ff;
+  background-color: rgba(153, 219, 181, 0.5);
 }
 
 /* Botón activo (Mes, Semana, Día) */
 .rbc-toolbar button.rbc-active {
-  background-color: #2dd36f;
-  color: #000;
-  border: 1px solid #000;
+  background-color: var(--color-accent, #008037);
+  color: #fff;
+  border: 1px solid var(--color-accent, #008037);
 }
 
 /* Espaciado entre botones */
@@ -90,12 +90,12 @@
   gap: 4px;
 }
 
-/* Asegura que todos los textos del calendario sean negros */
-.rbc-month-view, 
+/* Asegura que todos los textos del calendario sean legibles */
+.rbc-month-view,
 .rbc-time-view,
 .rbc-timeslot-group,
 .rbc-time-header,
 .rbc-header,
 .rbc-time-content {
-  color: #000 !important;
+  color: var(--text-primary, #13160f) !important;
 }

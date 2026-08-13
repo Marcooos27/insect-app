@@ -9,8 +9,8 @@
 }
 
 .traz-toolbar {
-  --background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
-  --color: var(--text-white);
+  --background: var(--color-darkest);
+  --color: var(--text-primary);
 }
 
 .traz-toolbar-title {
@@ -22,7 +22,7 @@
 }
 
 .traz-content {
-  --background: linear-gradient(160deg, var(--color-darkest) 0%, var(--color-dark) 100%);
+  --background: var(--color-darkest);
 }
 
 .traz-container {
@@ -86,14 +86,14 @@
 .traz-idle-icon {
   font-size: 52px;
   color: var(--color-accent);
-  filter: drop-shadow(0 0 16px rgba(144, 150, 50, 0.4));
+  filter: drop-shadow(0 0 16px rgba(0, 128, 55, 0.4));
   z-index: 1;
 }
 
 .traz-idle-title {
   font-size: 1.6rem;
   font-weight: 800;
-  color: var(--text-white);
+  color: var(--text-primary);
   letter-spacing: 2px;
   text-transform: uppercase;
   margin: 0;
@@ -117,7 +117,7 @@
   --color: var(--text-white);
   --border-radius: 14px;
   --ripple-color: transparent;
-  --box-shadow: 0 4px 20px rgba(144, 150, 50, 0.35);
+  --box-shadow: 0 4px 20px rgba(0, 128, 55, 0.35);
   font-weight: 700;
   letter-spacing: 0.5px;
   font-size: 1rem;
@@ -135,7 +135,7 @@
   --color: var(--text-white);
   --border-radius: 14px;
   --ripple-color: transparent;
-  --box-shadow: 0 4px 20px rgba(144, 150, 50, 0.35);
+  --box-shadow: 0 4px 20px rgba(0, 128, 55, 0.35);
   font-weight: 700;
   letter-spacing: 0.5px;
   font-size: 1rem;
@@ -144,6 +144,16 @@
 }
 
 
+.traz-cribado-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+}
+
 .traz-cribado-header {
   display: flex;
   align-items: center;
@@ -151,14 +161,31 @@
   padding-bottom: 14px;
 }
 
+.traz-cribado-actions-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.traz-cribado-actions-row .traz-cancel-btn {
+  flex: 1;
+  margin: 0;
+}
+
+.traz-cancel-session-btn {
+  flex: 1;
+  margin: 0;
+}
+
 
 .traz-cribado-icon {
-  color: var(--text-white) !important;
+  color: var(--text-primary) !important;
 }
 
 .traz-cribado-title,
 .traz-cribado-sub {
-  color: var(--text-white);
+  color: var(--text-primary);
 }
 
 
@@ -167,8 +194,8 @@
    TARJETA BASE
 ================================ */
 .traz-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #ffffff;
+  border: 1px solid var(--color-tint);
   border-radius: 20px;
   padding: 24px;
   width: 100%;
@@ -176,8 +203,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 30px rgba(19, 22, 15, 0.08);
 }
 
 .traz-card-header {
@@ -185,20 +211,20 @@
   align-items: center;
   gap: 14px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-tint);
 }
 
 .traz-card-icon {
   font-size: 2.2rem;
   color: var(--color-accent);
   flex-shrink: 0;
-  filter: drop-shadow(0 0 8px rgba(144, 150, 50, 0.3));
+  filter: drop-shadow(0 0 8px rgba(0, 128, 55, 0.3));
 }
 
 .traz-card-title {
   font-size: 1.1rem;
   font-weight: 800;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin: 0 0 4px;
   letter-spacing: 0.5px;
 }
@@ -240,13 +266,13 @@
 }
 
 .traz-action-add {
-  background: rgba(144, 150, 50, 0.15);
+  background: rgba(0, 128, 55, 0.15);
   border-color: var(--color-mid);
   color: var(--color-accent);
 }
 
 .traz-action-add:hover, .traz-action-add:active {
-  background: rgba(144, 150, 50, 0.3);
+  background: rgba(0, 128, 55, 0.3);
   transform: scale(1.03);
 }
 
@@ -270,9 +296,9 @@
   justify-content: center;
   gap: 6px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--color-tint);
   border-radius: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 600;
   padding: 10px;
@@ -282,8 +308,8 @@
 }
 
 .traz-cancel-btn:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.75);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 /* ================================
@@ -337,7 +363,7 @@
 .traz-waiting-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -374,7 +400,7 @@
 .traz-result-title {
   font-size: 1.3rem;
   font-weight: 800;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin: 0;
   text-align: center;
   letter-spacing: 0.5px;
@@ -397,10 +423,10 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(153, 219, 181, 0.12);
   border-radius: 14px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-tint);
 }
 
 .traz-info-row {
@@ -409,7 +435,7 @@
   align-items: center;
   gap: 10px;
   padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(19, 22, 15, 0.08);
 }
 
 .traz-info-row:last-child {
@@ -433,13 +459,13 @@
 
 .traz-info-value {
   font-size: 0.88rem;
-  color: var(--text-white);
+  color: var(--text-primary);
   font-weight: 600;
   text-align: right;
 }
 
 .traz-lote-tag {
-  background: rgba(144, 150, 50, 0.2);
+  background: rgba(0, 128, 55, 0.2);
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 0.78rem;
@@ -486,8 +512,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(153, 219, 181, 0.12);
+  border: 1px solid var(--color-tint);
   border-radius: 10px;
   color: var(--color-accent);
   font-size: 0.85rem;
@@ -500,7 +526,7 @@
 }
 
 .traz-modify-date-btn:hover {
-  background: rgba(255,255,255,0.12);
+  background: rgba(153, 219, 181, 0.25);
   border-color: var(--color-accent);
 }
 
@@ -582,14 +608,14 @@
   align-items: center;
   gap: 16px;
   padding: 24px 20px;
-  background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
+  background: var(--color-darkest);
   border-radius: 20px;
 }
 
 .traz-modal-title {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-white);
+  color: var(--text-primary);
   margin: 0;
   text-align: center;
 }

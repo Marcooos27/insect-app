@@ -62,11 +62,11 @@ import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
-import '@ionic/react/css/palettes/dark.system.css';
 
 import './theme/variables.css';
 import RegisterQRPage from './pages/Profile/RegisterQR';
 import IncidenciasPage from './pages/Profile/InicidenciasPage';
+import logoLarvID from './logoLarvID.png';
 
 setupIonicReact();
 
@@ -125,6 +125,60 @@ const App: React.FC = () => {
   }
   // ← FIN DEL BLOQUE
 
+  // Tabs en un array para poder repartirlos a partes iguales a cada lado
+  // del logo en la tab bar (2+2 para operario, 3+3 para admin).
+  const tabButtons: React.ReactNode[] = [];
+
+  if (!user) {
+    tabButtons.push(
+      <IonTabButton key="login" tab="login" href="/login">
+        <IonIcon aria-hidden="true" icon={logIn} />
+        <IonLabel>Login</IonLabel>
+      </IonTabButton>
+    );
+  }
+
+  tabButtons.push(
+    <IonTabButton key="home" tab="home" href="/home">
+      <IonIcon icon={activeTab === 'home' ? receipt : receiptOutline} />
+      <IonLabel>Tareas</IonLabel>
+    </IonTabButton>,
+    <IonTabButton key="trazabilidad" tab="trazabilidad" href="/trazabilidad">
+      <IonIcon icon={activeTab === 'home' ? qrCode : qrCodeOutline} />
+      <IonLabel>Trazabilidad</IonLabel>
+    </IonTabButton>
+  );
+
+  if (user) {
+    tabButtons.push(
+      <IonTabButton key="calendar" tab="calendar" href="/calendar">
+        <IonIcon icon={activeTab === 'calendar' ? calendar : calendarOutline} />
+        <IonLabel>Calendario</IonLabel>
+      </IonTabButton>
+    );
+  }
+
+  if (user?.rol === "admin") {
+    tabButtons.push(
+      <IonTabButton key="dashboard" tab="dashboard" href="/dashboard">
+        <IonIcon icon={activeTab === 'dashboard' ? barChart : barChartOutline} />
+        <IonLabel>Gráficos</IonLabel>
+      </IonTabButton>,
+      <IonTabButton key="managements" tab="managements" href="/managements">
+        <IonIcon icon={activeTab === 'managements' ? settings : settingsOutline} />
+        <IonLabel>Gestión</IonLabel>
+      </IonTabButton>
+    );
+  }
+
+  if (user) {
+    tabButtons.push(
+      <IonTabButton key="Perfil" tab="Perfil" href="/profile">
+        <IonIcon icon={activeTab === 'Perfil' ? person : personOutline} />
+        <IonLabel>Perfil</IonLabel>
+      </IonTabButton>
+    );
+  }
 
   return (
     <IonApp>
@@ -242,62 +296,22 @@ const App: React.FC = () => {
                     <Redirect exact from="/" to="/login" />
                   </IonRouterOutlet>
 
-                  <IonTabBar 
-                    slot="bottom" 
-                    style={{ display: user ? 'flex' : 'none' }} 
+                  <IonTabBar
+                    slot="bottom"
+                    style={{ display: user ? 'flex' : 'none' }}
                     onIonTabsDidChange={(e: any) => setActiveTab(e.detail.tab)} // Actualiza el estado
                     >
-
-                    {!user && (
-                      <IonTabButton tab="login" href="/login">
-                        <IonIcon aria-hidden="true" icon={logIn} />
-                        <IonLabel>Login</IonLabel>
-                      </IonTabButton>
-                    )}
-
-                    <IonTabButton tab="home" href="/home">
-                      <IonIcon icon={activeTab === 'home' ? receipt : receiptOutline} />
-                      <IonLabel>Tareas</IonLabel>
-                    </IonTabButton>
-
-                    <IonTabButton tab="trazabilidad" href="/trazabilidad">
-                      <IonIcon icon={activeTab === 'home' ? qrCode : qrCodeOutline} />
-                      <IonLabel>Trazabilidad</IonLabel>
-                    </IonTabButton>
-
-
-                    {/* DESPUÉS - todos los usuarios logueados */}
-                    {user && (
-                        <IonTabButton tab="calendar" href="/calendar">
-                          <IonIcon icon={activeTab === 'calendar' ? calendar : calendarOutline} />
-                          <IonLabel>Calendario</IonLabel>
-                        </IonTabButton>
-                    )}
-
-                    {/* SOLO ADMIN */}
-                    {user?.rol === "admin" && (
-                        <IonTabButton tab="dashboard" href="/dashboard">
-                          <IonIcon icon={activeTab === 'dashboard' ? barChart : barChartOutline} />
-                          <IonLabel>Gráficos</IonLabel>
-                        </IonTabButton>
-                    )}
-
-                    {user?.rol === "admin" && (
-                        <IonTabButton tab="managements" href="/managements">
-                          <IonIcon icon={activeTab === 'managements' ? settings : settingsOutline} />
-                          <IonLabel>Gestión</IonLabel>
-                        </IonTabButton>
-                    )}
-                    
-
-                    {user && (
-                      <IonTabButton tab="Perfil" href="/profile">
-                        <IonIcon icon={activeTab === 'Perfil' ? person : personOutline} />
-                        <IonLabel>Perfil</IonLabel>
-                      </IonTabButton>
-                    )}
-                    
+                    {tabButtons}
                   </IonTabBar>
+                  {/* No puede ir dentro de IonTabBar: Ionic solo renderiza IonTabButton
+                      entre sus hijos. Va como hermano con slot="bottom" para que
+                      ion-tabs lo coloque en la misma región que la tab bar, no en
+                      la del contenido (sin slot, cae en el slot por defecto). */}
+                  {user && (
+                    <div className="tabbar-logo" slot="bottom">
+                      <img src={logoLarvID} alt="" />
+                    </div>
+                  )}
                 </IonTabs>
               </IonReactRouter>
             </CalendarProvider>

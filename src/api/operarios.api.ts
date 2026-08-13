@@ -4,6 +4,7 @@ export interface Operario {
   id_operario: number;
   nombre: string;
   turno_trabajo: string;
+  es_admin?: boolean;
 }
 
 export interface OperarioCreate {

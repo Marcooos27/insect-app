@@ -18,8 +18,8 @@
   background: linear-gradient(160deg, var(--color-dark), var(--color-darkest));
   border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 6px 20px rgba(19,22,15,0.08);
+  border: 1px solid var(--color-tint);
 }
 
 /* Columna derecha: resultados */
@@ -38,11 +38,11 @@
 
 /* Items de filtro */
 .completed-filter-item {
-  --background: rgba(255,255,255,0.07);
+  --background: rgba(255,255,255,0.6);
   --border-color: transparent;
   --inner-border-width: 0;
   border-radius: 12px;
-  border: 2px solid rgba(255,255,255,0.1);
+  border: 2px solid var(--color-tint);
   margin-bottom: 4px;
   overflow: hidden; /* fuerza que el hijo respete el border-radius */
 }
@@ -58,13 +58,13 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-bottom: 1px solid rgba(19,22,15,0.1);
   margin-bottom: 4px;
 }
 
 .completed-filter-item ion-select {
-  color: var(--text-white);
-  --placeholder-color: rgba(255,255,255,0.35);
+  color: var(--text-primary);
+  --placeholder-color: rgba(19,22,15,0.35);
 }
 
 /* Botón filtrar */
@@ -85,7 +85,7 @@
 
 .completed-filter-btn:hover {
   --background: var(--color-accent);
-  --color: var(--text-primary);
+  --color: var(--text-white);
 }
 
 .completed-filter-item ion-datetime {
@@ -101,12 +101,12 @@
 ================================ */
 .completed-task-item {
   --background: var(--color-accent);
+  --color: var(--text-white);
   --border-color: transparent;
   --inner-border-width: 0;
   border-radius: 10px;
   margin-bottom: 10px;
   border: 1px solid var(--color-mid);
-  backdrop-filter: blur(4px);
 }
 
 .completed-task-item::part(native) {
@@ -155,9 +155,9 @@
 }
 
 .badge-sin-datos {
-  background-color: rgba(255,255,255,0.4);
-  color: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255,255,255,0.4);
+  background-color: rgba(120,120,120,0.15);
+  color: #6b6b6b;
+  border: 1px solid rgba(120,120,120,0.4);
 }
 
 
@@ -181,11 +181,11 @@
 .completed-task-key {
   text-align: right;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .completed-task-value {
-  color: var(--text-primary);
+  color: var(--text-white);
   text-align: left;
 }
 
@@ -194,7 +194,7 @@
   --background: var(--color-dark);
   --inner-border-width: 0;
   --border-color: var(--color-accent);
-  color: var(--text-white);
+  color: var(--text-primary);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -205,8 +205,8 @@
   justify-content: center;
   border-radius: 10px;
   padding: 16px;
-  background-color: rgba(255,255,255,0.05);
-  border: 1px dashed rgba(255,255,255,0.15);
+  background-color: rgba(153,219,181,0.15);
+  border: 1px dashed var(--color-tint);
   font-weight: 600;
   font-size: 0.85rem;
   width: 100%;
