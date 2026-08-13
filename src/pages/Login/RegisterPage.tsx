@@ -47,7 +47,7 @@ const Register: React.FC = () => {
 
           <div className="login-header">
             <IonIcon icon={leafOutline} className="login-logo-icon" />
-            <h1 className="login-title">InsectEat</h1>
+            <h1 className="login-title">InsectEat group</h1>
             <p className="login-subtitle">Crear cuenta nueva</p>
           </div>
 

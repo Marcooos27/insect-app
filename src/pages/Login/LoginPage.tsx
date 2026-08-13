@@ -10,7 +10,7 @@ import { mailOutline, lockClosedOutline, leafOutline } from "ionicons/icons";
 import { useAuth } from "../../context/AuthContext";
 import { useHistory } from "react-router";
 import "./LoginPage.css";
-import logo from "./LogoInsectEAT.png";
+import logo from "./Logo_LarvID.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -50,10 +50,9 @@ const Login = () => {
 
             <img
               src={logo}
-              alt="InsectEat Logo"
+              alt="LarvID Logo"
               className="login-logo"
             />
-            <p className="login-subtitle">Gestión de producción</p>
           </div>
 
           {/* Formulario */}

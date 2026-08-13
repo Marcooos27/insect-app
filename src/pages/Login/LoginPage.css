@@ -1,5 +1,5 @@
 .login-content {
-  --background: linear-gradient(160deg, var(--color-darkest) 0%, var(--color-dark) 60%, var(--color-mid) 100%);
+  --background: var(--color-darkest);
 }
 
 .login-container {
@@ -92,7 +92,7 @@
   align-items: center;
   gap: 12px;
   background-color: rgba(255,255,255,0.7);
-  border: 1px solid var(--color-tint);
+  border: 2px solid var(--color-tint);
   border-radius: 12px;
   padding: 4px 16px;
   transition: border-color 0.2s ease, background-color 0.2s ease;
