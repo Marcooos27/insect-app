@@ -158,6 +158,31 @@
 }
 
 /* ================================
+   BOTÓN EXPORTAR APPCC
+================================ */
+.profile-appcc {
+  padding: 24px 20px 0;
+
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.profile-appcc-btn {
+  --background: var(--color-accent);
+  --background-hover: var(--color-accent);
+  --background-activated: var(--color-accent);
+  --ripple-color: transparent;
+  --border-radius: 12px;
+  --color: #fff;
+  --box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  width: 100%;
+}
+
+/* ================================
    BOTÓN CERRAR SESIÓN
 ================================ */
 .profile-logout {

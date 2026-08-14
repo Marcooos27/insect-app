@@ -160,7 +160,7 @@ ion-tab-bar {
 .tabbar-logo {
   position: absolute;
   left: 50%;
-  bottom: 27px; /* 75px (alto de la tab bar) − mitad del círculo (48px) */
+  bottom: 11px; /* deja ~66% del círculo dentro de la tab bar y ~33% asomando por encima */
   width: 96px;
   height: 96px;
   transform: translateX(-50%);

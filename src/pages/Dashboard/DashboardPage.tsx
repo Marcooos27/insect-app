@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IonPage, IonContent, IonSpinner } from "@ionic/react";
 
 import api from "../../services/api";
@@ -22,6 +22,9 @@ const DashboardPage: React.FC = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [distribucionId, setDistribucionId] = useState<number | null>(null);
   const [fotosCamara, setFotosCamara] = useState<string | null>(null);
+  const [arrowTop, setArrowTop] = useState<number | null>(null);
+  const splitRef = useRef<HTMLDivElement>(null);
+  const splitLeftRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api.get("/dashboard/camaras")
@@ -34,6 +37,23 @@ const DashboardPage: React.FC = () => {
   }, []);
 
   const camaras = vista === "propias" ? camarasPropias : camarasFranquiciados;
+
+  // Posiciona la flecha de la línea divisoria a la altura de la tarjeta
+  // de cámara seleccionada, para señalarla visualmente.
+  useEffect(() => {
+    if (!selectedId || !splitLeftRef.current || !splitRef.current) {
+      setArrowTop(null);
+      return;
+    }
+    const cardEl = splitLeftRef.current.querySelector<HTMLDivElement>(".cam-card.selected");
+    if (!cardEl) {
+      setArrowTop(null);
+      return;
+    }
+    const cardRect = cardEl.getBoundingClientRect();
+    const splitRect = splitRef.current.getBoundingClientRect();
+    setArrowTop(cardRect.top - splitRect.top + cardRect.height / 2);
+  }, [selectedId, camaras]);
 
   const camaraSeleccionada = camaras.find(c => c.id_camara === selectedId) || null;
 
@@ -75,9 +95,8 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
 
-          <div className="dash-split">
-            <div className="dash-split-left">
-              <div className="seccion-label">{camaras.length} salas</div>
+          <div className="dash-split" ref={splitRef}>
+            <div className="dash-split-left" ref={splitLeftRef}>
               {camaras.length === 0 && vista === "franquiciados" && (
                 <div className="dash-vacio">Todavía no hay ninguna franquicia dada de alta</div>
               )}
@@ -89,6 +108,20 @@ const DashboardPage: React.FC = () => {
                   onClick={() => seleccionar(c.id_camara)}
                 />
               ))}
+            </div>
+
+            <div className="dash-divider">
+              {arrowTop !== null && (
+                <svg
+                  className="dash-divider-arrow"
+                  style={{ top: `${arrowTop}px` }}
+                  width="10"
+                  height="14"
+                  viewBox="0 0 10 14"
+                >
+                  <polygon points="9,1 9,13 1,7" />
+                </svg>
+              )}
             </div>
 
             <div className="dash-split-right">

@@ -10,6 +10,7 @@
   min-height: 100vh;
   padding: 2rem;
   text-align: center;
+  background: var(--color-darkest, #ffffff);
 }
 
 .limpieza-icon {
@@ -24,6 +25,7 @@
 
 .limpieza-titulo {
   color: var(--text-primary, #13160f);
+  font-family: 'Arvo', serif;
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
@@ -45,7 +47,9 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  background: rgba(153,219,181,0.2);
+  background: #ffffff;
+  border: 1px solid var(--color-tint, #99DBB5);
+  box-shadow: 0 1px 3px rgba(19,22,15,0.06);
   border-radius: 10px;
   padding: 0.9rem 1.2rem;
   margin-bottom: 0.8rem;
@@ -54,13 +58,14 @@
 }
 
 .limpieza-item ion-icon {
-  color: #4caf50;
+  color: var(--color-accent, #008037);
   font-size: 1.4rem;
   flex-shrink: 0;
 }
 
 .limpieza-boton {
   --background: var(--color-accent, #008037);
+  --background-activated: var(--color-mid, #00B44B);
   --color: var(--text-white, #ffffff);
   --border-radius: 12px;
   font-weight: 700;

@@ -10,6 +10,13 @@ import io
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/appcc", tags=["appcc"])
 
+TIPOS_PRODUCTO = {
+    "01": "Harina proteica de insecto",
+    "02": "Aceite de insecto",
+    "03": "Frass",
+    "04": "Larva deshidratada",
+}
+
 
 def get_dias_laborables(year: int, month: int):
     """Devuelve lista de fechas laborables (L-V) del mes."""
@@ -122,18 +129,23 @@ def get_datos_appcc(year: int, month: int, user=Depends(get_current_user)):
         row = cur.fetchone()
         nombre_admin = row[0] if row else ""
 
-        # --- SECCIÓN 6: Trazabilidad (lotes del mes) ---
+        cur.execute("""
+            SELECT nombre, tipo_producto FROM proveedor ORDER BY nombre
+        """)
+        proveedores = [{"nombre": r[0], "producto": r[1] or ""} for r in cur.fetchall()]
+
+        # --- SECCIÓN 6: Trazabilidad (lotes finales producidos en el mes) ---
         cur.execute("""
             SELECT
-                la.codigo_qr as lote,
-                p.fecha_entrada_camara as fecha,
-                p.codigo_qr as pallet,
-                la.descripcion as sustrato
-            FROM engorde e
-            JOIN pallet p ON p.id_pallet = e.id_pallet
-            JOIN lote_alimento la ON la.id_lote_alimento = e.id_lote_alimento
-            WHERE DATE_TRUNC('month', p.fecha_entrada_camara) = %s
-            ORDER BY p.fecha_entrada_camara
+                lf.codigo_lote, lf.tipo_producto, lf.fecha_produccion,
+                lf.destino, lf.etiquetado_ok, lf.observaciones,
+                la.tipo_alimento, la.descripcion AS sustrato_desc,
+                lh.origen AS partida_larvas
+            FROM lote_final lf
+            LEFT JOIN lote_alimento la ON la.id_lote_alimento = lf.id_lote_alimento
+            LEFT JOIN lote_huevo lh ON lh.id_lote_huevo = lf.id_lote_huevo
+            WHERE DATE_TRUNC('month', lf.fecha_produccion) = %s
+            ORDER BY lf.fecha_produccion
         """, (date(year, month, 1),))
         cols = [d[0] for d in cur.description]
         trazabilidad = [dict(zip(cols, row)) for row in cur.fetchall()]
@@ -155,6 +167,7 @@ def get_datos_appcc(year: int, month: int, user=Depends(get_current_user)):
             "resultados_practica": {f"{k[0]}_{k[1]}": v for k, v in resultados_practica.items()},
             "zonas_plaga": zonas_plaga,
             "plaga_data": plaga_data,
+            "proveedores": proveedores,
             "trazabilidad": trazabilidad,
         }
 
@@ -417,8 +430,30 @@ def generar_docx(datos: dict) -> bytes:
         doc.add_paragraph("Firma responsable: _________________________")
         doc.add_paragraph("")
 
+    # =========================================================
+    # SECCIÓN: CONTROL DE MATERIAS PRIMAS (recepción)
+    # =========================================================
+    doc.add_page_break()
+    heading(f"CONTROL DE MATERIAS PRIMAS — {mes_nombre} {year}")
 
+    tabla_mp = doc.add_table(rows=1, cols=8)
+    tabla_mp.style = 'Table Grid'
+    mp_hdrs = ["Fecha", "Producto", "Proveedor",
+               "Documentación (albarán, factura, lote)",
+               "Temperatura producto", "Condiciones transporte",
+               "Fecha consumo / caducidad", "Observaciones"]
+    for i, h in enumerate(mp_hdrs):
+        cell = tabla_mp.rows[0].cells[i]
+        set_cell_bg(cell, "D9D9D9")
+        run = cell.paragraphs[0].add_run(h)
+        run.bold = True
+        run.font.size = Pt(7)
 
+    for _ in range(6):
+        tabla_mp.add_row()
+
+    doc.add_paragraph("Firma del responsable: _________________________")
+    doc.add_paragraph("")
 
     # =========================================================
     # SECCIÓN: CONTROL DE TEMPERATURA Y HUMEDAD
@@ -721,6 +756,15 @@ def generar_docx(datos: dict) -> bytes:
 
     doc.add_paragraph("")
 
+    nota_higiene = doc.add_paragraph()
+    nota_run = nota_higiene.add_run(
+        "Nota: la \"X\" registra la confirmación diaria del operario en la app, que "
+        "incluye de forma conjunta uñas y manos, accesorios, ropa y calzado."
+    )
+    nota_run.italic = True
+    nota_run.font.size = Pt(8)
+    doc.add_paragraph("")
+
     semanas = datos["semanas"]
     higiene = datos["higiene_personal"]
     dias_semana = ["L", "M", "X", "J", "V"]
@@ -892,9 +936,62 @@ def generar_docx(datos: dict) -> bytes:
         run.bold = True
         run.font.size = Pt(7)
 
-    # 5 filas vacías para rellenar a mano
-    for _ in range(5):
+    # Filas prellenadas con los proveedores registrados en el sistema
+    for prov in datos["proveedores"]:
+        row = tabla.add_row()
+        row.cells[0].text = prov["nombre"]
+        row.cells[1].text = prov["producto"]
+        for cell in row.cells:
+            if cell.paragraphs[0].runs:
+                cell.paragraphs[0].runs[0].font.size = Pt(8)
+
+    # Filas vacías extra para proveedores nuevos no registrados aún
+    for _ in range(3):
         tabla.add_row()
+
+    # =========================================================
+    # SECCIÓN: CONTROL DE TRANSFORMACIÓN DEL PRODUCTO
+    # =========================================================
+    doc.add_page_break()
+    heading(f"CONTROL DE TRANSFORMACIÓN DEL PRODUCTO — {mes_nombre} {year}")
+
+    tabla_tr = doc.add_table(rows=1, cols=9)
+    tabla_tr.style = 'Table Grid'
+    tr_hdrs = ["Fecha", "Lote procesado", "Equipo utilizado",
+               "Temperatura alcanzada (°C)", "Tiempo de exposición (min)",
+               "Presión (si aplica)", "Cantidad procesada (kg)",
+               "¿Límites críticos cumplidos? (Sí/No)", "Firma responsable"]
+    for i, h in enumerate(tr_hdrs):
+        cell = tabla_tr.rows[0].cells[i]
+        set_cell_bg(cell, "D9D9D9")
+        run = cell.paragraphs[0].add_run(h)
+        run.bold = True
+        run.font.size = Pt(7)
+
+    for _ in range(6):
+        tabla_tr.add_row()
+
+    # =========================================================
+    # SECCIÓN: CONTROL DE ALMACENAMIENTO
+    # =========================================================
+    doc.add_page_break()
+    heading(f"CONTROL DE ALMACENAMIENTO — {mes_nombre} {year}")
+
+    tabla_alm = doc.add_table(rows=1, cols=8)
+    tabla_alm.style = 'Table Grid'
+    alm_hdrs = ["Lote", "Fecha",
+                "Movimiento (Entrada/Salida/Reubicación/Fraccionamiento/Consolidación)",
+                "Ubicación física", "Condiciones ambientales (temp/humedad)",
+                "Cantidad (kg)", "Observaciones", "Firma responsable"]
+    for i, h in enumerate(alm_hdrs):
+        cell = tabla_alm.rows[0].cells[i]
+        set_cell_bg(cell, "D9D9D9")
+        run = cell.paragraphs[0].add_run(h)
+        run.bold = True
+        run.font.size = Pt(7)
+
+    for _ in range(6):
+        tabla_alm.add_row()
 
     # =========================================================
     # SECCIÓN 6: TRAZABILIDAD
@@ -902,25 +999,34 @@ def generar_docx(datos: dict) -> bytes:
     doc.add_page_break()
     heading(f"CONTROL DE IDENTIFICACIÓN Y TRAZABILIDAD — {mes_nombre} {year}")
 
-    tabla = doc.add_table(rows=1, cols=5)
+    tabla = doc.add_table(rows=1, cols=9)
     tabla.style = 'Table Grid'
-    traz_hdrs = ["Lote", "Pallet asociado", "Sustrato utilizado",
-                 "Fecha de producción", "Observaciones"]
+    traz_hdrs = ["Producto (Harina/Aceite/Frass)", "Número de lote",
+                 "Partida de larvas asociada", "Sustrato utilizado",
+                 "Fecha de producción", "Destino autorizado",
+                 "Etiquetado conforme (Sí/No)", "Observaciones", "Firma responsable"]
     for i, h in enumerate(traz_hdrs):
         cell = tabla.rows[0].cells[i]
         set_cell_bg(cell, "D9D9D9")
         run = cell.paragraphs[0].add_run(h)
         run.bold = True
-        run.font.size = Pt(8)
+        run.font.size = Pt(7)
 
     if datos["trazabilidad"]:
         for t in datos["trazabilidad"]:
             row = tabla.add_row()
-            row.cells[0].text = str(t.get("lote", ""))
-            row.cells[1].text = str(t.get("pallet", ""))
-            row.cells[2].text = str(t.get("sustrato", ""))
-            row.cells[3].text = str(t.get("fecha", ""))
-            row.cells[4].text = ""
+            codigo = t.get("tipo_producto")
+            row.cells[0].text = TIPOS_PRODUCTO.get(codigo, codigo or "")
+            row.cells[1].text = str(t.get("codigo_lote", ""))
+            row.cells[2].text = str(t.get("partida_larvas") or "")
+            sustrato = t.get("tipo_alimento") or t.get("sustrato_desc") or ""
+            row.cells[3].text = str(sustrato)
+            fecha_prod = t.get("fecha_produccion")
+            row.cells[4].text = str(fecha_prod) if fecha_prod else ""
+            row.cells[5].text = str(t.get("destino") or "")
+            row.cells[6].text = "SÍ" if t.get("etiquetado_ok") else "NO"
+            row.cells[7].text = str(t.get("observaciones") or "")
+            row.cells[8].text = ""
             for cell in row.cells:
                 if cell.paragraphs[0].runs:
                     cell.paragraphs[0].runs[0].font.size = Pt(8)

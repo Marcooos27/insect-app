@@ -1,5 +1,5 @@
 .dash-content { --background: var(--color-darkest, #ffffff); }
-.dash-container { padding: 1.2rem 1rem 5rem; }
+.dash-container { padding: 1.2rem 1rem 5rem; min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
 .dash-loading { display: flex; justify-content: center; padding: 3rem; }
 
 .segmentado { display: flex; gap: 8px; margin-bottom: 1.2rem; }
@@ -11,9 +11,26 @@
 .dash-vacio { text-align: center; color: var(--text-secondary); background: rgba(153,219,181,0.15); border: 1px dashed var(--color-tint); border-radius: 10px; padding: 16px 12px; font-weight: 600; font-size: 12px; }
 
 /* Layout dividido 33 / 67 */
-.dash-split { display: flex; gap: 10px; align-items: flex-start; }
+.dash-split { display: flex; gap: 18px; align-items: stretch; flex: 1 1 auto; }
 .dash-split-left { flex: 0 0 33%; max-width: 33%; display: flex; flex-direction: column; gap: 8px; }
 .dash-split-right { flex: 1 1 67%; min-width: 0; }
+
+/* Línea que separa visualmente las cámaras del resumen/detalle, estirada
+   hasta el final del panel (no solo hasta donde llegue el contenido). Al
+   seleccionar una cámara, aparece una flechita de contorno a su misma
+   altura que señala hacia ella. */
+.dash-divider { position: relative; flex: 0 0 1px; width: 1px; background: var(--color-tint); align-self: stretch; }
+.dash-divider-arrow {
+  position: absolute;
+  right: 0px;
+  transform: translateY(-50%);
+  transition: top 0.15s ease;
+  fill: none;
+  stroke: var(--color-tint);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
 
 /* Tarjeta de cámara (columna izquierda) */
 .cam-card { background: #ffffff; border: 1px solid var(--color-tint); border-radius: 12px; padding: 10px; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; box-shadow: 0 1px 3px rgba(19,22,15,0.06); }
@@ -33,23 +50,23 @@
 .cam-alerta { color: #E24B4A; font-weight: 500; }
 
 /* Resumen general (panel derecho por defecto) */
-.resumen-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.2rem; }
-.resumen-tile { display: flex; align-items: center; gap: 10px; background: #ffffff; border: 1px solid var(--color-tint); border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(19,22,15,0.06); }
-.resumen-tile ion-icon { font-size: 22px; color: var(--color-accent); flex-shrink: 0; }
-.resumen-tile-valor { display: block; font-size: 18px; font-weight: 600; color: var(--text-primary); }
+.resumen-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0.9rem; }
+.resumen-tile { display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid var(--color-tint); border-radius: 12px; padding: 10px; box-shadow: 0 1px 3px rgba(19,22,15,0.06); }
+.resumen-tile ion-icon { font-size: 20px; color: var(--color-accent); flex-shrink: 0; }
+.resumen-tile-valor { display: block; font-size: 16px; font-weight: 600; color: var(--text-primary); }
 .resumen-tile-label { display: block; font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 
-.resumen-tareas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.2rem; }
-.resumen-tarea-box { display: flex; gap: 10px; background: #ffffff; border: 1px solid var(--color-tint); border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(19,22,15,0.06); }
-.resumen-tarea-icono { font-size: 20px; flex-shrink: 0; }
+.resumen-tareas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0.9rem; }
+.resumen-tarea-box { display: flex; gap: 8px; background: #ffffff; border: 1px solid var(--color-tint); border-radius: 12px; padding: 10px; box-shadow: 0 1px 3px rgba(19,22,15,0.06); }
+.resumen-tarea-icono { font-size: 18px; flex-shrink: 0; }
 .resumen-tarea-icono.llenar ion-icon { color: var(--color-accent); }
 .resumen-tarea-icono.vaciar ion-icon { color: #EF9F27; }
 .resumen-tarea-info { display: flex; flex-direction: column; min-width: 0; }
 .resumen-tarea-titulo { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
-.resumen-tarea-camara { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.resumen-tarea-camara { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .resumen-tarea-operario { font-size: 11px; color: var(--color-accent); margin-top: 2px; }
 
-.resumen-huevos { display: flex; align-items: center; gap: 10px; background: rgba(153,219,181,0.15); border: 1px dashed var(--color-tint); border-radius: 12px; padding: 12px; margin-bottom: 1rem; }
+.resumen-huevos { display: flex; align-items: center; gap: 8px; background: rgba(153,219,181,0.15); border: 1px dashed var(--color-tint); border-radius: 12px; padding: 10px; margin-bottom: 0.8rem; }
 .resumen-huevos ion-icon { font-size: 22px; color: var(--text-secondary); }
 .resumen-huevos-titulo { display: block; font-size: 13px; color: var(--text-primary); }
 .resumen-huevos-sub { display: block; font-size: 11px; color: var(--text-secondary); margin-top: 2px; }

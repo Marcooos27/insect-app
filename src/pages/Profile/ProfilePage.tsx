@@ -3,7 +3,9 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonPopover
+  IonPopover,
+  IonToast,
+  IonSpinner
 } from "@ionic/react";
 
 import {
@@ -13,7 +15,8 @@ import {
   logOutOutline,
   qrCodeOutline,
   ellipsisVerticalOutline,
-  warningOutline
+  warningOutline,
+  documentTextOutline
 } from "ionicons/icons";
 
 import { useAuth } from "../../context/AuthContext";
@@ -21,7 +24,13 @@ import { useContext } from "react";
 import { OperarioContext } from "../../context/OperarioContext";
 import { useHistory } from "react-router";
 import React, { useState } from 'react';
+import { API_URL } from "../../services/api";
 import "./ProfilePage.css";
+
+const MESES_ES = [
+  "", "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+  "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+];
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth();
@@ -29,9 +38,54 @@ const Profile: React.FC = () => {
   const history = useHistory();
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState<MouseEvent | undefined>(undefined);
+  const [exportandoAppcc, setExportandoAppcc] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastColor, setToastColor] = useState<"success" | "danger">("success");
 
   const nombreOperario =
     operarios.find(op => op.id_operario === user?.id_operario)?.nombre ?? "—";
+
+  const handleExportarAppcc = async () => {
+    if (exportandoAppcc) return;
+    setExportandoAppcc(true);
+    try {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/appcc/exportar/${year}/${month}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        let detail = "Error exportando el APPCC";
+        try {
+          const data = await res.json();
+          detail = data.detail || detail;
+        } catch { /* respuesta no era JSON */ }
+        throw new Error(detail);
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `APPCC_${MESES_ES[month]}_${year}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      setToastColor("success");
+      setToastMsg("APPCC exportado correctamente");
+    } catch (err: any) {
+      setToastColor("danger");
+      setToastMsg(err.message || "Error exportando el APPCC");
+    } finally {
+      setExportandoAppcc(false);
+    }
+  };
 
   return (
     <IonPage>
@@ -114,6 +168,25 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
+        {/* EXPORTAR APPCC (solo admin) */}
+        {user?.rol === "admin" && (
+          <div className="profile-appcc">
+            <IonButton
+              expand="block"
+              className="profile-appcc-btn"
+              onClick={handleExportarAppcc}
+              disabled={exportandoAppcc}
+            >
+              {exportandoAppcc ? <IonSpinner name="crescent" /> : (
+                <>
+                  <IonIcon icon={documentTextOutline} slot="start" />
+                  Exportar APPCC (mes actual)
+                </>
+              )}
+            </IonButton>
+          </div>
+        )}
+
         {/* LOGOUT */}
         <div className="profile-logout">
           <IonButton
@@ -125,6 +198,14 @@ const Profile: React.FC = () => {
             Cerrar sesión
           </IonButton>
         </div>
+
+        <IonToast
+          isOpen={!!toastMsg}
+          message={toastMsg}
+          duration={3000}
+          color={toastColor}
+          onDidDismiss={() => setToastMsg("")}
+        />
 
       </IonContent>
     </IonPage>
