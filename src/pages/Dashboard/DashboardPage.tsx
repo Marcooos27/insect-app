@@ -15,7 +15,8 @@ import "./DashboardPage.css";
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [vista, setVista] = useState<"propias" | "franquiciados">("propias");
-  const [camaras, setCamaras] = useState<CamaraResumen[]>([]);
+  const [camarasPropias, setCamarasPropias] = useState<CamaraResumen[]>([]);
+  const [camarasFranquiciados, setCamarasFranquiciados] = useState<CamaraResumen[]>([]);
   const [operarios, setOperarios] = useState<Operario[]>([]);
   const [cargando, setCargando] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -24,15 +25,25 @@ const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     api.get("/dashboard/camaras")
-      .then(res => setCamaras(res.data.propias || []))
+      .then(res => {
+        setCamarasPropias(res.data.propias || []);
+        setCamarasFranquiciados(res.data.franquiciados || []);
+      })
       .finally(() => setCargando(false));
     getOperarios().then(setOperarios).catch(() => setOperarios([]));
   }, []);
+
+  const camaras = vista === "propias" ? camarasPropias : camarasFranquiciados;
 
   const camaraSeleccionada = camaras.find(c => c.id_camara === selectedId) || null;
 
   const seleccionar = (id: number) => {
     setSelectedId(prev => (prev === id ? null : id));
+  };
+
+  const cambiarVista = (nuevaVista: "propias" | "franquiciados") => {
+    setVista(nuevaVista);
+    setSelectedId(null); // la cámara seleccionada no existe en la otra lista
   };
 
   if (cargando) return (
@@ -51,13 +62,13 @@ const DashboardPage: React.FC = () => {
             <div className="segmentado">
               <button
                 className={`seg-btn ${vista === "propias" ? "active" : ""}`}
-                onClick={() => setVista("propias")}
+                onClick={() => cambiarVista("propias")}
               >
                 Mis cámaras
               </button>
               <button
                 className={`seg-btn ${vista === "franquiciados" ? "active" : ""}`}
-                onClick={() => setVista("franquiciados")}
+                onClick={() => cambiarVista("franquiciados")}
               >
                 Franquiciados
               </button>
@@ -67,6 +78,9 @@ const DashboardPage: React.FC = () => {
           <div className="dash-split">
             <div className="dash-split-left">
               <div className="seccion-label">{camaras.length} salas</div>
+              {camaras.length === 0 && vista === "franquiciados" && (
+                <div className="dash-vacio">Todavía no hay ninguna franquicia dada de alta</div>
+              )}
               {camaras.map(c => (
                 <CameraCard
                   key={c.id_camara}

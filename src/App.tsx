@@ -21,7 +21,7 @@ import {
 } from 'ionicons/icons';
 
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useState, useEffect } from 'react';  // ya tienes useState, solo añade useEffect
+import { useState, useEffect, cloneElement, type ReactElement } from 'react';  // ya tienes useState, solo añade useEffect
 import LimpiezaCheck from './pages/limpieza/LimpiezaCheck';
 import api from './services/api';
 
@@ -127,7 +127,7 @@ const App: React.FC = () => {
 
   // Tabs en un array para poder repartirlos a partes iguales a cada lado
   // del logo en la tab bar (2+2 para operario, 3+3 para admin).
-  const tabButtons: React.ReactNode[] = [];
+  const tabButtons: ReactElement<{ className?: string }>[] = [];
 
   if (!user) {
     tabButtons.push(
@@ -179,6 +179,18 @@ const App: React.FC = () => {
       </IonTabButton>
     );
   }
+
+  // Reserva un hueco extra alrededor del logo central: el último tab de la
+  // mitad izquierda se marca para llevar más margen a la derecha (ver CSS
+  // .tab-gap-right), el resto de tabs quedan igual de juntos entre sí.
+  const tabButtonsMid = Math.ceil(tabButtons.length / 2);
+  const tabButtonsConEspacio = tabButtons.map((btn, i) =>
+    i === tabButtonsMid - 1
+      ? cloneElement(btn, {
+          className: [btn.props.className, 'tab-gap-right'].filter(Boolean).join(' '),
+        } as Partial<unknown>)
+      : btn
+  );
 
   return (
     <IonApp>
@@ -301,7 +313,7 @@ const App: React.FC = () => {
                     style={{ display: user ? 'flex' : 'none' }}
                     onIonTabsDidChange={(e: any) => setActiveTab(e.detail.tab)} // Actualiza el estado
                     >
-                    {tabButtons}
+                    {tabButtonsConEspacio}
                   </IonTabBar>
                   {/* No puede ir dentro de IonTabBar: Ionic solo renderiza IonTabButton
                       entre sus hijos. Va como hermano con slot="bottom" para que

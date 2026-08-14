@@ -45,33 +45,38 @@ def get_camaras(user=Depends(get_current_user)):
 
         resultado = {"propias": camaras_propias}
 
-        # Si es admin, devolvemos también los franquiciados
+        # Si es admin, devolvemos también las cámaras de franquiciados, con la
+        # misma forma que las propias (una fila por cámara) para que el
+        # frontend pueda pintarlas igual, solo que son cámaras con
+        # id_franquiciado asignado (p.ej. "Motilla 1", "Villaconejos 1"...).
         if user["rol"] == "admin":
             cur.execute("""
-                SELECT 
-                    f.id_franquiciado,
-                    f.ubicacion,
-                    COUNT(DISTINCT c.id_camara) AS num_camaras,
+                SELECT
+                    c.id_camara,
+                    c.nombre,
                     c.capacidad_max,
                     COUNT(p.id_pallet) FILTER (WHERE p.estado = 'en_camara') AS pallets_dentro,
-                    SUM(c.capacidad_max) AS capacidad_total,
-                    MIN(
-                        (SELECT sl.valor FROM sensor s
-                         JOIN sensor_lectura sl ON sl.id_sensor = s.id_sensor
-                         WHERE s.id_camara = c.id_camara AND s.tipo = 'temperatura' AND s.activo = true
-                         ORDER BY sl.fecha_lectura DESC LIMIT 1)
-                    ) AS temp_min,
-                    MAX(
-                        (SELECT sl.valor FROM sensor s
-                         JOIN sensor_lectura sl ON sl.id_sensor = s.id_sensor
-                         WHERE s.id_camara = c.id_camara AND s.tipo = 'temperatura' AND s.activo = true
-                         ORDER BY sl.fecha_lectura DESC LIMIT 1)
-                    ) AS temp_max
-                FROM franquiciado f
-                JOIN camara c ON c.id_franquiciado = f.id_franquiciado
+                    COUNT(p.id_pallet) FILTER (
+                        WHERE p.estado = 'en_camara'
+                        AND p.fecha_salida_prevista < CURRENT_DATE
+                    ) AS pallets_vencidos,
+                    (SELECT sl.valor FROM sensor s
+                     JOIN sensor_lectura sl ON sl.id_sensor = s.id_sensor
+                     WHERE s.id_camara = c.id_camara AND s.tipo = 'temperatura' AND s.activo = true
+                     ORDER BY sl.fecha_lectura DESC LIMIT 1) AS temperatura,
+                    (SELECT sl.valor FROM sensor s
+                     JOIN sensor_lectura sl ON sl.id_sensor = s.id_sensor
+                     WHERE s.id_camara = c.id_camara AND s.tipo = 'humedad' AND s.activo = true
+                     ORDER BY sl.fecha_lectura DESC LIMIT 1) AS humedad,
+                    (SELECT sl.fecha_lectura FROM sensor s
+                     JOIN sensor_lectura sl ON sl.id_sensor = s.id_sensor
+                     WHERE s.id_camara = c.id_camara AND s.activo = true
+                     ORDER BY sl.fecha_lectura DESC LIMIT 1) AS ultima_lectura
+                FROM camara c
                 LEFT JOIN pallet p ON p.id_camara = c.id_camara
-                GROUP BY f.id_franquiciado, f.ubicacion, c.capacidad_max
-                ORDER BY f.ubicacion
+                WHERE c.id_franquiciado IS NOT NULL
+                GROUP BY c.id_camara, c.nombre, c.capacidad_max
+                ORDER BY c.nombre
             """)
             cols = [d[0] for d in cur.description]
             resultado["franquiciados"] = [dict(zip(cols, row)) for row in cur.fetchall()]

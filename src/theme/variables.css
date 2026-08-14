@@ -154,23 +154,38 @@ ion-tab-bar {
    el slot por defecto de ion-tabs (la región del contenido), no en la
    región de la tab bar, y aparece desplazado hacia arriba. Con el slot
    correcto, position:absolute respecto a ion-tabs (position:relative,
-   arriba) encaja pixel a pixel con la caja de la tab bar. */
+   arriba) encaja pixel a pixel con la caja de la tab bar.
+   Se dibuja como una insignia circular centrada en el borde superior de
+   la tab bar, así sobresale por encima (mitad fuera, mitad dentro). */
 .tabbar-logo {
   position: absolute;
   left: 50%;
-  bottom: 0;
-  height: 75px;
+  bottom: 27px; /* 75px (alto de la tab bar) − mitad del círculo (48px) */
+  width: 96px;
+  height: 96px;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 10px;
+  border-radius: 50%;
+  background: #99DBB5; /* mismo verde que el fondo de la tab bar, homogéneo */
+  /* Mismo borde que remata la tab bar (border-top: var(--color-mid)) y sin
+     sombra propia: así se lee como un bulto de la propia barra, no como un
+     círculo distinto pegado encima. */
+  border: 2px solid var(--color-mid);
   pointer-events: none;
   z-index: 10;
 }
 .tabbar-logo img {
-  height: 52px;
-  width: auto;
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+}
+
+/* El botón justo antes del logo lleva más margen para dejarle hueco;
+   el resto de tabs se acercan un poco entre sí para compensar. */
+.tab-gap-right {
+  margin-right: 48px;
 }
 
 /* En pantallas de móvil estrechas los botones de la tab bar no dejan hueco
@@ -178,6 +193,10 @@ ion-tab-bar {
 @media (max-width: 600px) {
   .tabbar-logo {
     display: none;
+  }
+
+  .tab-gap-right {
+    margin-right: 0;
   }
 }
 
